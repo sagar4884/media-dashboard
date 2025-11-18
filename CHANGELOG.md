@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.61] - 2025-11-18
+
+### Added
+- New Deletion Manager page to manage items marked for deletion.
+- Dashboard on the Deletion Manager page to show pending deletions and reclaimable space.
+- "Purge Expired" button to mass-delete items that have passed their grace period.
+- "Delete Now" button for individual items on the Deletion Manager page.
+- "Archived" stats on the main dashboard.
+- "Archived" filter on Radarr and Sonarr pages.
+
+### Changed
+- The deletion logic is now dynamic. The grace period is calculated on the fly, and changes to the grace period setting are reflected instantly.
+- Items deleted from media servers are now marked as "Archived" in the database instead of being removed.
+
+### Fixed
+- Resolved a `jinja2.exceptions.TemplateSyntaxError` on the Deletion Manager page.
+- Fixed a `jinja2.exceptions.UndefinedError` by making `timedelta` available to templates.
+
 ## [0.60] - 2025-11-18
 
 ### Added

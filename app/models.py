@@ -18,7 +18,7 @@ class Movie(db.Model):
     size_gb = db.Column(db.Float)
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
-    delete_at = db.Column(db.DateTime)
+    marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
 
@@ -31,7 +31,7 @@ class Show(db.Model):
     size_gb = db.Column(db.Float)
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
-    delete_at = db.Column(db.DateTime)
+    marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
 

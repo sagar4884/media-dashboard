@@ -6,6 +6,7 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from rq import Queue
 import redis
+from datetime import timedelta
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -33,6 +34,9 @@ def create_app():
     redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
     redis_conn = redis.from_url(redis_url)
     app.queue = Queue(connection=redis_conn)
+
+    # Make timedelta available in templates
+    app.jinja_env.globals['timedelta'] = timedelta
 
     with app.app_context():
         from . import routes
