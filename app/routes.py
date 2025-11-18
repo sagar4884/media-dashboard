@@ -3,6 +3,8 @@ from . import db
 from .models import ServiceSettings, Movie, Show, TautulliHistory
 from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session
 from rq.job import Job
+from rq.exceptions import NoSuchJobError
+from rq.exceptions import NoSuchJobError
 from rq.registry import StartedJobRegistry
 from datetime import datetime, timedelta
 
@@ -101,18 +103,21 @@ def sync(service):
 
 @current_app.route('/task_status/<job_id>')
 def task_status(job_id):
-    job = Job.fetch(job_id, connection=current_app.queue.connection)
-    if job:
-        response = {
-            'status': job.get_status(),
-            'progress': job.meta.get('progress', 0) if job.is_started else 0,
-        }
-        if job.is_finished:
-            response['result'] = job.result
-        elif job.is_failed:
-            response['error'] = job.exc_info
-    else:
-        response = {'status': 'not_found'}
+    try:
+        job = Job.fetch(job_id, connection=current_app.queue.connection)
+    except NoSuchJobError:
+        # The job is no longer in the registry, which means it's finished or failed and cleaned up.
+        # Tell the frontend to stop polling.
+        return jsonify({'status': 'finished'})
+
+    response = {
+        'status': job.get_status(),
+        'progress': job.meta.get('progress', 0) if job.is_started else 0,
+    }
+    if job.is_finished:
+        response['result'] = job.result
+    elif job.is_failed:
+        response['error'] = job.exc_info
     
     return jsonify(response)
 

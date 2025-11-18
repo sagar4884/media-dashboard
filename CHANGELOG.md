@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.55] - 2025-11-18
+
+### Fixed
+- Resolved a `NoSuchJobError` when polling for completed jobs. The application now gracefully handles cases where a job has been cleared from the queue.
+- Addressed a Gunicorn `WORKER TIMEOUT` error by increasing the worker timeout to 120 seconds, making the web server more resilient to slow database queries.
+
 ## [0.5] - 2025-11-18
 
 ### Added
