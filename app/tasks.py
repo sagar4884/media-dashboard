@@ -7,6 +7,10 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os
 from datetime import datetime, timedelta
+from . import db
+from . import db
+from . import db
+from . import db
 
 def get_retry_session():
     session = requests.Session()
@@ -452,3 +456,21 @@ def update_service_tags(service_name, payload):
             session.put(editor_url, headers=headers, json=remove_payload)
 
     return {'status': 'Tag update process completed'}
+
+
+def vacuum_database():
+    try:
+        db.session.execute('VACUUM')
+        db.session.commit()
+        return "Database vacuum complete."
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def vacuum_database():
+    try:
+        db.session.execute('VACUUM')
+        db.session.commit()
+        return "Database vacuum complete."
+    except Exception as e:
+        return f"Error: {e}"
