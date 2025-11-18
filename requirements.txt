@@ -6,3 +6,4 @@ rq==1.15.0
 redis
 requests
 python-dotenv
+supervisor

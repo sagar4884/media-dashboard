@@ -1,27 +1,16 @@
 services:
-  web:
+  app:
     build: .
-    command: gunicorn --timeout 120 -w 4 -b 0.0.0.0:8000 wsgi:app
     ports:
       - "8000:8000"
     volumes:
       - .:/app
+      - /mnt/user/appdata/media-dashboard:/database
     depends_on:
       - redis
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=sqlite:///instance/app.db
-      - REDIS_URL=redis://redis:6379/0
-
-  worker:
-    build: .
-    command: python worker.py
-    volumes:
-      - .:/app
-    depends_on:
-      - web
-    environment:
-      - DATABASE_URL=sqlite:///instance/app.db
+      - DATABASE_URL=sqlite:////database/app.db
       - REDIS_URL=redis://redis:6379/0
 
   redis:
