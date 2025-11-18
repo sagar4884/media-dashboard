@@ -2,7 +2,7 @@
 <Container version="2">
   <Name>MediaDashboard-Web</Name>
   <Repository>bladelight/media-dashboard:[BRANCH]</Repository>
-  <Registry>https://hub.docker.com/r/your-dockerhub-username/media-dashboard/</Registry>
+  <Registry>https://hub.docker.com/r/bladelight/media-dashboard/</Registry>
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
