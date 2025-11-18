@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>MediaDashboard-Web</Name>
+  <Repository>bladelight/media-dashboard:[BRANCH]</Repository>
+  <Registry>https://hub.docker.com/r/bladelight/media-dashboard/</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/sagar4884/media-dashboard/issues</Support>
+  <Project>https://github.com/sagar4884/media-dashboard</Project>
+  <Overview>Web server for the Media Dashboard application.</Overview>
+  <Category>Media</Category>
+  <WebUI>http://[IP]:[PORT:8000]</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/sagar4884/media-dashboard/main/app/static/favicon.ico</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1637257200</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Web server for the Media Dashboard application.</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>8000</HostPort>
+        <ContainerPort>8000</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/media-dashboard</HostDir>
+      <ContainerDir>/app/instance</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value>sqlite:///instance/app.db</Value>
+      <Name>DATABASE_URL</Name>
+    </Variable>
+    <Variable>
+      <Value>redis://[YOUR_UNRAID_IP]:6379/0</Value>
+      <Name>REDIS_URL</Name>
+    </Variable>
+  </Environment>
+  <Config Name="Branch" Target="[BRANCH]" Default="latest" Mode="" Description="Choose the branch to install." Type="Variable" Display="always" Required="true">
+    <Option Value="latest" Display="Main"/>
+    <Option Value="beta" Display="Beta"/>
+  </Config>
+  <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="WebUI port" Type="Port" Display="always" Required="true"/>
+  <Config Name="Appdata" Target="/app/instance" Default="/mnt/user/appdata/media-dashboard" Mode="rw" Description="Database and instance storage" Type="Path" Display="always" Required="true"/>
+  <Config Name="Database URL" Target="DATABASE_URL" Default="sqlite:///instance/app.db" Description="Database connection string" Type="Variable" Display="always" Required="true"/>
+  <Config Name="Redis URL" Target="REDIS_URL" Default="redis://[YOUR_UNRAID_IP]:6379/0" Description="Redis connection string" Type="Variable" Display="always" Required="true"/>
+</Container>
