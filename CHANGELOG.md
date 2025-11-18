@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.59] - 2025-11-18
+
+### Added
+- "Not Scored" button on Radarr and Sonarr pages to allow users to reset the score of an item.
+
+### Changed
+- The tag management system has been completely overhauled to use the correct Radarr/Sonarr API endpoints, ensuring real-time tag updates are reliable.
+- The system will now automatically create any required `ai-` tags (`ai-keep`, `ai-delete`, etc.) if they do not already exist on the media server.
+
+### Fixed
+- Corrected a critical bug where Radarr and Sonarr tags were not updating in real-time when a score was changed in the dashboard.
+- Fixed a syntax error in the Sonarr sync task that was causing it to fail.
+
 ## [0.58] - 2025-11-18
 
 ### Added

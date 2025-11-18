@@ -35,7 +35,7 @@ def sync_radarr_movies(full_sync=False):
     headers = {'X-Api-Key': settings.api_key}
     session = get_retry_session()
 
-    # Fetch all tags to create a mapping from ID to Label
+    # Fetch all tags to create a mapping from ID to Label and vice-versa
     tags_response = session.get(f"{settings.url}/api/v3/tag", headers=headers)
     tags_response.raise_for_status()
     tag_map = {tag['id']: tag['label'] for tag in tags_response.json()}
@@ -44,11 +44,24 @@ def sync_radarr_movies(full_sync=False):
     response.raise_for_status()
     movies_data = response.json()
 
+    movies_to_update = {}  # Groups movies by tag changes required
+
     total_movies = len(movies_data)
     for i, movie_data in enumerate(movies_data):
         movie = Movie.query.filter_by(radarr_id=movie_data['id']).first()
+        
+        # Bootstrap score for new movies from existing tags
         if not movie:
-            movie = Movie(radarr_id=movie_data['id'], score='Not Scored')
+            movie = Movie(radarr_id=movie_data['id'])
+            current_labels = {tag_map.get(tag_id, '').lower() for tag_id in movie_data.get('tags', [])}
+            if 'ai-keep' in current_labels:
+                movie.score = 'Keep'
+            elif 'ai-delete' in current_labels:
+                movie.score = 'Delete'
+            elif 'ai-tautulli-keep' in current_labels:
+                movie.score = 'Tautulli Keep'
+            else:
+                movie.score = 'Not Scored'
         
         movie.tmdb_id = movie_data.get('tmdbId')
         movie.title = movie_data.get('title')
@@ -58,20 +71,37 @@ def sync_radarr_movies(full_sync=False):
         tag_ids = movie_data.get('tags', [])
         movie.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
 
-        # Set score based on tags
-        if 'ai-delete' in movie.labels:
-            movie.score = 'Delete'
-        elif 'ai-keep' in movie.labels:
-            movie.score = 'Keep'
-        else:
-            movie.score = 'Not Scored'
+        # Sync tags based on score
+        current_labels = {tag_map.get(tag_id, '').lower() for tag_id in tag_ids}
+        tags_to_add_labels = set()
+        tags_to_remove_labels = set()
+
+        if movie.score == 'Keep':
+            tags_to_add_labels.add('ai-keep')
+            tags_to_remove_labels.update(['ai-delete', 'ai-tautulli-keep'])
+        elif movie.score == 'Delete':
+            tags_to_add_labels.add('ai-delete')
+            tags_to_remove_labels.update(['ai-keep', 'ai-tautulli-keep'])
+        elif movie.score == 'Tautulli Keep':
+            tags_to_add_labels.add('ai-tautulli-keep')
+            tags_to_remove_labels.update(['ai-keep', 'ai-delete'])
+        elif movie.score == 'Not Scored':
+            tags_to_remove_labels.update(['ai-keep', 'ai-delete', 'ai-tautulli-keep', 'ai-rolling-keep'])
+        
+        final_tags_to_add = tuple(sorted([tag for tag in tags_to_add_labels if tag not in current_labels]))
+        final_tags_to_remove = tuple(sorted([tag for tag in tags_to_remove_labels if tag in current_labels]))
+
+        if final_tags_to_add or final_tags_to_remove:
+            change_key = (final_tags_to_add, final_tags_to_remove)
+            if change_key not in movies_to_update:
+                movies_to_update[change_key] = []
+            movies_to_update[change_key].append(movie.radarr_id)
 
         if (full_sync or not movie.local_poster_path) and movie.tmdb_id:
             poster_path = fetch_tmdb_assets(movie.tmdb_id, 'movie')
             movie.local_poster_path = poster_path
 
         db.session.add(movie)
-        db.session.commit()
 
         # ETA calculation
         elapsed_time = time.time() - start_time
@@ -82,6 +112,17 @@ def sync_radarr_movies(full_sync=False):
         
         job.meta['progress'] = int(progress * 100)
         job.save_meta()
+
+    db.session.commit()
+
+    # After loop, apply tag changes in batches
+    for (tags_to_add, tags_to_remove), movie_ids in movies_to_update.items():
+        payload = {
+            'movieIds': movie_ids,
+            'tagsToAdd': list(tags_to_add),
+            'tagsToRemove': list(tags_to_remove)
+        }
+        update_service_tags('Radarr', payload)
 
     return {'status': 'Completed', 'movies_synced': total_movies}
 
@@ -107,37 +148,68 @@ def sync_sonarr_shows(full_sync=False):
     response.raise_for_status()
     shows_data = response.json()
 
+    shows_to_update = {}  # Groups shows by tag changes required
+
     total_shows = len(shows_data)
     for i, show_data in enumerate(shows_data):
         show = Show.query.filter_by(sonarr_id=show_data['id']).first()
+        
+        # Bootstrap score for new shows from existing tags
         if not show:
-            show = Show(sonarr_id=show_data['id'], score='Not Scored')
+            show = Show(sonarr_id=show_data['id'])
+            current_labels = {tag_map.get(tag_id, '').lower() for tag_id in show_data.get('tags', [])}
+            if 'ai-keep' in current_labels:
+                show.score = 'Keep'
+            elif 'ai-delete' in current_labels:
+                show.score = 'Delete'
+            elif 'ai-rolling-keep' in current_labels:
+                show.score = 'Seasonal'
+            elif 'ai-tautulli-keep' in current_labels:
+                show.score = 'Tautulli Keep'
+            else:
+                show.score = 'Not Scored'
 
         show.tvdb_id = show_data.get('tvdbId')
         show.title = show_data.get('title')
-        show.year = show_data.get('year')
-        show.size_gb = show_data.get('statistics', {}).get('sizeOnDisk', 0) / (1024**3)
         show.overview = show_data.get('overview')
         tag_ids = show_data.get('tags', [])
         show.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
 
-        # Set score based on tags
-        if 'ai-delete' in show.labels:
-            show.score = 'Delete'
-        elif 'ai-keep' in show.labels:
-            show.score = 'Keep'
-        elif 'ai-rolling-keep' in show.labels:
-            show.score = 'Seasonal'
-        else:
-            show.score = 'Not Scored'
+        # Sync tags based on score
+        current_labels = {tag_map.get(tag_id, '').lower() for tag_id in tag_ids}
+        tags_to_add_labels = set()
+        tags_to_remove_labels = set()
 
+        if show.score == 'Keep':
+            tags_to_add_labels.add('ai-keep')
+            tags_to_remove_labels.update(['ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep'])
+        elif show.score == 'Delete':
+            tags_to_add_labels.add('ai-delete')
+            tags_to_remove_labels.update(['ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
+        elif show.score == 'Seasonal':
+            tags_to_add_labels.add('ai-rolling-keep')
+            tags_to_remove_labels.update(['ai-keep', 'ai-delete', 'ai-tautulli-keep'])
+        elif show.score == 'Tautulli Keep':
+            tags_to_add_labels.add('ai-tautulli-keep')
+            tags_to_remove_labels.update(['ai-keep', 'ai-delete', 'ai-rolling-keep'])
+        elif show.score == 'Not Scored':
+            tags_to_remove_labels.update(['ai-keep', 'ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep'])
+
+        final_tags_to_add = tuple(sorted([tag for tag in tags_to_add_labels if tag not in current_labels]))
+        final_tags_to_remove = tuple(sorted([tag for tag in tags_to_remove_labels if tag in current_labels]))
+
+        if final_tags_to_add or final_tags_to_remove:
+            change_key = (final_tags_to_add, final_tags_to_remove)
+            if change_key not in shows_to_update:
+                shows_to_update[change_key] = []
+            shows_to_update[change_key].append(show.sonarr_id)
+        
         if (full_sync or not show.local_poster_path) and show.tvdb_id:
             poster_path = fetch_tmdb_assets(show.tvdb_id, 'tv')
             show.local_poster_path = poster_path
         
         db.session.add(show)
-        db.session.commit()
-
+        
         # ETA calculation
         elapsed_time = time.time() - start_time
         progress = (i + 1) / total_shows
@@ -147,6 +219,17 @@ def sync_sonarr_shows(full_sync=False):
 
         job.meta['progress'] = int(progress * 100)
         job.save_meta()
+        
+    db.session.commit()
+        
+    # After loop, apply tag changes in batches
+    for (tags_to_add, tags_to_remove), series_ids in shows_to_update.items():
+        payload = {
+            'seriesIds': series_ids,
+            'tagsToAdd': list(tags_to_add),
+            'tagsToRemove': list(tags_to_remove)
+        }
+        update_service_tags('Sonarr', payload)
 
     return {'status': 'Completed', 'shows_synced': total_shows}
 
@@ -174,6 +257,37 @@ def sync_tautulli_history(full_sync=False):
     rescued_movies = []
     rescued_shows = []
     total_items = len(history_data)
+
+    # Get all movie and show titles that have been watched recently
+    watched_titles = {item['full_title'] for item in history_data}
+
+    # Process all movies
+    all_movies = Movie.query.all()
+    for movie in all_movies:
+        if movie.score in ['Keep']:
+            continue
+        
+        if movie.title in watched_titles:
+            if movie.score != 'Tautulli Keep':
+                movie.score = 'Tautulli Keep'
+                rescued_movies.append(movie.radarr_id)
+        elif movie.score == 'Tautulli Keep':
+            movie.score = 'Not Scored'
+            # Tag removal will be handled by the next sync with Radarr
+
+    # Process all shows
+    all_shows = Show.query.all()
+    for show in all_shows:
+        if show.score in ['Keep', 'Seasonal']:
+            continue
+
+        if show.title in watched_titles:
+            if show.score != 'Tautulli Keep':
+                show.score = 'Tautulli Keep'
+                rescued_shows.append(show.sonarr_id)
+        elif show.score == 'Tautulli Keep':
+            show.score = 'Not Scored'
+            # Tag removal will be handled by the next sync with Sonarr
 
     for i, item in enumerate(history_data):
         history_entry = TautulliHistory.query.filter_by(row_id=item['id']).first()
@@ -286,14 +400,55 @@ def update_service_tags(service_name, payload):
     headers = {'X-Api-Key': settings.api_key}
     session = get_retry_session()
     
+    tags_url = f"{settings.url}/api/v3/tag"
+    
     if service_name == 'Radarr':
-        url = f"{settings.url}/api/v3/movie/editor"
+        id_key = 'movieIds'
+        editor_url = f"{settings.url}/api/v3/movie/editor"
     elif service_name == 'Sonarr':
-        url = f"{settings.url}/api/v3/series/editor"
+        id_key = 'seriesIds'
+        editor_url = f"{settings.url}/api/v3/series/editor"
     else:
         return {'error': 'Invalid service name for tag update'}
-        
-    response = session.put(url, headers=headers, json=payload)
-    response.raise_for_status()
 
-    return response.json()
+    try:
+        tags_response = session.get(tags_url, headers=headers)
+        tags_response.raise_for_status()
+        tags_data = tags_response.json()
+        label_to_id_map = {tag['label'].lower(): tag['id'] for tag in tags_data}
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching tags for {service_name}: {e}")
+        return {'error': f'Could not fetch tags for {service_name}'}
+
+    # Process tags to add
+    if payload.get('tagsToAdd'):
+        labels_to_add = payload['tagsToAdd']
+        ids_to_add = []
+        for label in labels_to_add:
+            if label.lower() not in label_to_id_map:
+                try:
+                    print(f"Tag '{label}' not found for {service_name}. Creating it.")
+                    create_tag_response = session.post(tags_url, headers=headers, json={'label': label})
+                    create_tag_response.raise_for_status()
+                    new_tag = create_tag_response.json()
+                    label_to_id_map[new_tag['label'].lower()] = new_tag['id']
+                    ids_to_add.append(new_tag['id'])
+                except requests.exceptions.RequestException as e:
+                    print(f"Error creating tag '{label}' for {service_name}: {e}")
+            else:
+                ids_to_add.append(label_to_id_map[label.lower()])
+        
+        if ids_to_add:
+            add_payload = {id_key: payload[id_key], "tags": ids_to_add, "applyTags": "add"}
+            session.put(editor_url, headers=headers, json=add_payload)
+
+    # Process tags to remove
+    if payload.get('tagsToRemove'):
+        labels_to_remove = payload['tagsToRemove']
+        ids_to_remove = [label_to_id_map[label.lower()] for label in labels_to_remove if label.lower() in label_to_id_map]
+        
+        if ids_to_remove:
+            remove_payload = {id_key: payload[id_key], "tags": ids_to_remove, "applyTags": "remove"}
+            session.put(editor_url, headers=headers, json=remove_payload)
+
+    return {'status': 'Tag update process completed'}

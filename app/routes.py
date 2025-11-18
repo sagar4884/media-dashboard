@@ -156,19 +156,23 @@ def media_action(media_type, media_id, action):
         item.score = 'Keep'
         item.delete_at = None
         tags_to_add.append('ai-keep')
-        tags_to_remove.extend(['ai-delete', 'ai-rolling-keep'])
+        tags_to_remove.extend(['ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'delete':
         item.score = 'Delete'
         settings = ServiceSettings.query.filter_by(service_name=service_name).first()
         grace_days = settings.grace_days if settings else 30
         item.delete_at = datetime.utcnow() + timedelta(days=grace_days)
         tags_to_add.append('ai-delete')
-        tags_to_remove.extend(['ai-keep', 'ai-rolling-keep'])
+        tags_to_remove.extend(['ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'seasonal' and media_type == 'show':
         item.score = 'Seasonal'
         item.delete_at = None
         tags_to_add.append('ai-rolling-keep')
-        tags_to_remove.extend(['ai-delete', 'ai-keep'])
+        tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-tautulli-keep'])
+    elif action == 'not_scored':
+        item.score = 'Not Scored'
+        item.delete_at = None
+        tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     
     db.session.commit()
 
