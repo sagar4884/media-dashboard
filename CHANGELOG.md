@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.58] - 2025-11-18
+
+### Added
+- Implemented "Full Sync" buttons for Radarr, Sonarr, and Tautulli to re-sync all data.
+- Added pagination to the Radarr and Sonarr pages to improve performance with large libraries.
+
+### Fixed
+- Corrected a `jinja2.exceptions.TemplateSyntaxError` caused by incorrect `include` syntax in the Radarr and Sonarr templates.
+
 ## [0.57] - 2025-11-18
 
 ### Fixed

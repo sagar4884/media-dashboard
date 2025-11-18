@@ -25,6 +25,10 @@
 
             {% if view == 'table' %}
             <div class="bg-gray-800 p-4 rounded-lg shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    {% set pagination = movies %}
+                    {% include 'pagination_controls.html' %}
+                </div>
                  <table class="min-w-full divide-y divide-gray-700">
                     <thead class="bg-gray-700/50">
                         <tr>
@@ -36,7 +40,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-gray-800 divide-y divide-gray-700">
-                        {% for movie in movies %}
+                        {% for movie in movies.items %}
                         <tr class="group">
                             <td class="px-6 py-4 whitespace-nowrap relative">
                                 <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/50x75/111827/4b5563?text=N/A' }}" alt="{{ movie.title }} poster" class="w-12 h-auto rounded">
@@ -71,11 +75,19 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="flex justify-between items-center mt-4">
+                    {% set pagination = movies %}
+                    {% include 'pagination_controls.html' %}
+                </div>
             </div>
             {% else %}
             <!-- Poster View -->
+            <div class="flex justify-between items-center mb-4">
+                {% set pagination = movies %}
+                {% include 'pagination_controls.html' %}
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {% for movie in movies %}
+                {% for movie in movies.items %}
                 <div class="group bg-gray-800 rounded-lg shadow-lg overflow-hidden relative">
                     <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/500x750/111827/4b5563?text=No+Poster' }}" alt="{{ movie.title }} poster" class="w-full h-auto object-cover">
                     <!-- Hover Overlay -->
@@ -102,6 +114,10 @@
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                {% set pagination = movies %}
+                {% include 'pagination_controls.html' %}
             </div>
             {% endif %}
         </main>

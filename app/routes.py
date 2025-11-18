@@ -48,13 +48,17 @@ def dashboard():
 @current_app.route('/radarr')
 def radarr_page():
     view = request.args.get('view', 'table')
-    movies = Movie.query.order_by(Movie.title).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 100, type=int)
+    movies = Movie.query.order_by(Movie.title).paginate(page=page, per_page=per_page)
     return render_template('radarr.html', movies=movies, view=view)
 
 @current_app.route('/sonarr')
 def sonarr_page():
     view = request.args.get('view', 'table')
-    shows = Show.query.order_by(Show.title).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 100, type=int)
+    shows = Show.query.order_by(Show.title).paginate(page=page, per_page=per_page)
     return render_template('sonarr.html', shows=shows, view=view)
 
 @current_app.route('/tautulli')
