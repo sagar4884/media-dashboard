@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-# Ensure the instance folder exists and create an empty db file to ensure writability
-mkdir -p /app/instance
-touch /app/instance/app.db
+# Ensure the database directory exists and create an empty db file
+mkdir -p /database
+touch /database/app.db
 
 # If migrations directory doesn't exist, initialize it
 if [ ! -d "/app/migrations" ]; then

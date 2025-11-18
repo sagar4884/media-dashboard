@@ -20,18 +20,12 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=True)
-
-    # Ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
+    app = Flask(__name__)
 
     # Configuration
     app.config.from_mapping(
         SECRET_KEY='a_very_secret_key',  # Change this!
-        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(app.instance_path, "app.db")}'),
+        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite:////database/app.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
