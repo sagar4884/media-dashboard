@@ -1,0 +1,62 @@
+name: Docker Image CI/CD
+
+on:
+  # This workflow is triggered when code is pushed to 'main' or 'beta' branches
+  push:
+    branches:
+      - main
+      - beta
+      
+env:
+  # Define the full Docker image name once (replace with your details)
+  DOCKER_IMAGE: bladelight/media-dashboard # Example: your-username/your-repo-name
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Set up Docker Buildx
+        # Buildx is a component that enables powerful build capabilities (like multi-arch builds)
+        uses: docker/setup-buildx-action@v3
+        
+      - name: 🔑 Login to Docker Hub
+        # Uses the secrets you created earlier for secure authentication
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏷️ Define Image Tags
+        id: meta
+        # This step determines the correct tag based on the branch name
+        run: |
+          TAGS=()
+          # If branch is 'main', use 'latest' tag
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            TAGS+=("${{ env.DOCKER_IMAGE }}:latest")
+          # If branch is 'beta', use 'beta' tag
+          elif [ "${{ github.ref_name }}" == "beta" ]; then
+            TAGS+=("${{ env.DOCKER_IMAGE }}:beta")
+          fi
+          
+          # Optional: Add tag with the commit SHA for traceability
+          TAGS+=("${{ env.DOCKER_IMAGE }}:${{ github.sha }}")
+          
+          # Pass the final list of tags to the next step
+          echo "tags=${TAGS[*]}" >> $GITHUB_OUTPUT
+          
+      - name: 📦 Build and Push Docker image
+        # This action builds the image and pushes it to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Assumes your Dockerfile is in the root directory
+          push: true
+          # Use the tags generated in the previous step
+          tags: ${{ steps.meta.outputs.tags }}
+          # Optional: Enable caching for faster subsequent builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
