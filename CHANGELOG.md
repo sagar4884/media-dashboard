@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.70] - 2025-11-18
+### Changed
+- The application has been consolidated into a single Docker container, simplifying deployment.
+- The database migration system has been removed. The application will now create the database from the models on first run and perform an integrity check on subsequent starts.
+
+### Fixed
+- Resolved all startup errors related to database creation and migrations on fresh installations.
+
 ## [0.64] - 2025-11-18
 ### Fixed
 - Resolved a `sqlalchemy.exc.OperationalError` that was preventing the application from starting. The error was caused by the application trying to access the database before the directory for the database file was created.
