@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.56] - 2025-11-18
+
+### Added
+- Implemented a persistent progress bar with ETA for all sync tasks. The progress bar now remains visible across page refreshes, providing a more reliable user experience.
+
+### Changed
+- Relocated the progress bar from the bottom of the page to the "Service Sync" area for better visibility.
+- Enhanced the progress bar to display the completion percentage and the estimated time remaining.
+
 ## [0.55] - 2025-11-18
 
 ### Fixed

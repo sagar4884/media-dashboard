@@ -10,6 +10,11 @@ from datetime import datetime, timedelta
 
 @current_app.route('/')
 def dashboard():
+    # Check for a running job
+    registry = StartedJobRegistry(queue=current_app.queue)
+    running_job_ids = registry.get_job_ids()
+    active_job_id = running_job_ids[0] if running_job_ids else None
+
     # Radarr stats
     radarr_total = Movie.query.count()
     radarr_unscored = Movie.query.filter(Movie.score.in_(['Not Scored', None])).count()
@@ -38,7 +43,7 @@ def dashboard():
             'seasonal': sonarr_seasonal
         }
     }
-    return render_template('dashboard.html', stats=stats)
+    return render_template('dashboard.html', stats=stats, active_job_id=active_job_id)
 
 @current_app.route('/radarr')
 def radarr_page():
@@ -113,6 +118,7 @@ def task_status(job_id):
     response = {
         'status': job.get_status(),
         'progress': job.meta.get('progress', 0) if job.is_started else 0,
+        'eta': job.meta.get('eta', None)
     }
     if job.is_finished:
         response['result'] = job.result

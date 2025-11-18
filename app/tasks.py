@@ -26,6 +26,7 @@ def sync_radarr_movies():
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
+    start_time = time.time()
 
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     if not settings:
@@ -71,7 +72,14 @@ def sync_radarr_movies():
         db.session.add(movie)
         db.session.commit()
 
-        job.meta['progress'] = int(((i + 1) / total_movies) * 100)
+        # ETA calculation
+        elapsed_time = time.time() - start_time
+        progress = (i + 1) / total_movies
+        if progress > 0:
+            eta_seconds = (elapsed_time / progress) * (1 - progress)
+            job.meta['eta'] = time.strftime("%M:%S", time.gmtime(eta_seconds))
+        
+        job.meta['progress'] = int(progress * 100)
         job.save_meta()
 
     return {'status': 'Completed', 'movies_synced': total_movies}
@@ -80,6 +88,7 @@ def sync_sonarr_shows():
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
+    start_time = time.time()
 
     settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
     if not settings:
@@ -127,12 +136,24 @@ def sync_sonarr_shows():
         db.session.add(show)
         db.session.commit()
 
-        job.meta['progress'] = int(((i + 1) / total_shows) * 100)
+        # ETA calculation
+        elapsed_time = time.time() - start_time
+        progress = (i + 1) / total_shows
+        if progress > 0:
+            eta_seconds = (elapsed_time / progress) * (1 - progress)
+            job.meta['eta'] = time.strftime("%M:%S", time.gmtime(eta_seconds))
+
+        job.meta['progress'] = int(progress * 100)
         job.save_meta()
 
     return {'status': 'Completed', 'shows_synced': total_shows}
 
 def sync_tautulli_history():
+    job = get_current_job()
+    job.meta['progress'] = 0
+    job.save_meta()
+    start_time = time.time()
+
     settings = ServiceSettings.query.filter_by(service_name='Tautulli').first()
     if not settings:
         return {'error': 'Tautulli settings not found'}
@@ -150,8 +171,9 @@ def sync_tautulli_history():
 
     rescued_movies = []
     rescued_shows = []
+    total_items = len(history_data)
 
-    for item in history_data:
+    for i, item in enumerate(history_data):
         history_entry = TautulliHistory.query.filter_by(row_id=item['id']).first()
         if not history_entry:
             history_entry = TautulliHistory(
@@ -174,6 +196,16 @@ def sync_tautulli_history():
         if show_to_rescue:
             show_to_rescue.score = 'Tautulli Keep'
             rescued_shows.append(show_to_rescue.sonarr_id)
+        
+        # ETA calculation
+        elapsed_time = time.time() - start_time
+        progress = (i + 1) / total_items
+        if progress > 0:
+            eta_seconds = (elapsed_time / progress) * (1 - progress)
+            job.meta['eta'] = time.strftime("%M:%S", time.gmtime(eta_seconds))
+
+        job.meta['progress'] = int(progress * 100)
+        job.save_meta()
 
     db.session.commit()
 
