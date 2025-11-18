@@ -1,80 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Media Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-4">Settings</h1>
-
-        <form action="{{ url_for('settings') }}" method="POST" class="bg-white p-4 rounded-lg shadow-md">
-            <!-- Radarr Settings -->
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold mb-2">Radarr</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="Radarr_url" class="block text-sm font-medium text-gray-700">URL</label>
-                        <input type="text" id="Radarr_url" name="Radarr_url" value="{{ radarr_settings.url or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                    </div>
-                    <div>
-                        <label for="Radarr_api_key" class="block text-sm font-medium text-gray-700">API Key</label>
-                        <input type="text" id="Radarr_api_key" name="Radarr_api_key" value="{{ radarr_settings.api_key or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div>
-                        <label for="Radarr_grace_days" class="block text-sm font-medium text-gray-700">Grace Days</label>
-                        <input type="number" id="Radarr_grace_days" name="Radarr_grace_days" value="{{ radarr_settings.grace_days or 30 }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div>
-                        <label for="tmdb_api_key" class="block text-sm font-medium text-gray-700">TMDB API Key</label>
-                        <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                </div>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-white">Settings</h1>
+                <a href="{{ url_for('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 0 1 0 1.414L9.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414l-4-4a1 1 0 0 1 0-1.414l4-4a1 1 0 0 1 1.414 0z" clip-rule="evenodd" /></svg>
+                    Back to Dashboard
+                </a>
             </div>
 
-            <!-- Sonarr Settings -->
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold mb-2">Sonarr</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="Sonarr_url" class="block text-sm font-medium text-gray-700">URL</label>
-                        <input type="text" id="Sonarr_url" name="Sonarr_url" value="{{ sonarr_settings.url or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div>
-                        <label for="Sonarr_api_key" class="block text-sm font-medium text-gray-700">API Key</label>
-                        <input type="text" id="Sonarr_api_key" name="Sonarr_api_key" value="{{ sonarr_settings.api_key or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                     <div>
-                        <label for="Sonarr_grace_days" class="block text-sm font-medium text-gray-700">Grace Days</label>
-                        <input type="number" id="Sonarr_grace_days" name="Sonarr_grace_days" value="{{ sonarr_settings.grace_days or 30 }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            <form action="{{ url_for('settings') }}" method="POST" class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <!-- Radarr Settings -->
+                <div class="mb-8 p-4 border border-gray-700 rounded-lg">
+                    <h2 class="text-2xl font-bold mb-4 text-white">Radarr</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="Radarr_url" class="block text-sm font-medium text-gray-400">URL</label>
+                            <input type="text" id="Radarr_url" name="Radarr_url" value="{{ radarr_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="Radarr_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
+                            <input type="text" id="Radarr_api_key" name="Radarr_api_key" value="{{ radarr_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="Radarr_grace_days" class="block text-sm font-medium text-gray-400">Grace Days</label>
+                            <input type="number" id="Radarr_grace_days" name="Radarr_grace_days" value="{{ radarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="tmdb_api_key" class="block text-sm font-medium text-gray-400">TMDB API Key</label>
+                            <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tautulli Settings -->
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold mb-2">Tautulli</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="Tautulli_url" class="block text-sm font-medium text-gray-700">URL</label>
-                        <input type="text" id="Tautulli_url" name="Tautulli_url" value="{{ tautulli_settings.url or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div>
-                        <label for="Tautulli_api_key" class="block text-sm font-medium text-gray-700">API Key</label>
-                        <input type="text" id="Tautulli_api_key" name="Tautulli_api_key" value="{{ tautulli_settings.api_key or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-                    <div>
-                        <label for="Tautulli_retention_days" class="block text-sm font-medium text-gray-700">Retention Days</label>
-                        <input type="number" id="Tautulli_retention_days" name="Tautulli_retention_days" value="{{ tautulli_settings.retention_days or 365 }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <!-- Sonarr Settings -->
+                <div class="mb-8 p-4 border border-gray-700 rounded-lg">
+                    <h2 class="text-2xl font-bold mb-4 text-white">Sonarr</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div>
+                            <label for="Sonarr_url" class="block text-sm font-medium text-gray-400">URL</label>
+                            <input type="text" id="Sonarr_url" name="Sonarr_url" value="{{ sonarr_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="Sonarr_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
+                            <input type="text" id="Sonarr_api_key" name="Sonarr_api_key" value="{{ sonarr_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                         <div>
+                            <label for="Sonarr_grace_days" class="block text-sm font-medium text-gray-400">Grace Days</label>
+                            <input type="number" id="Sonarr_grace_days" name="Sonarr_grace_days" value="{{ sonarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save Settings</button>
-            <a href="{{ url_for('dashboard') }}" class="text-gray-500 ml-4">Back to Dashboard</a>
-        </form>
+
+                <!-- Tautulli Settings -->
+                <div class="mb-8 p-4 border border-gray-700 rounded-lg">
+                    <h2 class="text-2xl font-bold mb-4 text-white">Tautulli</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="Tautulli_url" class="block text-sm font-medium text-gray-400">URL</label>
+                            <input type="text" id="Tautulli_url" name="Tautulli_url" value="{{ tautulli_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="Tautulli_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
+                            <input type="text" id="Tautulli_api_key" name="Tautulli_api_key" value="{{ tautulli_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="Tautulli_retention_days" class="block text-sm font-medium text-gray-400">Retention Days</for>
+                            <input type="number" id="Tautulli_retention_days" name="Tautulli_retention_days" value="{{ tautulli_settings.retention_days or 365 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Save Settings</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>
