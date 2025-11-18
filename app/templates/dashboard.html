@@ -14,25 +14,7 @@
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
     <div class="min-h-screen">
-        <!-- Sticky Header -->
-        <header class="sticky top-0 bg-gray-800/50 backdrop-blur-md shadow-lg z-10">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <h1 class="text-2xl font-bold text-white">Media Dashboard</h1>
-                    <nav class="flex items-center space-x-4">
-                        <a href="{{ url_for('settings') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0L8 7.45M7.45 8L3.17 8.51c-1.56.38-1.56 2.6 0 2.98L7.45 12M8 12.55l-.51 4.28c-.38 1.56 2.6 1.56 2.98 0L12 12.55M12.55 12l4.28-.51c1.56-.38 1.56-2.6 0-2.98L12.55 8M10 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM10 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" clip-rule="evenodd" /></svg>
-                            Settings
-                        </a>
-                        <a href="{{ url_for('purge') }}" class="flex items-center bg-red-600 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-red-700" onclick="return confirm('Are you sure you want to purge all items marked for deletion?')">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 0 0-1 1v1H4a1 1 0 0 0 0 2h1v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6h1a1 1 0 1 0 0-2h-4V3a1 1 0 0 0-1-1H9zm7 4a1 1 0 1 0-2 0v9a1 1 0 1 0 2 0V6z" clip-rule="evenodd" /></svg>
-                            Purge
-                        </a>
-                    </nav>
-                </div>
-            </div>
-        </header>
-
+        {% include 'header.html' %}
         <main class="container mx-auto p-4 sm:p-6 lg:p-8">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -54,64 +36,9 @@
                 </div>
             </div>
             
-            <!-- Radarr Section -->
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold mb-4 text-white">Radarr Movies</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {% for movie in movies %}
-                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-                        <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/500x750/111827/4b5563?text=No+Poster' }}" alt="{{ movie.title }} poster" class="w-full h-auto object-cover">
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg text-white truncate">{{ movie.title }} ({{ movie.year }})</h3>
-                            <p class="text-gray-400 text-sm">{{ "%.2f"|format(movie.size_gb) }} GB</p>
-                            <div class="mt-2">
-                                <span class="text-sm font-semibold px-2 py-1 rounded
-                                    {% if movie.score == 'Keep' %}bg-green-500/20 text-green-400
-                                    {% elif movie.score == 'Delete' %}bg-red-500/20 text-red-400
-                                    {% elif movie.score == 'Tautulli Keep' %}bg-blue-500/20 text-blue-400
-                                    {% else %}bg-gray-500/20 text-gray-400
-                                    {% endif %}">
-                                    {{ movie.score }}
-                                </span>
-                            </div>
-                            <div class="flex justify-end space-x-2 mt-4">
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep') }}" class="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clip-rule="evenodd" /></svg></a>
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete') }}" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414z" clip-rule="evenodd" /></svg></a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Sonarr Section -->
-            <div>
-                <h2 class="text-3xl font-bold mb-4 text-white">Sonarr Shows</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                     {% for show in shows %}
-                     <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-                        <img src="{{ url_for('static', filename=show.local_poster_path) if show.local_poster_path else 'https://placehold.co/500x750/111827/4b5563?text=No+Poster' }}" alt="{{ show.title }} poster" class="w-full h-auto object-cover">
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg text-white truncate">{{ show.title }} ({{ show.year }})</h3>
-                            <p class="text-gray-400 text-sm">{{ "%.2f"|format(show.size_gb) }} GB</p>
-                             <div class="mt-2">
-                                <span class="text-sm font-semibold px-2 py-1 rounded
-                                    {% if show.score == 'Keep' %}bg-green-500/20 text-green-400
-                                    {% elif show.score == 'Delete' %}bg-red-500/20 text-red-400
-                                    {% elif show.score == 'Tautulli Keep' %}bg-blue-500/20 text-blue-400
-                                    {% else %}bg-gray-500/20 text-gray-400
-                                    {% endif %}">
-                                    {{ show.score }}
-                                </span>
-                            </div>
-                            <div class="flex justify-end space-x-2 mt-4">
-                                <a href="{{ url_for('media_action', media_type='show', media_id=show.id, action='keep') }}" class="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clip-rule="evenodd" /></svg></a>
-                                <a href="{{ url_for('media_action', media_type='show', media_id=show.id, action='delete') }}" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414z" clip-rule="evenodd" /></svg></a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-white">Welcome to the Media Dashboard</h1>
+                <p class="text-lg text-gray-400 mt-4">Use the navigation above to manage your media libraries.</p>
             </div>
         </main>
     </div>

@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, current_app, redirect, url_for, flash
 from . import db
-from .models import ServiceSettings, Movie, Show
+from .models import ServiceSettings, Movie, Show, TautulliHistory
 from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session
 from rq.job import Job
 from rq.registry import StartedJobRegistry
@@ -8,24 +8,22 @@ from datetime import datetime, timedelta
 
 @current_app.route('/')
 def dashboard():
-    radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
-    sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
-    tautulli_settings = ServiceSettings.query.filter_by(service_name='Tautulli').first()
+    return render_template('dashboard.html')
 
+@current_app.route('/radarr')
+def radarr_page():
     movies = Movie.query.order_by(Movie.title).all()
+    return render_template('radarr.html', movies=movies)
+
+@current_app.route('/sonarr')
+def sonarr_page():
     shows = Show.query.order_by(Show.title).all()
+    return render_template('sonarr.html', shows=shows)
 
-    registry = StartedJobRegistry(queue=current_app.queue)
-    active_job_ids = registry.get_job_ids()
-    active_jobs = [Job.fetch(job_id, connection=current_app.queue.connection) for job_id in active_job_ids]
-
-    return render_template('dashboard.html', 
-                           radarr_settings=radarr_settings, 
-                           sonarr_settings=sonarr_settings,
-                           tautulli_settings=tautulli_settings,
-                           movies=movies,
-                           shows=shows,
-                           active_jobs=active_jobs)
+@current_app.route('/tautulli')
+def tautulli_page():
+    history = TautulliHistory.query.order_by(TautulliHistory.date.desc()).all()
+    return render_template('tautulli.html', history=history)
 
 @current_app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -47,7 +45,7 @@ def settings():
             db.session.add(settings)
         db.session.commit()
         flash('Settings saved successfully!', 'success')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('settings'))
     
     radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
@@ -127,8 +125,12 @@ def media_action(media_type, media_id, action):
         'tagsToRemove': tags_to_remove
     }
     update_service_tags(service_name, payload)
+    
+    if media_type == 'movie':
+        return redirect(url_for('radarr_page'))
+    else:
+        return redirect(url_for('sonarr_page'))
 
-    return redirect(url_for('dashboard'))
 
 @current_app.route('/purge')
 def purge():

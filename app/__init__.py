@@ -1,12 +1,14 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from rq import Queue
 import redis
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 # Enforce foreign key constraints for SQLite
 @event.listens_for(Engine, "connect")
@@ -25,6 +27,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Redis and RQ setup
     redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')

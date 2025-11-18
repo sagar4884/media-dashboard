@@ -15,11 +15,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application's code into the container
 COPY . .
 
+# Make the entrypoint script executable
+RUN chmod +x /app/entrypoint.sh
+
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
 # Define environment variable
 ENV FLASK_APP=app:create_app()
 
-# Run app.py when the container launches
+# Run the application
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "wsgi:app"]
