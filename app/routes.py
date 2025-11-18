@@ -50,16 +50,82 @@ def radarr_page():
     view = request.args.get('view', 'table')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 100, type=int)
-    movies = Movie.query.order_by(Movie.title).paginate(page=page, per_page=per_page)
-    return render_template('radarr.html', movies=movies, view=view)
+    
+    # Filter and sort parameters
+    score_filter = request.args.get('score_filter', 'all')
+    sort_by = request.args.get('sort_by', 'title')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    # Base query
+    query = Movie.query
+
+    # Apply filter
+    if score_filter and score_filter != 'all':
+        if score_filter == 'Not Scored':
+            query = query.filter(Movie.score.in_(['Not Scored', None]))
+        else:
+            query = query.filter(Movie.score == score_filter)
+
+    # Apply sorting
+    sortable_columns = ['title', 'size_gb', 'score', 'year']
+    if sort_by not in sortable_columns:
+        sort_by = 'title'
+        
+    column = getattr(Movie, sort_by)
+    if sort_order == 'desc':
+        query = query.order_by(column.desc())
+    else:
+        query = query.order_by(column.asc())
+    
+    movies = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('radarr.html',
+                           movies=movies,
+                           view=view,
+                           score_filter=score_filter,
+                           sort_by=sort_by,
+                           sort_order=sort_order)
 
 @current_app.route('/sonarr')
 def sonarr_page():
     view = request.args.get('view', 'table')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 100, type=int)
-    shows = Show.query.order_by(Show.title).paginate(page=page, per_page=per_page)
-    return render_template('sonarr.html', shows=shows, view=view)
+    
+    # Filter and sort parameters
+    score_filter = request.args.get('score_filter', 'all')
+    sort_by = request.args.get('sort_by', 'title')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    # Base query
+    query = Show.query
+
+    # Apply filter
+    if score_filter and score_filter != 'all':
+        if score_filter == 'Not Scored':
+            query = query.filter(Show.score.in_(['Not Scored', None]))
+        else:
+            query = query.filter(Show.score == score_filter)
+
+    # Apply sorting
+    sortable_columns = ['title', 'size_gb', 'score', 'year']
+    if sort_by not in sortable_columns:
+        sort_by = 'title'
+        
+    column = getattr(Show, sort_by)
+    if sort_order == 'desc':
+        query = query.order_by(column.desc())
+    else:
+        query = query.order_by(column.asc())
+    
+    shows = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('sonarr.html',
+                           shows=shows,
+                           view=view,
+                           score_filter=score_filter,
+                           sort_by=sort_by,
+                           sort_order=sort_order)
 
 @current_app.route('/tautulli')
 def tautulli_page():

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.60] - 2025-11-18
+
+### Added
+- Filtering and sorting functionality to the Radarr and Sonarr pages. Users can now filter by score and sort by title, size, and score.
+
+### Fixed
+- Resolved a `400 Bad Request` error during Tautulli sync by correctly passing the API key as a URL parameter instead of a header.
+
 ## [0.59] - 2025-11-18
 
 ### Added

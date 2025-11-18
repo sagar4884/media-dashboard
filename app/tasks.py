@@ -243,14 +243,14 @@ def sync_tautulli_history(full_sync=False):
     if not settings:
         return {'error': 'Tautulli settings not found'}
     
-    headers = {'X-Api-Key': settings.api_key}
     session = get_retry_session()
     params = {
         'cmd': 'get_history',
+        'apikey': settings.api_key,
         'length': 1000, # Adjust as needed
         'after': (datetime.now() - timedelta(days=settings.retention_days)).strftime('%Y-%m-%d')
     }
-    response = session.get(f"{settings.url}/api/v2", headers=headers, params=params)
+    response = session.get(f"{settings.url}/api/v2", params=params)
     response.raise_for_status()
     history_data = response.json()['response']['data']['data']
 
