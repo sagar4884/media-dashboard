@@ -240,9 +240,9 @@ def sync(service):
     full_sync = mode == 'full'
 
     if service == 'radarr':
-        job = current_app.queue.enqueue(sync_radarr_movies, job_timeout='15m', args=(full_sync,))
+        job = current_app.queue.enqueue(sync_radarr_movies, job_timeout='3h', args=(full_sync,))
     elif service == 'sonarr':
-        job = current_app.queue.enqueue(sync_sonarr_shows, job_timeout='15m', args=(full_sync,))
+        job = current_app.queue.enqueue(sync_sonarr_shows, job_timeout='3h', args=(full_sync,))
     elif service == 'tautulli':
         job = current_app.queue.enqueue(sync_tautulli_history, job_timeout='5m', args=(full_sync,))
     else:

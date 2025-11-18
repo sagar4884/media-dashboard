@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.711] - 2025-11-18
+### Fixed
+- Increased the timeout for Radarr and Sonarr sync jobs from 15 minutes to 3 hours to prevent `JobTimeoutException` on large libraries during a full sync.
+
 ## [0.71] - 2025-11-18
 ### Fixed
 - Fixed an issue where the application would fail on the first run because `sqlite3` was not found. The `sqlite3` package is now installed in the Docker container.
