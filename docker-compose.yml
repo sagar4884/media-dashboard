@@ -1,0 +1,27 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=sqlite:///app.db
+      - REDIS_URL=redis://redis:6379/0
+
+  worker:
+    build: .
+    command: python worker.py
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=sqlite:///app.db
+      - REDIS_URL=redis://redis:6379/0
+
+  redis:
+    image: "redis:alpine"

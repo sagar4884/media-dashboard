@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold">Media Dashboard</h1>
+            <div>
+                <a href="{{ url_for('settings') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Settings</a>
+                <a href="{{ url_for('purge') }}" class="bg-red-500 text-white px-4 py-2 rounded" onclick="return confirm('Are you sure you want to purge all items marked for deletion?')">Purge</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white p-3 rounded mb-4">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Radarr Section -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-4">
+            <h2 class="text-2xl font-bold mb-2">Radarr Movies</h2>
+            <button hx-get="/sync/radarr" hx-trigger="click" hx-swap="none" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">Sync Radarr</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for movie in movies %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/500x750' }}" alt="{{ movie.title }} poster" class="w-full h-auto">
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg">{{ movie.title }} ({{ movie.year }})</h3>
+                        <p class="text-gray-600 text-sm">{{ "%.2f"|format(movie.size_gb) }} GB</p>
+                        <p class="text-sm my-2">{{ movie.overview or 'No overview available.' }}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold 
+                                {% if movie.score == 'Keep' %}text-green-500
+                                {% elif movie.score == 'Delete' %}text-red-500
+                                {% elif movie.score == 'Tautulli Keep' %}text-blue-500
+                                {% endif %}">
+                                {{ movie.score }}
+                            </span>
+                            <div>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep') }}" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Keep</a>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete') }}" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sonarr Section -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-4">
+            <h2 class="text-2xl font-bold mb-2">Sonarr Shows</h2>
+            <button hx-get="/sync/sonarr" hx-trigger="click" hx-swap="none" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">Sync Sonarr</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for show in shows %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="{{ url_for('static', filename=show.local_poster_path) if show.local_poster_path else 'https://placehold.co/500x750' }}" alt="{{ show.title }} poster" class="w-full h-auto">
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg">{{ show.title }} ({{ show.year }})</h3>
+                        <p class="text-gray-600 text-sm">{{ "%.2f"|format(show.size_gb) }} GB</p>
+                        <p class="text-sm my-2">{{ show.overview or 'No overview available.' }}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold 
+                                {% if show.score == 'Keep' %}text-green-500
+                                {% elif show.score == 'Delete' %}text-red-500
+                                {% elif show.score == 'Tautulli Keep' %}text-blue-500
+                                {% endif %}">
+                                {{ show.score }}
+                            </span>
+                            <div>
+                                <a href="{{ url_for('media_action', media_type='show', media_id=show.id, action='keep') }}" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Keep</a>
+                                <a href="{{ url_for('media_action', media_type='show', media_id=show.id, action='delete') }}" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Tautulli Section -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-4">
+            <h2 class="text-2xl font-bold mb-2">Tautulli</h2>
+            <button hx-get="/sync/tautulli" hx-trigger="click" hx-swap="none" class="bg-blue-500 text-white px-4 py-2 rounded">Sync Tautulli History</button>
+        </div>
+
+        <!-- Sync Progress -->
+        <div id="progress-bar-container" class="fixed bottom-0 left-0 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+
+    </div>
+
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            // disable buttons to prevent multiple clicks
+            var syncButtons = document.querySelectorAll('button[hx-get]');
+            syncButtons.forEach(function(btn) {
+                btn.setAttribute('disabled', 'disabled');
+            });
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            var job_id = JSON.parse(evt.detail.xhr.responseText).job_id;
+            if (job_id) {
+                var container = document.getElementById('progress-bar-container');
+                container.style.display = 'block';
+
+                var interval = setInterval(function () {
+                    fetch('/task_status/' + job_id)
+                        .then(response => response.json())
+                        .then(data => {
+                            var progressBar = document.getElementById('progress-bar');
+                            progressBar.style.width = data.progress + '%';
+                            if (data.status === 'finished' || data.status === 'failed') {
+                                clearInterval(interval);
+                                location.reload();
+                            }
+                        });
+                }, 2000);
+            } else {
+                 var syncButtons = document.querySelectorAll('button[hx-get]');
+                syncButtons.forEach(function(btn) {
+                    btn.removeAttribute('disabled');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

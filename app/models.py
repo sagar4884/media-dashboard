@@ -1,0 +1,45 @@
+from . import db
+
+class ServiceSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_name = db.Column(db.String(50), unique=True, nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    api_key = db.Column(db.String(100), nullable=False)
+    grace_days = db.Column(db.Integer, default=30)
+    retention_days = db.Column(db.Integer, default=365)
+    tmdb_api_key = db.Column(db.String(100))
+
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    radarr_id = db.Column(db.Integer, unique=True)
+    tmdb_id = db.Column(db.Integer)
+    title = db.Column(db.String(200))
+    year = db.Column(db.Integer)
+    size_gb = db.Column(db.Float)
+    labels = db.Column(db.String(200))
+    score = db.Column(db.String(50))
+    delete_at = db.Column(db.DateTime)
+    overview = db.Column(db.Text)
+    local_poster_path = db.Column(db.String(200))
+
+class Show(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sonarr_id = db.Column(db.Integer, unique=True)
+    tvdb_id = db.Column(db.Integer)
+    title = db.Column(db.String(200))
+    year = db.Column(db.Integer)
+    size_gb = db.Column(db.Float)
+    labels = db.Column(db.String(200))
+    score = db.Column(db.String(50))
+    delete_at = db.Column(db.DateTime)
+    overview = db.Column(db.Text)
+    local_poster_path = db.Column(db.String(200))
+
+class TautulliHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    row_id = db.Column(db.Integer, unique=True)
+    title = db.Column(db.String(200))
+    user = db.Column(db.String(100))
+    date = db.Column(db.DateTime)
+    state = db.Column(db.String(50))
+    duration_mins = db.Column(db.Integer)
