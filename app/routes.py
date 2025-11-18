@@ -12,13 +12,15 @@ def dashboard():
 
 @current_app.route('/radarr')
 def radarr_page():
+    view = request.args.get('view', 'table')
     movies = Movie.query.order_by(Movie.title).all()
-    return render_template('radarr.html', movies=movies)
+    return render_template('radarr.html', movies=movies, view=view)
 
 @current_app.route('/sonarr')
 def sonarr_page():
+    view = request.args.get('view', 'table')
     shows = Show.query.order_by(Show.title).all()
-    return render_template('sonarr.html', shows=shows)
+    return render_template('sonarr.html', shows=shows, view=view)
 
 @current_app.route('/tautulli')
 def tautulli_page():
