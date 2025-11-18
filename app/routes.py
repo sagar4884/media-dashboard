@@ -1,10 +1,11 @@
 from flask import render_template, request, jsonify, current_app, redirect, url_for, flash
+import os
 import requests
+from sqlalchemy import text
 from . import db
 from .models import ServiceSettings, Movie, Show, TautulliHistory
-from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session
+from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session, vacuum_database
 from rq.job import Job
-from rq.exceptions import NoSuchJobError
 from rq.exceptions import NoSuchJobError
 from rq.registry import StartedJobRegistry
 from datetime import datetime, timedelta
@@ -21,7 +22,6 @@ def dashboard():
     radarr_unscored = Movie.query.filter(Movie.score.in_(['Not Scored', None])).count()
     radarr_keep = Movie.query.filter_by(score='Keep').count()
     radarr_delete = Movie.query.filter_by(score='Delete').count()
-    radarr_archived = Movie.query.filter_by(score='Archived').count()
 
     # Sonarr stats
     sonarr_total = Show.query.count()
@@ -29,23 +29,20 @@ def dashboard():
     sonarr_keep = Show.query.filter_by(score='Keep').count()
     sonarr_delete = Show.query.filter_by(score='Delete').count()
     sonarr_seasonal = Show.query.filter_by(score='Seasonal').count()
-    sonarr_archived = Show.query.filter_by(score='Archived').count()
 
     stats = {
         'radarr': {
             'total': radarr_total,
             'unscored': radarr_unscored,
             'keep': radarr_keep,
-            'delete': radarr_delete,
-            'archived': radarr_archived
+            'delete': radarr_delete
         },
         'sonarr': {
             'total': sonarr_total,
             'unscored': sonarr_unscored,
             'keep': sonarr_keep,
             'delete': sonarr_delete,
-            'seasonal': sonarr_seasonal,
-            'archived': sonarr_archived
+            'seasonal': sonarr_seasonal
         }
     }
     return render_template('dashboard.html', stats=stats, active_job_id=active_job_id)
@@ -134,8 +131,77 @@ def sonarr_page():
 
 @current_app.route('/tautulli')
 def tautulli_page():
-    history = TautulliHistory.query.order_by(TautulliHistory.date.desc()).all()
+    history = db.session.query(
+        TautulliHistory,
+        Movie.local_poster_path,
+        Movie.overview,
+        Show.local_poster_path.label('show_local_poster_path'),
+        Show.overview.label('show_overview'),
+        Show.title.label('show_title')
+    ).outerjoin(Movie, TautulliHistory.title == Movie.title)\
+     .outerjoin(Show, TautulliHistory.title.startswith(Show.title))\
+     .order_by(TautulliHistory.date.desc())\
+     .all()
     return render_template('tautulli.html', history=history)
+
+@current_app.route('/deletion')
+def deletion_page():
+    radarr_items = Movie.query.filter(Movie.score == 'Delete').order_by(Movie.marked_for_deletion_at.asc()).all()
+    sonarr_items = Show.query.filter(Show.score == 'Delete').order_by(Show.marked_for_deletion_at.asc()).all()
+
+    radarr_space = sum(item.size_gb for item in radarr_items)
+    sonarr_space = sum(item.size_gb for item in sonarr_items)
+
+    stats = {
+        'radarr': {'pending': len(radarr_items)},
+        'sonarr': {'pending': len(sonarr_items)},
+        'total_space': radarr_space + sonarr_space
+    }
+    
+    radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
+    sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
+
+    return render_template('deletion.html', 
+                           radarr_items=radarr_items, 
+                           sonarr_items=sonarr_items, 
+                           stats=stats,
+                           radarr_settings=radarr_settings,
+                           sonarr_settings=sonarr_settings,
+                           now=datetime.utcnow())
+
+@current_app.route('/database')
+def database_page():
+    db_path = current_app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+    db_info = {
+        'type': 'SQLite',
+        'path': db_path,
+        'size_mb': os.path.getsize(db_path) / (1024 * 1024) if os.path.exists(db_path) else 0
+    }
+    return render_template('database.html', db_info=db_info)
+
+@current_app.route('/database/integrity_check', methods=['POST'])
+def integrity_check():
+    try:
+        result = db.session.execute(text('PRAGMA integrity_check')).fetchone()
+        return f"Integrity Check: {result[0]}"
+    except Exception as e:
+        return f"Error: {e}"
+
+@current_app.route('/database/optimize', methods=['POST'])
+def optimize_db():
+    try:
+        db.session.execute(text('PRAGMA optimize'))
+        db.session.commit()
+        return "Database optimization complete."
+    except Exception as e:
+        return f"Error: {e}"
+
+@current_app.route('/database/vacuum', methods=['POST'])
+def vacuum_db():
+    job = current_app.queue.enqueue(vacuum_database, job_timeout='15m')
+    return jsonify({'job_id': job.get_id()})
+
+
 
 @current_app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -225,22 +291,24 @@ def media_action(media_type, media_id, action):
 
     if action == 'keep':
         item.score = 'Keep'
-        item.marked_for_deletion_at = None
+        item.delete_at = None
         tags_to_add.append('ai-keep')
         tags_to_remove.extend(['ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'delete':
         item.score = 'Delete'
-        item.marked_for_deletion_at = datetime.utcnow()
+        settings = ServiceSettings.query.filter_by(service_name=service_name).first()
+        grace_days = settings.grace_days if settings else 30
+        item.delete_at = datetime.utcnow() + timedelta(days=grace_days)
         tags_to_add.append('ai-delete')
         tags_to_remove.extend(['ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'seasonal' and media_type == 'show':
         item.score = 'Seasonal'
-        item.marked_for_deletion_at = None
+        item.delete_at = None
         tags_to_add.append('ai-rolling-keep')
         tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-tautulli-keep'])
     elif action == 'not_scored':
         item.score = 'Not Scored'
-        item.marked_for_deletion_at = None
+        item.delete_at = None
         tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     
     db.session.commit()
@@ -292,104 +360,39 @@ def purge():
     flash(f'Purged {deleted_movies_count} movies and {deleted_shows_count} shows.', 'success')
     return redirect(url_for('dashboard'))
 
-
-@current_app.route('/deletion')
-def deletion_page():
-    now = datetime.utcnow()
-    
-    radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
-    sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
-
-    # Backfill missing dates for items marked as delete
-    items_to_fix = Movie.query.filter(Movie.score == 'Delete', Movie.marked_for_deletion_at == None).all()
-    items_to_fix += Show.query.filter(Show.score == 'Delete', Show.marked_for_deletion_at == None).all()
-    if items_to_fix:
-        for item in items_to_fix:
-            item.marked_for_deletion_at = now
-        db.session.commit()
-
-    radarr_items = Movie.query.filter(Movie.score == 'Delete').order_by(Movie.marked_for_deletion_at.asc()).all()
-    sonarr_items = Show.query.filter(Show.score == 'Delete').order_by(Show.marked_for_deletion_at.asc()).all()
-
-    radarr_space = sum(item.size_gb for item in radarr_items if item.size_gb)
-    sonarr_space = sum(item.size_gb for item in sonarr_items if item.size_gb)
-
-    stats = {
-        'radarr': {'pending': len(radarr_items)},
-        'sonarr': {'pending': len(sonarr_items)},
-        'total_space': radarr_space + sonarr_space
-    }
-
-    return render_template('deletion.html',
-                           radarr_items=radarr_items,
-                           sonarr_items=sonarr_items,
-                           stats=stats,
-                           now=now,
-                           radarr_settings=radarr_settings,
-                           sonarr_settings=sonarr_settings)
-
-@current_app.route('/delete_media/<media_type>/<int:media_id>')
+@current_app.route('/delete/<media_type>/<int:media_id>')
 def delete_media(media_type, media_id):
+    session = get_retry_session()
+    
     if media_type == 'movie':
         item = Movie.query.get_or_404(media_id)
         settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
         if settings:
             headers = {'X-Api-Key': settings.api_key}
             url = f"{settings.url}/api/v3/movie/{item.radarr_id}?deleteFiles=true"
-            requests.delete(url, headers=headers)
-            item.score = 'Archived'
-            db.session.commit()
-            flash(f"Deleted movie '{item.title}' and marked as archived.", 'success')
+            try:
+                response = session.delete(url, headers=headers)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                flash(f'Error deleting movie from Radarr: {e}', 'error')
+                return redirect(url_for('deletion_page'))
+        db.session.delete(item)
+        flash(f'Deleted movie: {item.title}', 'success')
+
     elif media_type == 'show':
         item = Show.query.get_or_404(media_id)
         settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
         if settings:
             headers = {'X-Api-Key': settings.api_key}
             url = f"{settings.url}/api/v3/series/{item.sonarr_id}?deleteFiles=true"
-            requests.delete(url, headers=headers)
-            item.score = 'Archived'
-            db.session.commit()
-            flash(f"Deleted show '{item.title}' and marked as archived.", 'success')
-    else:
-        flash("Invalid media type.", 'error')
+            try:
+                response = session.delete(url, headers=headers)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                flash(f'Error deleting show from Sonarr: {e}', 'error')
+                return redirect(url_for('deletion_page'))
+        db.session.delete(item)
+        flash(f'Deleted show: {item.title}', 'success')
 
-    return redirect(url_for('deletion_page'))
-
-@current_app.route('/purge_expired')
-def purge_expired():
-    now = datetime.utcnow()
-    radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
-    sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
-
-    movies_to_delete = []
-    if radarr_settings and radarr_settings.grace_days is not None:
-        purge_before_date = now - timedelta(days=radarr_settings.grace_days)
-        movies_to_delete = Movie.query.filter(Movie.score == 'Delete', Movie.marked_for_deletion_at <= purge_before_date).all()
-
-    shows_to_delete = []
-    if sonarr_settings and sonarr_settings.grace_days is not None:
-        purge_before_date = now - timedelta(days=sonarr_settings.grace_days)
-        shows_to_delete = Show.query.filter(Show.score == 'Delete', Show.marked_for_deletion_at <= purge_before_date).all()
-
-    deleted_movies_count = 0
-    if radarr_settings and movies_to_delete:
-        headers = {'X-Api-Key': radarr_settings.api_key}
-        for movie in movies_to_delete:
-            url = f"{radarr_settings.url}/api/v3/movie/{movie.radarr_id}?deleteFiles=true"
-            requests.delete(url, headers=headers)
-            movie.score = 'Archived'
-            deleted_movies_count += 1
-
-    deleted_shows_count = 0
-    if sonarr_settings and shows_to_delete:
-        headers = {'X-Api-Key': sonarr_settings.api_key}
-        for show in shows_to_delete:
-            url = f"{sonarr_settings.url}/api/v3/series/{show.sonarr_id}?deleteFiles=true"
-            requests.delete(url, headers=headers)
-            show.score = 'Archived'
-            deleted_shows_count += 1
-            
     db.session.commit()
-
-    flash(f'Purged {deleted_movies_count} expired movies and {deleted_shows_count} expired shows.', 'success')
     return redirect(url_for('deletion_page'))

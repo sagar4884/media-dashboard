@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.62] - 2025-11-18
+### Added
+- Added a database management page with integrity check, optimize, and vacuum functions.
+- Added hover cards with posters and summaries to the deletion and Tautulli pages.
+
+### Fixed
+- Fixed a bug that caused the application to crash when navigating to the deletion page.
+- Fixed a bug that prevented hover cards from appearing for shows on the Tautulli page.
+- Fixed a bug that caused duplicate links to appear in the header.
+- Fixed a bug that caused raw SQL queries to fail.
+
 ## [0.61] - 2025-11-18
 
 ### Added
