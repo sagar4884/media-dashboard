@@ -95,12 +95,15 @@ def settings():
 
 @current_app.route('/sync/<service>')
 def sync(service):
+    mode = request.args.get('mode', 'quick')
+    full_sync = mode == 'full'
+
     if service == 'radarr':
-        job = current_app.queue.enqueue(sync_radarr_movies, job_timeout='15m')
+        job = current_app.queue.enqueue(sync_radarr_movies, job_timeout='15m', args=(full_sync,))
     elif service == 'sonarr':
-        job = current_app.queue.enqueue(sync_sonarr_shows, job_timeout='15m')
+        job = current_app.queue.enqueue(sync_sonarr_shows, job_timeout='15m', args=(full_sync,))
     elif service == 'tautulli':
-        job = current_app.queue.enqueue(sync_tautulli_history, job_timeout='5m')
+        job = current_app.queue.enqueue(sync_tautulli_history, job_timeout='5m', args=(full_sync,))
     else:
         return jsonify({'error': 'Invalid service'}), 400
     

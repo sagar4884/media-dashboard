@@ -22,7 +22,7 @@ def get_retry_session():
     session.mount('https://', adapter)
     return session
 
-def sync_radarr_movies():
+def sync_radarr_movies(full_sync=False):
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
@@ -66,7 +66,7 @@ def sync_radarr_movies():
         else:
             movie.score = 'Not Scored'
 
-        if not movie.local_poster_path and movie.tmdb_id:
+        if (full_sync or not movie.local_poster_path) and movie.tmdb_id:
             poster_path = fetch_tmdb_assets(movie.tmdb_id, 'movie')
             movie.local_poster_path = poster_path
 
@@ -85,7 +85,7 @@ def sync_radarr_movies():
 
     return {'status': 'Completed', 'movies_synced': total_movies}
 
-def sync_sonarr_shows():
+def sync_sonarr_shows(full_sync=False):
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
@@ -131,7 +131,7 @@ def sync_sonarr_shows():
         else:
             show.score = 'Not Scored'
 
-        if not show.local_poster_path and show.tvdb_id:
+        if (full_sync or not show.local_poster_path) and show.tvdb_id:
             poster_path = fetch_tmdb_assets(show.tvdb_id, 'tv')
             show.local_poster_path = poster_path
         
@@ -150,7 +150,7 @@ def sync_sonarr_shows():
 
     return {'status': 'Completed', 'shows_synced': total_shows}
 
-def sync_tautulli_history():
+def sync_tautulli_history(full_sync=False):
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
@@ -226,10 +226,27 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
     tmdb_api_key = settings.tmdb_api_key
     session = get_retry_session()
     
+    tmdb_id = None
     if media_type == 'movie':
-        url = f"https://api.themoviedb.org/3/movie/{media_id}?api_key={tmdb_api_key}"
-    else: # tv
-        url = f"https://api.themoviedb.org/3/tv/{media_id}?api_key={tmdb_api_key}"
+        tmdb_id = media_id
+    elif media_type == 'tv':
+        # Find the TMDB ID from the TVDB ID
+        find_url = f"https://api.themoviedb.org/3/find/{media_id}?api_key={tmdb_api_key}&external_source=tvdb_id"
+        try:
+            find_response = session.get(find_url)
+            find_response.raise_for_status()
+            find_data = find_response.json()
+            if find_data['tv_results']:
+                tmdb_id = find_data['tv_results'][0]['id']
+        except requests.exceptions.RequestException as e:
+            print(f"Error finding TMDB ID for TVDB ID {media_id}: {e}")
+            return None
+
+    if not tmdb_id:
+        print(f"No TMDB ID found for {media_type} {media_id}")
+        return None
+
+    url = f"https://api.themoviedb.org/3/{media_type}/{tmdb_id}?api_key={tmdb_api_key}"
         
     try:
         response = session.get(url)
@@ -242,21 +259,17 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
             poster_response = session.get(poster_url)
             poster_response.raise_for_status()
             
-            local_filename = f"{media_type}_{media_id}.jpg"
+            local_filename = f"{media_type}_{tmdb_id}.jpg"
             local_filepath = os.path.join('app', 'static', 'posters', local_filename)
             
             with open(local_filepath, 'wb') as f:
                 f.write(poster_response.content)
             
-            # Update the corresponding movie/show with the overview
             if media_type == 'movie':
                 item = Movie.query.filter_by(tmdb_id=media_id).first()
-            else:
-                item = Show.query.filter_by(tvdb_id=media_id).first()
-            
-            if item:
-                item.overview = data.get('overview')
-                db.session.commit()
+                if item:
+                    item.overview = data.get('overview')
+                    db.session.commit()
 
             return f"posters/{local_filename}"
 

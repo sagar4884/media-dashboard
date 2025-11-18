@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.57] - 2025-11-18
+
+### Fixed
+- Resolved an issue where Sonarr posters were incorrect and summaries were missing due to an incorrect TVDB to TMDB ID conversion.
+
 ## [0.56] - 2025-11-18
 
 ### Fixed
