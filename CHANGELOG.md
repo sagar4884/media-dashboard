@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.71] - 2025-11-18
+### Fixed
+- Fixed an issue where the application would fail on the first run because `sqlite3` was not found. The `sqlite3` package is now installed in the Docker container.
+- Fixed a `FileNotFoundError` that occurred when syncing because the `app/static/posters` directory was not being created automatically.
+
 ## [0.70] - 2025-11-18
 ### Changed
 - The application has been consolidated into a single Docker container, simplifying deployment.

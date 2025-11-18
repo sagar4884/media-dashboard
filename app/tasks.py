@@ -378,6 +378,8 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
             local_filename = f"{media_type}_{tmdb_id}.jpg"
             local_filepath = os.path.join('app', 'static', 'posters', local_filename)
             
+            os.makedirs(os.path.dirname(local_filepath), exist_ok=True)
+
             with open(local_filepath, 'wb') as f:
                 f.write(poster_response.content)
             
