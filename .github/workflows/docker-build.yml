@@ -34,20 +34,23 @@ jobs:
         id: meta
         # This step determines the correct tag based on the branch name
         run: |
+          # Initialize the TAGS array
           TAGS=()
-          # If branch is 'main', use 'latest' tag
+          
+          # 1. Add the branch-specific tag (latest or beta)
           if [ "${{ github.ref_name }}" == "main" ]; then
             TAGS+=("${{ env.DOCKER_IMAGE }}:latest")
-          # If branch is 'beta', use 'beta' tag
           elif [ "${{ github.ref_name }}" == "beta" ]; then
             TAGS+=("${{ env.DOCKER_IMAGE }}:beta")
           fi
           
-          # Optional: Add tag with the commit SHA for traceability
-          TAGS+=("${{ env.DOCKER_IMAGE }}:${{ github.sha }}")
-          
-          # Pass the final list of tags to the next step
-          echo "tags=${TAGS[*]}" >> $GITHUB_OUTPUT
+          # 2. Add tag with the short commit SHA for traceability
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          TAGS+=("${{ env.DOCKER_IMAGE }}:$SHORT_SHA")
+
+          # 3. Join the array elements with a comma and set as output
+          # This is the critical line that fixes the 'invalid reference format' error
+          echo "tags=$(IFS=, ; echo "${TAGS[*]}")" >> $GITHUB_OUTPUT
           
       - name: 📦 Build and Push Docker image
         # This action builds the image and pushes it to Docker Hub
@@ -55,7 +58,7 @@ jobs:
         with:
           context: . # Assumes your Dockerfile is in the root directory
           push: true
-          # Use the tags generated in the previous step
+          # The input expects comma-separated values, which we now provide
           tags: ${{ steps.meta.outputs.tags }}
           # Optional: Enable caching for faster subsequent builds
           cache-from: type=gha
