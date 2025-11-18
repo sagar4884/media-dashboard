@@ -8,7 +8,35 @@ from datetime import datetime, timedelta
 
 @current_app.route('/')
 def dashboard():
-    return render_template('dashboard.html')
+    # Radarr stats
+    radarr_total = Movie.query.count()
+    radarr_unscored = Movie.query.filter(Movie.score.in_(['Not Scored', None])).count()
+    radarr_keep = Movie.query.filter_by(score='Keep').count()
+    radarr_delete = Movie.query.filter_by(score='Delete').count()
+
+    # Sonarr stats
+    sonarr_total = Show.query.count()
+    sonarr_unscored = Show.query.filter(Show.score.in_(['Not Scored', None])).count()
+    sonarr_keep = Show.query.filter_by(score='Keep').count()
+    sonarr_delete = Show.query.filter_by(score='Delete').count()
+    sonarr_seasonal = Show.query.filter_by(score='Seasonal').count()
+
+    stats = {
+        'radarr': {
+            'total': radarr_total,
+            'unscored': radarr_unscored,
+            'keep': radarr_keep,
+            'delete': radarr_delete
+        },
+        'sonarr': {
+            'total': sonarr_total,
+            'unscored': sonarr_unscored,
+            'keep': sonarr_keep,
+            'delete': sonarr_delete,
+            'seasonal': sonarr_seasonal
+        }
+    }
+    return render_template('dashboard.html', stats=stats)
 
 @current_app.route('/radarr')
 def radarr_page():
@@ -61,11 +89,11 @@ def settings():
 @current_app.route('/sync/<service>')
 def sync(service):
     if service == 'radarr':
-        job = current_app.queue.enqueue(sync_radarr_movies)
+        job = current_app.queue.enqueue(sync_radarr_movies, job_timeout='15m')
     elif service == 'sonarr':
-        job = current_app.queue.enqueue(sync_sonarr_shows)
+        job = current_app.queue.enqueue(sync_sonarr_shows, job_timeout='15m')
     elif service == 'tautulli':
-        job = current_app.queue.enqueue(sync_tautulli_history)
+        job = current_app.queue.enqueue(sync_tautulli_history, job_timeout='5m')
     else:
         return jsonify({'error': 'Invalid service'}), 400
     
@@ -110,14 +138,19 @@ def media_action(media_type, media_id, action):
         item.score = 'Keep'
         item.delete_at = None
         tags_to_add.append('ai-keep')
-        tags_to_remove.append('ai-delete')
+        tags_to_remove.extend(['ai-delete', 'ai-rolling-keep'])
     elif action == 'delete':
         item.score = 'Delete'
         settings = ServiceSettings.query.filter_by(service_name=service_name).first()
         grace_days = settings.grace_days if settings else 30
         item.delete_at = datetime.utcnow() + timedelta(days=grace_days)
         tags_to_add.append('ai-delete')
-        tags_to_remove.append('ai-keep')
+        tags_to_remove.extend(['ai-keep', 'ai-rolling-keep'])
+    elif action == 'seasonal' and media_type == 'show':
+        item.score = 'Seasonal'
+        item.delete_at = None
+        tags_to_add.append('ai-rolling-keep')
+        tags_to_remove.extend(['ai-delete', 'ai-keep'])
     
     db.session.commit()
 
@@ -129,9 +162,9 @@ def media_action(media_type, media_id, action):
     update_service_tags(service_name, payload)
     
     if media_type == 'movie':
-        return redirect(url_for('radarr_page'))
+        return redirect(url_for('radarr_page', view=request.args.get('view', 'table')))
     else:
-        return redirect(url_for('sonarr_page'))
+        return redirect(url_for('sonarr_page', view=request.args.get('view', 'table')))
 
 
 @current_app.route('/purge')

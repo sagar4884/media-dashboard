@@ -33,6 +33,12 @@ def sync_radarr_movies():
 
     headers = {'X-Api-Key': settings.api_key}
     session = get_retry_session()
+
+    # Fetch all tags to create a mapping from ID to Label
+    tags_response = session.get(f"{settings.url}/api/v3/tag", headers=headers)
+    tags_response.raise_for_status()
+    tag_map = {tag['id']: tag['label'] for tag in tags_response.json()}
+
     response = session.get(f"{settings.url}/api/v3/movie", headers=headers)
     response.raise_for_status()
     movies_data = response.json()
@@ -47,7 +53,16 @@ def sync_radarr_movies():
         movie.title = movie_data.get('title')
         movie.year = movie_data.get('year')
         movie.size_gb = movie_data.get('sizeOnDisk', 0) / (1024**3)
-        movie.labels = ",".join([tag['label'] for tag in movie_data.get('tags', [])])
+        tag_ids = movie_data.get('tags', [])
+        movie.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
+
+        # Set score based on tags
+        if 'ai-delete' in movie.labels:
+            movie.score = 'Delete'
+        elif 'ai-keep' in movie.labels:
+            movie.score = 'Keep'
+        else:
+            movie.score = 'Not Scored'
 
         if not movie.local_poster_path and movie.tmdb_id:
             poster_path = fetch_tmdb_assets(movie.tmdb_id, 'movie')
@@ -72,6 +87,12 @@ def sync_sonarr_shows():
 
     headers = {'X-Api-Key': settings.api_key}
     session = get_retry_session()
+
+    # Fetch all tags to create a mapping from ID to Label
+    tags_response = session.get(f"{settings.url}/api/v3/tag", headers=headers)
+    tags_response.raise_for_status()
+    tag_map = {tag['id']: tag['label'] for tag in tags_response.json()}
+
     response = session.get(f"{settings.url}/api/v3/series", headers=headers)
     response.raise_for_status()
     shows_data = response.json()
@@ -86,7 +107,18 @@ def sync_sonarr_shows():
         show.title = show_data.get('title')
         show.year = show_data.get('year')
         show.size_gb = show_data.get('statistics', {}).get('sizeOnDisk', 0) / (1024**3)
-        show.labels = ",".join([tag['label'] for tag in show_data.get('tags', [])])
+        tag_ids = show_data.get('tags', [])
+        show.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
+
+        # Set score based on tags
+        if 'ai-delete' in show.labels:
+            show.score = 'Delete'
+        elif 'ai-keep' in show.labels:
+            show.score = 'Keep'
+        elif 'ai-rolling-keep' in show.labels:
+            show.score = 'Seasonal'
+        else:
+            show.score = 'Not Scored'
 
         if not show.local_poster_path and show.tvdb_id:
             poster_path = fetch_tmdb_assets(show.tvdb_id, 'tv')

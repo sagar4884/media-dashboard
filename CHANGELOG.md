@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5] - 2025-11-18
+
+### Added
+- The main dashboard now displays a summary of Radarr and Sonarr library statistics.
+- New "Seasonal" action for Sonarr to manage shows with the `ai-rolling-keep` tag.
+- Sync logic now automatically scores items based on `ai-keep`, `ai-delete`, and `ai-rolling-keep` tags.
+
+### Changed
+- Action buttons for Keep/Delete/Seasonal now add and remove tags in Radarr/Sonarr instead of directly modifying the local database score.
+
+### Fixed
+- Resolved a `TypeError` in Radarr/Sonarr sync tasks caused by incorrect handling of tag data. The sync logic now correctly maps tag IDs to labels.
+- Fixed a `JobTimeoutException` during initial library syncs by increasing the job timeout to 15 minutes.
+
 ## [0.4] - 2025-11-18
 
 ### Added

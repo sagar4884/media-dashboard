@@ -60,12 +60,12 @@
                                     {% elif movie.score == 'Tautulli Keep' %}bg-blue-500/20 text-blue-400
                                     {% else %}bg-gray-500/20 text-gray-400
                                     {% endif %}">
-                                    {{ movie.score }}
+                                    {{ movie.score or 'Not Scored' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep') }}" class="text-green-400 hover:text-green-300 mr-4">Keep</a>
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete') }}" class="text-red-400 hover:text-red-300">Delete</a>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep', view=view) }}" class="text-green-400 hover:text-green-300 mr-4">Keep</a>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete', view=view) }}" class="text-red-400 hover:text-red-300">Delete</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -92,11 +92,11 @@
                                 {% elif movie.score == 'Tautulli Keep' %}bg-blue-500/20 text-blue-400
                                 {% else %}bg-gray-500/20 text-gray-400
                                 {% endif %}">
-                                {{ movie.score }}
+                                {{ movie.score or 'Not Scored' }}
                             </span>
                             <div class="flex space-x-2">
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep') }}" class="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clip-rule="evenodd" /></svg></a>
-                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete') }}" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414z" clip-rule="evenodd" /></svg></a>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='keep', view=view) }}" class="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L8 12.586l7.293-7.293a1 1 0 0 1 1.414 0z" clip-rule="evenodd" /></svg></a>
+                                <a href="{{ url_for('media_action', media_type='movie', media_id=movie.id, action='delete', view=view) }}" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414z" clip-rule="evenodd" /></svg></a>
                             </div>
                         </div>
                     </div>
