@@ -41,8 +41,8 @@
                             <td class="px-6 py-4 whitespace-nowrap relative">
                                 <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/50x75/111827/4b5563?text=N/A' }}" alt="{{ movie.title }} poster" class="w-12 h-auto rounded">
                                 <!-- Hover Card -->
-                                <div class="absolute top-0 left-full ml-4 w-96 bg-gray-700 p-4 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10 flex items-start">
-                                    <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/150x225/111827/4b5563?text=N/A' }}" class="w-24 h-auto rounded mr-4 flex-shrink-0">
+                                <div class="absolute top-0 left-full ml-4 w-[28rem] bg-gray-700 p-4 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10 flex items-start">
+                                    <img src="{{ url_for('static', filename=movie.local_poster_path) if movie.local_poster_path else 'https://placehold.co/150x225/111827/4b5563?text=N/A' }}" class="w-36 h-auto rounded mr-4 flex-shrink-0">
                                     <div class="flex-1">
                                         <h4 class="font-bold text-white">{{ movie.title }}</h4>
                                         <p class="text-sm text-gray-300 mt-2 whitespace-normal">{{ movie.overview or 'No summary available.' }}</p>
@@ -106,5 +106,20 @@
             {% endif %}
         </main>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.querySelectorAll('tbody tr.group');
+            rows.forEach(row => {
+                const hoverCard = row.querySelector('.absolute');
+                row.addEventListener('mousemove', function (e) {
+                    const rect = row.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    hoverCard.style.top = `${y}px`;
+                    hoverCard.style.left = `${x + 20}px`;
+                });
+            });
+        });
+    </script>
 </body>
 </html>

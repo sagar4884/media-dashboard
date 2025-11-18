@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [0.56] - 2025-11-18
 
-### Added
-- Implemented a persistent progress bar with ETA for all sync tasks. The progress bar now remains visible across page refreshes, providing a more reliable user experience.
+### Fixed
+- Corrected an issue where the hover card summary was not displaying due to a missing `overview` attribute in the database.
+- Fixed the positioning of the hover card, which was previously appearing in the wrong location.
+- Resolved an issue where long summaries would overflow the hover card by increasing the card's width.
 
 ### Changed
-- Relocated the progress bar from the bottom of the page to the "Service Sync" area for better visibility.
-- Enhanced the progress bar to display the completion percentage and the estimated time remaining.
+- Increased the poster size on the hover card by 50% for better visibility.
 
 ## [0.55] - 2025-11-18
 

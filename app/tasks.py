@@ -54,6 +54,7 @@ def sync_radarr_movies():
         movie.title = movie_data.get('title')
         movie.year = movie_data.get('year')
         movie.size_gb = movie_data.get('sizeOnDisk', 0) / (1024**3)
+        movie.overview = movie_data.get('overview')
         tag_ids = movie_data.get('tags', [])
         movie.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
 
@@ -116,6 +117,7 @@ def sync_sonarr_shows():
         show.title = show_data.get('title')
         show.year = show_data.get('year')
         show.size_gb = show_data.get('statistics', {}).get('sizeOnDisk', 0) / (1024**3)
+        show.overview = show_data.get('overview')
         tag_ids = show_data.get('tags', [])
         show.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
 
