@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: sh -c "./entrypoint.sh && gunicorn --timeout 120 -w 4 -b 0.0.0.0:8000 wsgi:app"
+    command: gunicorn --timeout 120 -w 4 -b 0.0.0.0:8000 wsgi:app
     ports:
       - "8000:8000"
     volumes:
@@ -10,7 +10,7 @@ services:
       - redis
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=sqlite:///app.db
+      - DATABASE_URL=sqlite:///instance/app.db
       - REDIS_URL=redis://redis:6379/0
 
   worker:
@@ -19,9 +19,9 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - web # Wait for web to be healthy
+      - web
     environment:
-      - DATABASE_URL=sqlite:///app.db
+      - DATABASE_URL=sqlite:///instance/app.db
       - REDIS_URL=redis://redis:6379/0
 
   redis:

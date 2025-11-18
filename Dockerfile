@@ -25,4 +25,5 @@ EXPOSE 8000
 ENV FLASK_APP=app:create_app()
 
 # Run the application
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "wsgi:app"]

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.64] - 2025-11-18
+### Fixed
+- Resolved a `sqlalchemy.exc.OperationalError` that was preventing the application from starting. The error was caused by the application trying to access the database before the directory for the database file was created.
+
 ## [0.62] - 2025-11-18
 ### Added
 - Added a database management page with integrity check, optimize, and vacuum functions.
