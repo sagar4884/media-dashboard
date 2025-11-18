@@ -2,15 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.62] - 2025-11-18
-
-### Added
-- New Database Management page with tools to check integrity, optimize, and vacuum the database.
-- Background task for the vacuum operation to prevent the UI from freezing.
-
-### Fixed
-- Corrected a persistent issue where the navigation link for the Database Management page was not appearing.
-
 ## [0.61] - 2025-11-18
 
 ### Added
