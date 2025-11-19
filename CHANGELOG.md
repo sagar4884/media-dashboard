@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.718] - 2025-11-19
+### Changed
+- The `posters` directory has been made a persistent volume in Docker. This prevents poster images from being deleted when the application is updated. The `docker-compose.yml`, Unraid template, and `README.md` have all been updated to reflect this change.
+
 ## [0.717] - 2025-11-19
 ### Changed
 - The deletion logic for Radarr and Sonarr has been made more robust to ensure that files are deleted from the disk when an item is removed from the Deletion Manager.

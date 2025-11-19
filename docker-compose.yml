@@ -4,8 +4,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
-      - /mnt/user/appdata/media-dashboard:/database
+      - ./instance:/app/instance
+      - /mnt/user/appdata/media-dashboard/database:/database
+      - /mnt/user/appdata/media-dashboard/posters:/app/static/posters
     depends_on:
       - redis
     environment:

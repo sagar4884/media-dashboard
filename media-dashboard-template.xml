@@ -36,6 +36,11 @@
       <ContainerDir>/database</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/media-dashboard/posters</HostDir>
+      <ContainerDir>/app/static/posters</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
   </Data>
   <Environment>
     <Variable>

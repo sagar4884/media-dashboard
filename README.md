@@ -43,7 +43,11 @@ This is the easiest way to get the application up and running.
 
     # The path on your host machine where the application database will be stored.
     # Replace '/path/to/your/appdata' with the actual path on your system.
-    APPDATA_PATH=/path/to/your/appdata
+    APPDATA_PATH=/path/to/your/appdata/database
+
+    # The path on your host machine where the poster images will be stored.
+    # Replace '/path/to/your/appdata' with the actual path on your system.
+    POSTERS_PATH=/path/to/your/appdata/posters
     ```
 
 3.  **Run the application:**
@@ -61,7 +65,8 @@ You can also run the application directly from the Docker Hub image.
 docker run -d \
   --name=media-dashboard \
   -p 8000:8000 \
-  -v /path/to/your/appdata:/database \
+  -v /path/to/your/appdata/database:/database \
+  -v /path/to/your/appdata/posters:/app/static/posters \
   -e REDIS_URL='redis://<your-redis-ip>:6379/0' \
   bladelight/media-dashboard:latest
 ```
@@ -69,7 +74,8 @@ docker run -d \
 **Parameters:**
 
 -   `-p 8000:8000`: Maps the container's port 8000 to port 8000 on your host machine.
--   `-v /path/to/your/appdata:/database`: **(Important)** Mounts a directory from your host machine into the container to store the application's database. This ensures your data is preserved even if you remove the container. **Replace `/path/to/your/appdata` with the actual path on your host.**
+-   `-v /path/to/your/appdata/database:/database`: **(Important)** Mounts a directory from your host machine to store the application's database. **Replace `/path/to/your/appdata/database` with the actual path on your host.**
+-   `-v /path/to/your/appdata/posters:/app/static/posters`: **(Important)** Mounts a directory from your host machine to store the poster images. **Replace `/path/to/your/appdata/posters` with the actual path on your host.**
 -   `-e REDIS_URL='redis://<your-redis-ip>:6379/0'`: **(Important)** Sets the URL for your Redis instance. **Replace `<your-redis-ip>` with the actual IP address of your Redis server.**
 
 ## Post-Installation Setup
