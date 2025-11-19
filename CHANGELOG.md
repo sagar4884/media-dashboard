@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.715] - 2025-11-18
+### Fixed
+- Resolved a `NameError` that was causing the application to crash. The error was caused by a missing import for `StartedJobRegistry` in the global task locking mechanism.
+
 ## [0.714] - 2025-11-18
 ### Added
 - Implemented a global locking mechanism to prevent concurrent sync and database operations. All task-related buttons are now disabled while a job is running.

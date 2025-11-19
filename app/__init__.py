@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from rq import Queue
+from rq.registry import StartedJobRegistry
 import redis
 from datetime import timedelta
 
