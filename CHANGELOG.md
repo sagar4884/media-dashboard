@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.83] - 2025-11-19
+### Changed
+- **Kometa Overlays:**
+    - **Separate Output Files:** The overlay generation process now creates two separate files: `media_dashboard_overlays_movies.yaml` and `media_dashboard_overlays_shows.yaml`. This allows for cleaner organization and independent management of movie and show overlays in Kometa.
+
 ## [0.82] - 2025-11-19
 ### Added
 - **Database Management:**

@@ -761,7 +761,7 @@ def save_overlay_template():
     db.session.commit()
     return jsonify({'status': 'success'})
 
-def generate_overlay_yaml(movie_template=None, show_template=None, use_tmdb_for_shows=None):
+def generate_overlay_yaml(movie_template=None, show_template=None, use_tmdb_for_shows=None, target_type='all'):
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     
     default_template = """overlay:
@@ -782,66 +782,66 @@ def generate_overlay_yaml(movie_template=None, show_template=None, use_tmdb_for_
     if use_tmdb_for_shows is None:
         use_tmdb_for_shows = settings.overlay_use_tmdb_for_shows if settings else False
 
-    movies = Movie.query.filter(Movie.delete_at.isnot(None)).all()
-    shows = Show.query.filter(Show.delete_at.isnot(None)).all()
-
-    grouped_movies = {}
-    grouped_shows = {}
-
-    for item in movies:
-        date_str = item.delete_at.strftime('%b %d')
-        if date_str not in grouped_movies:
-            grouped_movies[date_str] = []
-        if item.tmdb_id:
-            grouped_movies[date_str].append(item.tmdb_id)
-
-    for item in shows:
-        date_str = item.delete_at.strftime('%b %d')
-        if date_str not in grouped_shows:
-            grouped_shows[date_str] = []
-        
-        if use_tmdb_for_shows:
-            if item.tmdb_id:
-                grouped_shows[date_str].append(item.tmdb_id)
-        else:
-            if item.tvdb_id:
-                grouped_shows[date_str].append(item.tvdb_id)
-
     overlays_data = {'overlays': {}}
 
     # Process Movies
-    for date_str, ids in grouped_movies.items():
-        if not ids: continue
-        key = f"MEDIADASHBOARD_LEAVING_MOVIES_{date_str.upper().replace(' ', '_')}"
-        
-        try:
-            current_template = yaml.safe_load(movie_template.replace('<DATE>', date_str))
-            if 'overlay' not in current_template:
-                current_template = {'overlay': current_template}
-        except yaml.YAMLError:
-            current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
+    if target_type in ['all', 'movies']:
+        movies = Movie.query.filter(Movie.delete_at.isnot(None)).all()
+        grouped_movies = {}
+        for item in movies:
+            date_str = item.delete_at.strftime('%b %d')
+            if date_str not in grouped_movies:
+                grouped_movies[date_str] = []
+            if item.tmdb_id:
+                grouped_movies[date_str].append(item.tmdb_id)
 
-        current_template['tmdb_movie'] = ids
-        overlays_data['overlays'][key] = current_template
+        for date_str, ids in grouped_movies.items():
+            if not ids: continue
+            key = f"MEDIADASHBOARD_LEAVING_MOVIES_{date_str.upper().replace(' ', '_')}"
+            
+            try:
+                current_template = yaml.safe_load(movie_template.replace('<DATE>', date_str))
+                if 'overlay' not in current_template:
+                    current_template = {'overlay': current_template}
+            except yaml.YAMLError:
+                current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
+
+            current_template['tmdb_movie'] = ids
+            overlays_data['overlays'][key] = current_template
 
     # Process Shows
-    for date_str, ids in grouped_shows.items():
-        if not ids: continue
-        key = f"MEDIADASHBOARD_LEAVING_SHOWS_{date_str.upper().replace(' ', '_')}"
-        
-        try:
-            current_template = yaml.safe_load(show_template.replace('<DATE>', date_str))
-            if 'overlay' not in current_template:
-                current_template = {'overlay': current_template}
-        except yaml.YAMLError:
-            current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
-
-        if use_tmdb_for_shows:
-            current_template['tmdb_show'] = ids
-        else:
-            current_template['tvdb_show'] = ids
+    if target_type in ['all', 'shows']:
+        shows = Show.query.filter(Show.delete_at.isnot(None)).all()
+        grouped_shows = {}
+        for item in shows:
+            date_str = item.delete_at.strftime('%b %d')
+            if date_str not in grouped_shows:
+                grouped_shows[date_str] = []
             
-        overlays_data['overlays'][key] = current_template
+            if use_tmdb_for_shows:
+                if item.tmdb_id:
+                    grouped_shows[date_str].append(item.tmdb_id)
+            else:
+                if item.tvdb_id:
+                    grouped_shows[date_str].append(item.tvdb_id)
+
+        for date_str, ids in grouped_shows.items():
+            if not ids: continue
+            key = f"MEDIADASHBOARD_LEAVING_SHOWS_{date_str.upper().replace(' ', '_')}"
+            
+            try:
+                current_template = yaml.safe_load(show_template.replace('<DATE>', date_str))
+                if 'overlay' not in current_template:
+                    current_template = {'overlay': current_template}
+            except yaml.YAMLError:
+                current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
+
+            if use_tmdb_for_shows:
+                current_template['tmdb_show'] = ids
+            else:
+                current_template['tvdb_show'] = ids
+                
+            overlays_data['overlays'][key] = current_template
 
     return yaml.dump(overlays_data, sort_keys=False)
 
@@ -860,17 +860,23 @@ def preview_overlay():
 
 @current_app.route('/overlays/generate', methods=['POST'])
 def generate_overlay_file():
-    yaml_content = generate_overlay_yaml()
-    
     # Ensure directory exists
     output_dir = '/appdata/kometa'
     os.makedirs(output_dir, exist_ok=True)
     
-    file_path = os.path.join(output_dir, 'media_dashboard_overlays.yaml')
-    
     try:
-        with open(file_path, 'w') as f:
-            f.write(yaml_content)
+        # Generate and write Movies YAML
+        movies_yaml = generate_overlay_yaml(target_type='movies')
+        movies_path = os.path.join(output_dir, 'media_dashboard_overlays_movies.yaml')
+        with open(movies_path, 'w') as f:
+            f.write(movies_yaml)
+
+        # Generate and write Shows YAML
+        shows_yaml = generate_overlay_yaml(target_type='shows')
+        shows_path = os.path.join(output_dir, 'media_dashboard_overlays_shows.yaml')
+        with open(shows_path, 'w') as f:
+            f.write(shows_yaml)
+            
         return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
