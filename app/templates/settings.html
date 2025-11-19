@@ -16,12 +16,20 @@
         {% include 'header.html' %}
         <div class="container mx-auto p-4 sm:p-6 lg:p-8">
             <div class="max-w-4xl mx-auto">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white p-3 rounded-lg shadow-lg mb-6">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+                {% endwith %}
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold text-white">Settings</h1>
                 </div>
 
                 <form action="{{ url_for('settings') }}" method="POST" class="bg-gray-800 p-6 rounded-lg shadow-xl">
-                    <!-- Radarr Settings -->
                     <div class="mb-8 p-4 border border-gray-700 rounded-lg">
                         <h2 class="text-2xl font-bold mb-4 text-white">Radarr</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -37,10 +45,10 @@
                                 <label for="Radarr_grace_days" class="block text-sm font-medium text-gray-400">Grace Days</label>
                                 <input type="number" id="Radarr_grace_days" name="Radarr_grace_days" value="{{ radarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
                             </div>
-                            <div>
-                                <label for="tmdb_api_key" class="block text-sm font-medium text-gray-400">TMDB API Key</label>
-                                <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
-                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" hx-post="/test_connection/radarr" hx-target="#radarr-test-result" hx-include="[name='Radarr_url'], [name='Radarr_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
+                            <div id="radarr-test-result" class="mt-2"></div>
                         </div>
                     </div>
 
@@ -61,6 +69,10 @@
                                 <input type="number" id="Sonarr_grace_days" name="Sonarr_grace_days" value="{{ sonarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
                             </div>
                         </div>
+                        <div class="mt-4">
+                            <button type="button" hx-post="/test_connection/sonarr" hx-target="#sonarr-test-result" hx-include="[name='Sonarr_url'], [name='Sonarr_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
+                            <div id="sonarr-test-result" class="mt-2"></div>
+                        </div>
                     </div>
 
                     <!-- Tautulli Settings -->
@@ -79,6 +91,25 @@
                                 <label for="Tautulli_retention_days" class="block text-sm font-medium text-gray-400">Retention Days</for>
                                 <input type="number" id="Tautulli_retention_days" name="Tautulli_retention_days" value="{{ tautulli_settings.retention_days or 365 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
                             </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" hx-post="/test_connection/tautulli" hx-target="#tautulli-test-result" hx-include="[name='Tautulli_url'], [name='Tautulli_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
+                            <div id="tautulli-test-result" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- TMDB Settings -->
+                    <div class="mb-8 p-4 border border-gray-700 rounded-lg">
+                        <h2 class="text-2xl font-bold mb-4 text-white">TMDB</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="tmdb_api_key" class="block text-sm font-medium text-gray-400">TMDB API Key</label>
+                                <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" hx-post="/test_connection/tmdb" hx-target="#tmdb-test-result" hx-include="[name='tmdb_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
+                            <div id="tmdb-test-result" class="mt-2"></div>
                         </div>
                     </div>
                     

@@ -33,21 +33,21 @@
                     <div>
                         <h5 class="font-semibold">Integrity Check</h5>
                         <p class="text-gray-400">Verify the integrity of the database file. Checks for corruption.</p>
-                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium" onclick="performAction('/database/integrity_check', 'integrity-result')">Run Integrity Check</button>
+                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/integrity_check', 'integrity-result')" {% if active_job_id %}disabled{% endif %}>Run Integrity Check</button>
                         <pre id="integrity-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
                     </div>
                     <hr class="border-gray-700">
                     <div>
                         <h5 class="font-semibold">Optimize Database</h5>
                         <p class="text-gray-400">Run the OPTIMIZE command to reclaim unused space and defragment the database.</p>
-                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium" onclick="performAction('/database/optimize', 'optimize-result')">Optimize Database</button>
+                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/optimize', 'optimize-result')" {% if active_job_id %}disabled{% endif %}>Optimize Database</button>
                         <pre id="optimize-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
                     </div>
                     <hr class="border-gray-700">
                     <div>
                         <h5 class="font-semibold">Vacuum Database</h5>
                         <p class="text-gray-400">Rebuild the entire database to reclaim space from deleted data. This can take a while and will lock the database.</p>
-                        <button class="mt-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-md text-sm font-medium" onclick="startBackgroundTask('/database/vacuum', 'vacuum-status')">Vacuum Database</button>
+                        <button class="mt-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="startBackgroundTask('/database/vacuum', 'vacuum-status')" {% if active_job_id %}disabled{% endif %}>Vacuum Database</button>
                         <div id="vacuum-status" class="mt-2" style="display: none;">
                             <div class="w-full bg-gray-700 rounded-full h-2.5">
                                 <div class="bg-blue-600 h-2.5 rounded-full" style="width: 0%;"></div>

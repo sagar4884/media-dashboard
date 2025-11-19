@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.714] - 2025-11-18
+### Added
+- Implemented a global locking mechanism to prevent concurrent sync and database operations. All task-related buttons are now disabled while a job is running.
+- Added "Test" buttons to the settings page for Radarr, Sonarr, Tautulli, and TMDB to allow users to verify their connection settings.
+
+### Changed
+- The settings page has been restructured to move the TMDB API key into its own dedicated section.
+
+### Fixed
+- Fixed an issue where the "Settings saved" confirmation message would not appear on the settings page, instead appearing on the main dashboard.
+
 ## [0.713] - 2025-11-18
 ### Fixed
 - Corrected a critical bug where Sonarr posters would not download because the TMDB API key was being looked up incorrectly. The system now correctly retrieves the key from the Radarr settings.

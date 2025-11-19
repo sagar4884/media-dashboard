@@ -12,11 +12,6 @@ from datetime import datetime, timedelta
 
 @current_app.route('/')
 def dashboard():
-    # Check for a running job
-    registry = StartedJobRegistry(queue=current_app.queue)
-    running_job_ids = registry.get_job_ids()
-    active_job_id = running_job_ids[0] if running_job_ids else None
-
     # Radarr stats
     radarr_total = Movie.query.count()
     radarr_unscored = Movie.query.filter(Movie.score.in_(['Not Scored', None])).count()
@@ -45,7 +40,7 @@ def dashboard():
             'seasonal': sonarr_seasonal
         }
     }
-    return render_template('dashboard.html', stats=stats, active_job_id=active_job_id)
+    return render_template('dashboard.html', stats=stats)
 
 @current_app.route('/radarr')
 def radarr_page():
@@ -198,6 +193,10 @@ def optimize_db():
 
 @current_app.route('/database/vacuum', methods=['POST'])
 def vacuum_db():
+    registry = StartedJobRegistry(queue=current_app.queue)
+    if registry.get_job_ids():
+        return jsonify({'error': 'A job is already running'}), 409
+        
     job = current_app.queue.enqueue(vacuum_database, job_timeout='15m')
     return jsonify({'job_id': job.get_id()})
 
@@ -236,6 +235,10 @@ def settings():
 
 @current_app.route('/sync/<service>')
 def sync(service):
+    registry = StartedJobRegistry(queue=current_app.queue)
+    if registry.get_job_ids():
+        return jsonify({'error': 'A job is already running'}), 409
+
     mode = request.args.get('mode', 'quick')
     full_sync = mode == 'full'
 
@@ -396,3 +399,31 @@ def delete_media(media_type, media_id):
 
     db.session.commit()
     return redirect(url_for('deletion_page'))
+
+@current_app.route('/test_connection/<service>', methods=['POST'])
+def test_connection(service):
+    session = get_retry_session()
+    service_name = service.capitalize()
+    
+    url = request.form.get(f'{service_name}_url')
+    api_key = request.form.get(f'{service_name}_api_key')
+
+    try:
+        if service == 'radarr' or service == 'sonarr':
+            headers = {'X-Api-Key': api_key}
+            response = session.get(f"{url}/api/v3/system/status", headers=headers, timeout=10)
+        elif service == 'tautulli':
+            params = {'cmd': 'get_history', 'apikey': api_key, 'length': 1}
+            response = session.get(f"{url}/api/v2", params=params, timeout=10)
+        elif service == 'tmdb':
+            tmdb_api_key = request.form.get('tmdb_api_key')
+            response = session.get(f"https://api.themoviedb.org/3/configuration?api_key={tmdb_api_key}", timeout=10)
+        else:
+            return f'<span class="text-red-400">Invalid service specified.</span>'
+
+        response.raise_for_status()
+        return f'<span class="text-green-400">Successful Connection</span>'
+    except requests.exceptions.Timeout:
+        return f'<span class="text-red-400">Connection Failed: The request timed out.</span>'
+    except requests.exceptions.RequestException as e:
+        return f'<span class="text-red-400">Connection Failed: {e}</span>'
