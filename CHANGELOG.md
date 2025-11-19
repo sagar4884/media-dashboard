@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.842] - 2025-11-19
+### Added
+- **Library Performance:** Implemented lazy loading (`loading="lazy"`) for all movie and show posters in Radarr, Sonarr, and Deletion views. This significantly improves initial page load time and reduces bandwidth usage.
+- **Visual Polish:** Added CSS-based "Skeleton Loaders" (pulsing gray placeholders) for posters. This prevents layout shifts and provides a smoother visual experience while images are fetching.
+
 ## [0.841] - 2025-11-19
 ### Added
 - **Dashboard Visuals:** Added interactive Doughnut charts using `Chart.js` to visualize "Keep vs Delete vs Unscored" statistics for Radarr and Sonarr.
