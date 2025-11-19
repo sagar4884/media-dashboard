@@ -55,6 +55,16 @@
                             <p class="mt-2 text-sm text-gray-400">Status: <span class="status-text">Starting...</span></p>
                         </div>
                     </div>
+                    <hr class="border-gray-700">
+                    <div>
+                        <h5 class="font-semibold">Backup & Import</h5>
+                        <p class="text-gray-400 mb-2">Manage database backups. Backups are saved to <code>/appdata/Backup</code>. To import, place a <code>.db</code> file in <code>/appdata/Imports</code>.</p>
+                        <div class="flex space-x-4">
+                            <button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/backup', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Backup Database</button>
+                            <button class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="if(confirm('Are you sure? This will overwrite the current database with the newest file in /appdata/Imports.')) performAction('/database/import', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Import Database</button>
+                        </div>
+                        <pre id="backup-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
+                    </div>
                 </div>
             </div>
         </main>

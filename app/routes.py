@@ -1,8 +1,10 @@
 from flask import render_template, request, jsonify, current_app, redirect, url_for, flash
 import os
 import requests
+import shutil
+import sqlite3
 from sqlalchemy import text
-from . import db
+from . import db, run_migrations
 from .models import ServiceSettings, Movie, Show, TautulliHistory
 from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session, vacuum_database
 from rq.job import Job
@@ -870,5 +872,81 @@ def generate_overlay_file():
         with open(file_path, 'w') as f:
             f.write(yaml_content)
         return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@current_app.route('/database/backup', methods=['POST'])
+def backup_database():
+    backup_dir = '/appdata/Backup'
+    imports_dir = '/appdata/Imports'
+    os.makedirs(backup_dir, exist_ok=True)
+    os.makedirs(imports_dir, exist_ok=True)
+    
+    db_path = '/appdata/database/app.db'
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_filename = f"backup_{timestamp}.db"
+    backup_path = os.path.join(backup_dir, backup_filename)
+    
+    try:
+        # Use SQLite Online Backup API
+        # This is safer than copying files while the DB is in use
+        src = sqlite3.connect(db_path)
+        dst = sqlite3.connect(backup_path)
+        with dst:
+            src.backup(dst)
+        dst.close()
+        src.close()
+        
+        return jsonify({'status': 'success', 'message': f'Backup created: {backup_filename}'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@current_app.route('/database/import', methods=['POST'])
+def import_database():
+    imports_dir = '/appdata/Imports'
+    db_path = '/appdata/database/app.db'
+    
+    if not os.path.exists(imports_dir):
+        return jsonify({'status': 'error', 'message': 'Imports directory not found'})
+        
+    # Find valid DB files
+    files = [f for f in os.listdir(imports_dir) if f.endswith('.db')]
+    if not files:
+        return jsonify({'status': 'error', 'message': 'No .db files found in /appdata/Imports'})
+        
+    # Sort by modification time, newest first
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(imports_dir, x)), reverse=True)
+    target_file = files[0]
+    source_path = os.path.join(imports_dir, target_file)
+    
+    try:
+        # 1. Close current connections (best effort)
+        db.session.remove()
+        db.engine.dispose()
+        
+        # 2. Replace the file
+        # We also need to remove WAL/SHM files if they exist to avoid corruption
+        if os.path.exists(db_path + '-wal'):
+            os.remove(db_path + '-wal')
+        if os.path.exists(db_path + '-shm'):
+            os.remove(db_path + '-shm')
+            
+        shutil.copy2(source_path, db_path)
+        
+        # Check for and copy WAL/SHM files if they exist in source
+        # This supports importing manual raw backups
+        source_wal = source_path + '-wal'
+        source_shm = source_path + '-shm'
+        if os.path.exists(source_wal):
+            shutil.copy2(source_wal, db_path + '-wal')
+        if os.path.exists(source_shm):
+            shutil.copy2(source_shm, db_path + '-shm')
+        
+        # 3. Re-initialize and Migrate
+        # We need to reconnect to the new DB file
+        # Calling run_migrations will attempt to apply any schema updates
+        run_migrations(current_app)
+        
+        return jsonify({'status': 'success', 'message': f'Imported {target_file} successfully. Please refresh the page.'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})

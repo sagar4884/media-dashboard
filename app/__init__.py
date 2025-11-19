@@ -47,7 +47,12 @@ def create_app():
 
     with app.app_context():
         from . import routes
-        
+        run_migrations(app)
+
+    return app
+
+def run_migrations(app):
+    with app.app_context():
         # Migration for v0.8: Add seasonal_min_episodes
         try:
             with db.engine.connect() as conn:

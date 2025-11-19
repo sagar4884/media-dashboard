@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.82] - 2025-11-19
+### Added
+- **Database Management:**
+    - **Backup:** Added a "Backup Database" button to the Database page. Backups are saved as timestamped `.db` files in `/appdata/Backup`.
+    - **Import:** Added an "Import Database" button. This allows restoring the database from the newest `.db` file found in `/appdata/Imports`.
+    - **Auto-Migration:** The import process automatically applies any necessary schema updates (migrations) to ensure compatibility with the current version.
+    - **Raw File Support:** The import function supports importing raw SQLite backups (including `.db-wal` and `.db-shm` files) if they are present in the Imports folder.
+
 ## [0.81] - 2025-11-19
 ### Changed
 - **Kometa Overlays Refinement:**
