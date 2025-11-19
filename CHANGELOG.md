@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.722] - 2025-11-19
+### Fixed
+- Fixed a bug where the "Test Connection" buttons on the settings page were not working. The issue was caused by the missing htmx JavaScript library.
+
 ## [0.721] - 2025-11-19
 ### Fixed
 - Resolved a `No such file or directory` error that could occur on a clean install. The startup script now ensures the `/app/app/static` directory exists before creating the symbolic link for posters.
