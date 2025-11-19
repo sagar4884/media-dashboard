@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.831] - 2025-11-19
+### Fixed
+- **Sync Bug:** Fixed a critical issue where `local_poster_path` was being assigned a tuple instead of a string during Radarr/Sonarr sync, causing a `sqlite3.ProgrammingError`.
+- **Plex Integration:** Removed the `PlexOrphan` feature and its dependencies which were causing import errors.
+
 ## [0.83] - 2025-11-19
 ### Changed
 - **Kometa Overlays:**

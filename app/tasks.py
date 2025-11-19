@@ -105,8 +105,9 @@ def sync_radarr_movies(full_sync=False):
             movies_to_update[change_key].append(movie.radarr_id)
 
         if (full_sync or not movie.local_poster_path) and movie.tmdb_id:
-            poster_path = fetch_tmdb_assets(movie.tmdb_id, 'movie')
-            movie.local_poster_path = poster_path
+            assets = fetch_tmdb_assets(movie.tmdb_id, 'movie')
+            if assets and isinstance(assets, tuple):
+                movie.local_poster_path = assets[0]
 
         db.session.add(movie)
 
@@ -220,10 +221,11 @@ def sync_sonarr_shows(full_sync=False):
             shows_to_update[change_key].append(show.sonarr_id)
         
         if (full_sync or not show.local_poster_path) and show.tvdb_id:
-            poster_path, tmdb_id = fetch_tmdb_assets(show.tvdb_id, 'tv')
-            show.local_poster_path = poster_path
-            if tmdb_id:
-                show.tmdb_id = tmdb_id
+            assets = fetch_tmdb_assets(show.tvdb_id, 'tv')
+            if assets and isinstance(assets, tuple):
+                show.local_poster_path = assets[0]
+                if assets[1]:
+                    show.tmdb_id = assets[1]
         
         db.session.add(show)
         
