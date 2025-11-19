@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.841] - 2025-11-19
+### Added
+- **Dashboard Visuals:** Added interactive Doughnut charts using `Chart.js` to visualize "Keep vs Delete vs Unscored" statistics for Radarr and Sonarr.
+- **Service Health Indicators:** Added real-time status indicators (Online/Offline/Latency) for Radarr, Sonarr, and Tautulli on the dashboard.
+- **Health Check API:** Implemented a new `/health/<service>` endpoint to support the dashboard status indicators.
+
+### Fixed
+- **UI Cleanup:** Removed duplicate flash message rendering from `dashboard.html`, `settings.html`, and `deletion.html`, ensuring notifications only appear once via the new Toast system.
+
 ## [0.840] - 2025-11-19
 ### Added
 - **Feedback Layer:** Integrated `Toastify.js` to replace standard Flask flash messages with modern, non-intrusive toast notifications.

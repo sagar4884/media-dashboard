@@ -12,6 +12,7 @@ from rq.exceptions import NoSuchJobError
 from rq.registry import StartedJobRegistry
 from datetime import datetime, timedelta
 import yaml
+import time
 
 @current_app.route('/')
 def dashboard():
@@ -956,3 +957,30 @@ def import_database():
         return jsonify({'status': 'success', 'message': f'Imported {target_file} successfully. Please refresh the page.'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
+
+@current_app.route('/health/<service>')
+def health_check(service):
+    session = get_retry_session()
+    service_name = service.capitalize()
+    settings = ServiceSettings.query.filter_by(service_name=service_name).first()
+    
+    if not settings:
+        return jsonify({'status': 'offline', 'latency': 0, 'message': 'Not Configured'})
+
+    start_time = time.time()
+    try:
+        if service == 'radarr' or service == 'sonarr':
+            headers = {'X-Api-Key': settings.api_key}
+            response = session.get(f"{settings.url}/api/v3/system/status", headers=headers, timeout=5)
+        elif service == 'tautulli':
+            params = {'cmd': 'get_history', 'apikey': settings.api_key, 'length': 1}
+            response = session.get(f"{settings.url}/api/v2", params=params, timeout=5)
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid Service'})
+
+        response.raise_for_status()
+        latency = int((time.time() - start_time) * 1000)
+        return jsonify({'status': 'online', 'latency': latency})
+        
+    except Exception as e:
+        return jsonify({'status': 'offline', 'latency': 0, 'message': str(e)})
