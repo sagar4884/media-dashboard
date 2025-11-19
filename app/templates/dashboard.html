@@ -49,6 +49,9 @@
                         <div id="progress-bar" class="bg-blue-600 h-6 rounded-full" style="width: 0%;"></div>
                         <span id="progress-percentage" class="absolute inset-0 flex items-center justify-center text-white font-bold">0%</span>
                     </div>
+                    <div class="mt-4">
+                        <button id="stop-btn" hx-post="/stop-job" hx-swap="none" class="bg-red-600 text-white px-4 py-2 rounded-lg w-full flex items-center justify-center hover:bg-red-700 transition duration-300">Stop Sync</button>
+                    </div>
                 </div>
             </div>
             

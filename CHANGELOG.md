@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.73] - 2025-11-19
+### Added
+- Implemented a "Safe Stop" feature for all sync tasks. Users can now click a "Stop Sync" button to gracefully terminate a running sync. The task will save all progress it has made up to that point, allowing a "Quick Sync" to effectively resume the process later.
+
 ## [0.722] - 2025-11-19
 ### Fixed
 - Fixed a bug where the "Test Connection" buttons on the settings page were not working. The issue was caused by the missing htmx JavaScript library.

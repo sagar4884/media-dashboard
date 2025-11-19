@@ -29,6 +29,9 @@ def sync_radarr_movies(full_sync=False):
     job.meta['progress'] = 0
     job.save_meta()
     start_time = time.time()
+    
+    redis_conn = job.connection
+    redis_conn.delete('stop-job-flag')
 
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     if not settings:
@@ -50,6 +53,8 @@ def sync_radarr_movies(full_sync=False):
 
     total_movies = len(movies_data)
     for i, movie_data in enumerate(movies_data):
+        if redis_conn.exists('stop-job-flag'):
+            break
         movie = Movie.query.filter_by(radarr_id=movie_data['id']).first()
         
         # Bootstrap score for new movies from existing tags
@@ -134,6 +139,9 @@ def sync_sonarr_shows(full_sync=False):
     job.save_meta()
     start_time = time.time()
 
+    redis_conn = job.connection
+    redis_conn.delete('stop-job-flag')
+
     settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
     if not settings:
         return {'error': 'Sonarr settings not found'}
@@ -154,6 +162,8 @@ def sync_sonarr_shows(full_sync=False):
 
     total_shows = len(shows_data)
     for i, show_data in enumerate(shows_data):
+        if redis_conn.exists('stop-job-flag'):
+            break
         show = Show.query.filter_by(sonarr_id=show_data['id']).first()
         
         # Bootstrap score for new shows from existing tags
@@ -244,6 +254,9 @@ def sync_tautulli_history(full_sync=False):
     job.save_meta()
     start_time = time.time()
 
+    redis_conn = job.connection
+    redis_conn.delete('stop-job-flag')
+
     settings = ServiceSettings.query.filter_by(service_name='Tautulli').first()
     if not settings:
         return {'error': 'Tautulli settings not found'}
@@ -283,6 +296,8 @@ def sync_tautulli_history(full_sync=False):
     # Process all shows
     all_shows = Show.query.all()
     for show in all_shows:
+        if redis_conn.exists('stop-job-flag'):
+            break
         if show.score in ['Keep', 'Seasonal']:
             continue
 

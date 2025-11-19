@@ -253,6 +253,12 @@ def sync(service):
     
     return jsonify({'job_id': job.get_id()})
 
+@current_app.route('/stop-job', methods=['POST'])
+def stop_job():
+    redis_conn = current_app.queue.connection
+    redis_conn.set('stop-job-flag', 'true')
+    return jsonify({'status': 'Stop signal sent'})
+
 @current_app.route('/task_status/<job_id>')
 def task_status(job_id):
     try:
