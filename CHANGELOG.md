@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.851] - 2025-11-19
+### Added
+- **Foundation:** Created `_layout_head.html` to centralize `<head>` configuration, including Tailwind CSS, Inter font, and global scripts.
+- **Glassmorphism:** Implemented a modern "Glassmorphism" design language with `.glass-panel` and `.glass-header` utility classes.
+- **Typography:** Switched the default font to "Inter" for a cleaner, more modern look.
+
+### Changed
+- **UI Overhaul:** Applied the new glassmorphism style to the Header, Dashboard, Radarr, Sonarr, Tautulli, Deletion, Overlays, Database, Settings, and Seasonal pages.
+- **Refactor:** Replaced individual `<head>` sections in all templates with the centralized `_layout_head.html` include.
+
 ## [0.850] - 2025-11-19
 ### Added
 - **SPA Core:** Refactored Radarr and Sonarr library views to use HTMX for Pagination, Sorting, and Filtering. This eliminates full page reloads for these actions, providing a smoother "Single Page Application" feel.

@@ -1,16 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radarr - Media Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-    <script src="{{ url_for('static', filename='js/mass_edit.js') }}" defer></script>
+    {% include '_layout_head.html' %}
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
     <div class="min-h-screen">

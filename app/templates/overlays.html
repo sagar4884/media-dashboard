@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include '_layout_head.html' %}
     <title>Kometa Overlays - Media Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -21,7 +16,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Template Editor -->
-                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                <div class="glass-panel p-6 rounded-lg shadow-xl">
                     <h2 class="text-xl font-semibold text-white mb-4">Overlay Templates</h2>
                     <p class="text-sm text-gray-400 mb-4">
                         Define the style for your overlays. Use <code>&lt;DATE&gt;</code> as a placeholder for the deletion date (e.g., "Nov 24").
@@ -64,7 +59,7 @@
                 </div>
 
                 <!-- Preview & Generate -->
-                <div class="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col">
+                <div class="glass-panel p-6 rounded-lg shadow-xl flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold text-white">Generated YAML Preview</h2>
                         <button @click="generateFile" :disabled="generating" class="bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center text-sm">

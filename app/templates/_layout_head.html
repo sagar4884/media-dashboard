@@ -1,0 +1,41 @@
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="{{ url_for('static', filename='js/mass_edit.js') }}" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gray: {
+                            750: '#2d3748', // Custom shade for glass borders
+                            850: '#1a202c', // Custom shade for backgrounds
+                            900: '#111827', // Base dark
+                            950: '#0B0F19', // Deep dark
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background-color: rgba(31, 41, 55, 0.6); /* bg-gray-800/60 */
+            backdrop-filter: blur(16px); /* backdrop-blur-xl */
+            border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+        }
+        .glass-header {
+            background-color: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+        }
+    </style>

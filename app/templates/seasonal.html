@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include '_layout_head.html' %}
     <title>Seasonal Maintenance - Media Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -20,7 +15,7 @@
             </div>
 
             <!-- Settings Section -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8">
+            <div class="glass-panel p-6 rounded-lg shadow-xl mb-8">
                 <h2 class="text-xl font-semibold text-white mb-4">Settings</h2>
                 <form action="{{ url_for('seasonal_settings') }}" method="POST" class="flex items-end space-x-4">
                     <div>
@@ -33,7 +28,7 @@
             </div>
 
             <!-- Action Section -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8">
+            <div class="glass-panel p-6 rounded-lg shadow-xl mb-8">
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-xl font-semibold text-white">Scan for Expired Seasons</h2>

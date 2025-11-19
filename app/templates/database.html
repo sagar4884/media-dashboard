@@ -1,15 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include '_layout_head.html' %}
     <title>Database Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
     <div class="min-h-screen">
@@ -18,7 +11,7 @@
             <h2 class="text-3xl font-bold leading-tight text-white">Database Management</h2>
             <p class="mt-2 text-gray-400">Manage and maintain the application's database.</p>
 
-            <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-xl">
+            <div class="mt-6 glass-panel p-4 rounded-lg shadow-xl">
                 <h3 class="text-xl font-semibold text-white">Database Information</h3>
                 <div class="mt-4">
                     <p><strong>Type:</strong> {{ db_info.type }}</p>
@@ -27,7 +20,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-xl">
+            <div class="mt-6 glass-panel p-4 rounded-lg shadow-xl">
                 <h3 class="text-xl font-semibold text-white">Database Actions</h3>
                 <div class="mt-4 space-y-4">
                     <div>
