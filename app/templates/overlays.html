@@ -22,15 +22,43 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Template Editor -->
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
-                    <h2 class="text-xl font-semibold text-white mb-4">Overlay Template</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4">Overlay Templates</h2>
                     <p class="text-sm text-gray-400 mb-4">
                         Define the style for your overlays. Use <code>&lt;DATE&gt;</code> as a placeholder for the deletion date (e.g., "Nov 24").
                     </p>
                     <form @submit.prevent="saveTemplate">
-                        <textarea x-model="template" rows="12" class="w-full bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500 mb-4" spellcheck="false"></textarea>
+                        
+                        <!-- Movie Section -->
+                        <div class="mb-6">
+                            <label class="block text-lg font-medium text-white mb-2">Movies</label>
+                            <textarea x-model="movieTemplate" rows="8" class="w-full bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500 mb-2" spellcheck="false" placeholder="Movie Overlay YAML..."></textarea>
+                        </div>
+
+                        <!-- Show Section -->
+                        <div class="mb-6">
+                            <label class="block text-lg font-medium text-white mb-2">TV Shows</label>
+                            
+                            <div class="mb-4 bg-gray-700 p-3 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Show ID Type</label>
+                                <div class="flex items-center space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" x-model="useTmdbForShows" :value="false" class="form-radio text-blue-600 bg-gray-600 border-gray-500 focus:ring-blue-500">
+                                        <span class="ml-2 text-gray-300">TVDB (Default)</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" x-model="useTmdbForShows" :value="true" class="form-radio text-blue-600 bg-gray-600 border-gray-500 focus:ring-blue-500">
+                                        <span class="ml-2 text-gray-300">TMDB</span>
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Choose which ID type Kometa should use for TV Shows.</p>
+                            </div>
+
+                            <textarea x-model="showTemplate" rows="8" class="w-full bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500 mb-2" spellcheck="false" placeholder="Show Overlay YAML..."></textarea>
+                        </div>
+
                         <div class="flex justify-end space-x-4">
                             <button type="button" @click="resetDefault" class="text-gray-400 hover:text-white text-sm font-medium px-4 py-2">Reset to Default</button>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Save Template</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Save Configuration</button>
                         </div>
                     </form>
                 </div>
@@ -74,21 +102,32 @@
 
         function overlays() {
             return {
-                template: `{{ template | safe }}`,
+                movieTemplate: {{ movie_template | tojson }},
+                showTemplate: {{ show_template | tojson }},
+                useTmdbForShows: {{ use_tmdb_for_shows | tojson }},
                 preview: 'Loading preview...',
                 generating: false,
                 lastGenerated: null,
 
                 init() {
-                    if (!this.template) {
-                        this.template = defaultTemplate;
+                    if (!this.movieTemplate) {
+                        this.movieTemplate = defaultTemplate;
+                    }
+                    if (!this.showTemplate) {
+                        this.showTemplate = defaultTemplate;
                     }
                     this.fetchPreview();
+                    
+                    // Watch for changes to update preview
+                    this.$watch('movieTemplate', () => this.fetchPreview());
+                    this.$watch('showTemplate', () => this.fetchPreview());
+                    this.$watch('useTmdbForShows', () => this.fetchPreview());
                 },
 
                 resetDefault() {
-                    if(confirm('Reset template to default?')) {
-                        this.template = defaultTemplate;
+                    if(confirm('Reset both templates to default?')) {
+                        this.movieTemplate = defaultTemplate;
+                        this.showTemplate = defaultTemplate;
                     }
                 },
 
@@ -96,24 +135,40 @@
                     try {
                         const response = await fetch('/overlays/save_template', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ template: this.template })
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                movie_template: this.movieTemplate,
+                                show_template: this.showTemplate,
+                                use_tmdb_for_shows: this.useTmdbForShows 
+                            }),
                         });
                         const data = await response.json();
                         if (data.status === 'success') {
-                            alert('Template saved!');
-                            this.fetchPreview();
+                            alert('Configuration saved successfully!');
                         } else {
                             alert('Error saving: ' + data.message);
                         }
-                    } catch (e) {
-                        alert('Error saving: ' + e);
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error saving configuration');
                     }
                 },
 
                 async fetchPreview() {
                     try {
-                        const response = await fetch('/overlays/preview');
+                        const response = await fetch('/overlays/preview', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                movie_template: this.movieTemplate,
+                                show_template: this.showTemplate,
+                                use_tmdb_for_shows: this.useTmdbForShows 
+                            }),
+                        });
                         const data = await response.json();
                         this.preview = data.content;
                     } catch (e) {

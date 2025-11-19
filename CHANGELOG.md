@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.81] - 2025-11-19
+### Changed
+- **Kometa Overlays Refinement:**
+    - **Split Templates:** Separated the overlay template configuration into distinct "Movies" and "TV Shows" sections for greater flexibility.
+    - **ID Selection:** Added a toggle to choose between TVDB (default) and TMDB IDs for TV Shows in the generated YAML.
+    - **Backend Logic:** Updated generation logic to respect the selected ID type and use separate templates.
+    - **Task Update:** Enhanced background sync to fetch and store TMDB IDs for shows to support the new option.
+
 ## [0.80] - 2025-11-19
 ### Added
 - **Kometa Overlays:** Implemented integration with Kometa (Plex Meta Manager) to display "Leaving Soon" overlays on Plex items.

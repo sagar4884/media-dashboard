@@ -70,4 +70,40 @@ def create_app():
         except Exception as e:
             pass
 
+        # Migration for v0.80: Add overlay_movie_template
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_movie_template TEXT"))
+                conn.commit()
+                print("Migrated database: Added overlay_movie_template column.")
+        except Exception as e:
+            pass
+
+        # Migration for v0.80: Add overlay_show_template
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_show_template TEXT"))
+                conn.commit()
+                print("Migrated database: Added overlay_show_template column.")
+        except Exception as e:
+            pass
+
+        # Migration for v0.80: Add overlay_use_tmdb_for_shows
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_use_tmdb_for_shows BOOLEAN DEFAULT 0"))
+                conn.commit()
+                print("Migrated database: Added overlay_use_tmdb_for_shows column.")
+        except Exception as e:
+            pass
+
+        # Migration for v0.80: Add tmdb_id to Show
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE show ADD COLUMN tmdb_id INTEGER"))
+                conn.commit()
+                print("Migrated database: Added tmdb_id column to Show.")
+        except Exception as e:
+            pass
+
     return app

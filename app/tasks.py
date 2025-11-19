@@ -220,8 +220,10 @@ def sync_sonarr_shows(full_sync=False):
             shows_to_update[change_key].append(show.sonarr_id)
         
         if (full_sync or not show.local_poster_path) and show.tvdb_id:
-            poster_path = fetch_tmdb_assets(show.tvdb_id, 'tv')
+            poster_path, tmdb_id = fetch_tmdb_assets(show.tvdb_id, 'tv')
             show.local_poster_path = poster_path
+            if tmdb_id:
+                show.tmdb_id = tmdb_id
         
         db.session.add(show)
         
@@ -355,7 +357,7 @@ def sync_tautulli_history(full_sync=False):
 def fetch_tmdb_assets(media_id, media_type='movie'):
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     if not settings or not settings.tmdb_api_key:
-        return None
+        return None, None
         
     tmdb_api_key = settings.tmdb_api_key
     session = get_retry_session()
@@ -374,11 +376,11 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
                 tmdb_id = find_data['tv_results'][0]['id']
         except requests.exceptions.RequestException as e:
             print(f"Error finding TMDB ID for TVDB ID {media_id}: {e}")
-            return None
+            return None, None
 
     if not tmdb_id:
         print(f"No TMDB ID found for {media_type} {media_id}")
-        return None
+        return None, None
 
     url = f"https://api.themoviedb.org/3/{media_type}/{tmdb_id}?api_key={tmdb_api_key}"
         
@@ -412,12 +414,12 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
                     item.overview = data.get('overview')
                     db.session.commit()
 
-            return f"posters/{local_filename}"
+            return f"posters/{local_filename}", tmdb_id
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching TMDB assets for {media_type} {media_id}: {e}")
 
-    return None
+    return None, None
 
 def update_service_tags(service_name, payload):
     settings = ServiceSettings.query.filter_by(service_name=service_name).first()

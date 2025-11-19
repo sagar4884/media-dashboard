@@ -728,36 +728,41 @@ def seasonal_execute():
 
 @current_app.route('/overlays')
 def overlays_page():
-    settings = ServiceSettings.query.filter_by(service_name='Radarr').first() # Use Radarr settings to store template for now, or create a generic one
-    # If we don't have a generic settings row, let's use the first one we find or create a dummy one if needed.
-    # Actually, let's stick to the plan: add column to ServiceSettings.
-    # We can just pick one service to store it, say 'Radarr' since it's usually present.
+    settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     
-    template = ""
-    if settings and settings.overlay_template:
-        template = settings.overlay_template
+    movie_template = ""
+    show_template = ""
+    use_tmdb_for_shows = False
     
-    return render_template('overlays.html', template=template)
+    if settings:
+        movie_template = settings.overlay_movie_template or settings.overlay_template or ""
+        show_template = settings.overlay_show_template or settings.overlay_template or ""
+        use_tmdb_for_shows = settings.overlay_use_tmdb_for_shows
+    
+    return render_template('overlays.html', movie_template=movie_template, show_template=show_template, use_tmdb_for_shows=use_tmdb_for_shows)
 
 @current_app.route('/overlays/save_template', methods=['POST'])
 def save_overlay_template():
     data = request.get_json()
-    template = data.get('template')
+    movie_template = data.get('movie_template')
+    show_template = data.get('show_template')
+    use_tmdb_for_shows = data.get('use_tmdb_for_shows', False)
     
     # Store in Radarr settings for now as a global place
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     if not settings:
-        # Should not happen in a configured app, but handle it
         return jsonify({'status': 'error', 'message': 'Radarr settings not found (used for storage)'})
         
-    settings.overlay_template = template
+    settings.overlay_movie_template = movie_template
+    settings.overlay_show_template = show_template
+    settings.overlay_use_tmdb_for_shows = use_tmdb_for_shows
     db.session.commit()
     return jsonify({'status': 'success'})
 
-def generate_overlay_yaml():
-    # 1. Get Template
+def generate_overlay_yaml(movie_template=None, show_template=None, use_tmdb_for_shows=None):
     settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
-    raw_template = settings.overlay_template if settings and settings.overlay_template else """overlay:
+    
+    default_template = """overlay:
   name: text(Leaving <DATE>)
   horizontal_align: center
   vertical_align: bottom
@@ -766,61 +771,89 @@ def generate_overlay_yaml():
   font_color: '#FF0000'
   weight: 25"""
 
-    # 2. Get Items
+    if movie_template is None:
+        movie_template = settings.overlay_movie_template if settings and settings.overlay_movie_template else (settings.overlay_template if settings and settings.overlay_template else default_template)
+    
+    if show_template is None:
+        show_template = settings.overlay_show_template if settings and settings.overlay_show_template else (settings.overlay_template if settings and settings.overlay_template else default_template)
+    
+    if use_tmdb_for_shows is None:
+        use_tmdb_for_shows = settings.overlay_use_tmdb_for_shows if settings else False
+
     movies = Movie.query.filter(Movie.delete_at.isnot(None)).all()
     shows = Show.query.filter(Show.delete_at.isnot(None)).all()
-    
-    # 3. Group by Date
-    grouped_items = {}
-    
+
+    grouped_movies = {}
+    grouped_shows = {}
+
     for item in movies:
-        date_str = item.delete_at.strftime('%b %d') # e.g. Nov 24
-        if date_str not in grouped_items:
-            grouped_items[date_str] = {'tmdb_movie': [], 'tvdb_show': []}
+        date_str = item.delete_at.strftime('%b %d')
+        if date_str not in grouped_movies:
+            grouped_movies[date_str] = []
         if item.tmdb_id:
-            grouped_items[date_str]['tmdb_movie'].append(item.tmdb_id)
+            grouped_movies[date_str].append(item.tmdb_id)
 
     for item in shows:
         date_str = item.delete_at.strftime('%b %d')
-        if date_str not in grouped_items:
-            grouped_items[date_str] = {'tmdb_movie': [], 'tvdb_show': []}
-        if item.tvdb_id:
-            grouped_items[date_str]['tvdb_show'].append(item.tvdb_id)
-
-    # 4. Build YAML Structure
-    overlays_data = {'overlays': {}}
-    
-    for date_str, ids in grouped_items.items():
-        key = f"MEDIADASHBOARD_LEAVING_{date_str.upper().replace(' ', '_')}"
+        if date_str not in grouped_shows:
+            grouped_shows[date_str] = []
         
-        # Parse the raw template to a dict
+        if use_tmdb_for_shows:
+            if item.tmdb_id:
+                grouped_shows[date_str].append(item.tmdb_id)
+        else:
+            if item.tvdb_id:
+                grouped_shows[date_str].append(item.tvdb_id)
+
+    overlays_data = {'overlays': {}}
+
+    # Process Movies
+    for date_str, ids in grouped_movies.items():
+        if not ids: continue
+        key = f"MEDIADASHBOARD_LEAVING_MOVIES_{date_str.upper().replace(' ', '_')}"
+        
         try:
-            # Replace placeholder in the raw string first
-            current_template_str = raw_template.replace('<DATE>', date_str)
-            current_template = yaml.safe_load(current_template_str)
-            
-            # If the user pasted "overlay: ...", use it. If they pasted just the content, wrap it.
+            current_template = yaml.safe_load(movie_template.replace('<DATE>', date_str))
             if 'overlay' not in current_template:
                 current_template = {'overlay': current_template}
-                
         except yaml.YAMLError:
-            # Fallback if template is invalid YAML
             current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
 
-        entry = current_template
+        current_template['tmdb_movie'] = ids
+        overlays_data['overlays'][key] = current_template
+
+    # Process Shows
+    for date_str, ids in grouped_shows.items():
+        if not ids: continue
+        key = f"MEDIADASHBOARD_LEAVING_SHOWS_{date_str.upper().replace(' ', '_')}"
         
-        if ids['tmdb_movie']:
-            entry['tmdb_movie'] = ids['tmdb_movie']
-        if ids['tvdb_show']:
-            entry['tvdb_show'] = ids['tvdb_show']
+        try:
+            current_template = yaml.safe_load(show_template.replace('<DATE>', date_str))
+            if 'overlay' not in current_template:
+                current_template = {'overlay': current_template}
+        except yaml.YAMLError:
+            current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
+
+        if use_tmdb_for_shows:
+            current_template['tmdb_show'] = ids
+        else:
+            current_template['tvdb_show'] = ids
             
-        overlays_data['overlays'][key] = entry
+        overlays_data['overlays'][key] = current_template
 
     return yaml.dump(overlays_data, sort_keys=False)
 
-@current_app.route('/overlays/preview')
+@current_app.route('/overlays/preview', methods=['GET', 'POST'])
 def preview_overlay():
-    yaml_content = generate_overlay_yaml()
+    if request.method == 'POST':
+        data = request.get_json()
+        movie_template = data.get('movie_template')
+        show_template = data.get('show_template')
+        use_tmdb_for_shows = data.get('use_tmdb_for_shows')
+        yaml_content = generate_overlay_yaml(movie_template, show_template, use_tmdb_for_shows)
+    else:
+        yaml_content = generate_overlay_yaml()
+        
     return jsonify({'content': yaml_content})
 
 @current_app.route('/overlays/generate', methods=['POST'])

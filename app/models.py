@@ -9,7 +9,10 @@ class ServiceSettings(db.Model):
     retention_days = db.Column(db.Integer, default=365)
     tmdb_api_key = db.Column(db.String(100))
     seasonal_min_episodes = db.Column(db.Integer, default=1)
-    overlay_template = db.Column(db.Text)
+    overlay_template = db.Column(db.Text) # Deprecated
+    overlay_movie_template = db.Column(db.Text)
+    overlay_show_template = db.Column(db.Text)
+    overlay_use_tmdb_for_shows = db.Column(db.Boolean, default=False)
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +32,7 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sonarr_id = db.Column(db.Integer, unique=True)
     tvdb_id = db.Column(db.Integer)
+    tmdb_id = db.Column(db.Integer)
     title = db.Column(db.String(200))
     year = db.Column(db.Integer)
     size_gb = db.Column(db.Float)
