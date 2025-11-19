@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.716] - 2025-11-18
+### Fixed
+- Corrected a critical bug that was causing all poster images to be broken. The issue was caused by an incorrect order of operations in the application's initialization file.
+
 ## [0.715] - 2025-11-18
 ### Fixed
 - Resolved a `NameError` that was causing the application to crash. The error was caused by a missing import for `StartedJobRegistry` in the global task locking mechanism.

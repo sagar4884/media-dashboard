@@ -38,14 +38,14 @@ def create_app():
     # Make timedelta available in templates
     app.jinja_env.globals['timedelta'] = timedelta
 
-    with app.app_context():
-        from . import routes
-
     @app.context_processor
     def inject_active_job_id():
         registry = StartedJobRegistry(queue=app.queue)
         running_job_ids = registry.get_job_ids()
         active_job_id = running_job_ids[0] if running_job_ids else None
         return dict(active_job_id=active_job_id)
+
+    with app.app_context():
+        from . import routes
 
     return app
