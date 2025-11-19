@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.721] - 2025-11-19
+### Fixed
+- Resolved a `No such file or directory` error that could occur on a clean install. The startup script now ensures the `/app/app/static` directory exists before creating the symbolic link for posters.
+
 ## [0.720] - 2025-11-19
 ### Changed
 - Refactored the application to use a single, unified `/appdata` volume for all persistent data. This simplifies the deployment process and makes the application more robust and future-proof. All relevant files, including `docker-compose.yml`, the Unraid template, `entrypoint.sh`, and the application's core logic, have been updated to use the new data structure.

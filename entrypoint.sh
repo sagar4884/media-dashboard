@@ -6,6 +6,7 @@ DB_FILE="/appdata/database/app.db"
 # Ensure the database directory exists
 mkdir -p /appdata/database
 # Create a symlink for the posters directory
+mkdir -p /app/app/static
 ln -sfn /appdata/posters /app/app/static/posters
 
 # Check for the database file
