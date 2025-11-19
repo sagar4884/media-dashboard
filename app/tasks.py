@@ -379,7 +379,7 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
             poster_response.raise_for_status()
             
             local_filename = f"{media_type}_{tmdb_id}.jpg"
-            local_filepath = os.path.join('app', 'static', 'posters', local_filename)
+            local_filepath = os.path.join('/appdata', 'posters', local_filename)
             
             os.makedirs(os.path.dirname(local_filepath), exist_ok=True)
 

@@ -4,14 +4,12 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./instance:/app/instance
-      - /mnt/user/appdata/media-dashboard/database:/database
-      - /mnt/user/appdata/media-dashboard/posters:/app/static/posters
+      - /mnt/user/appdata/media-dashboard:/appdata
     depends_on:
       - redis
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=sqlite:////database/app.db
+      - DATABASE_URL=sqlite:////appdata/database/app.db
       - REDIS_URL=redis://redis:6379/0
 
   redis:

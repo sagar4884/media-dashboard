@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
 
-DB_FILE="/database/app.db"
+DB_FILE="/appdata/database/app.db"
 
 # Ensure the database directory exists
-mkdir -p /database
+mkdir -p /appdata/database
+# Create a symlink for the posters directory
+ln -sfn /appdata/posters /app/app/static/posters
 
 # Check for the database file
 if [ -f "$DB_FILE" ]; then

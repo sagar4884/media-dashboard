@@ -166,7 +166,7 @@ def deletion_page():
 
 @current_app.route('/database')
 def database_page():
-    db_path = current_app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+    db_path = current_app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '/')
     db_info = {
         'type': 'SQLite',
         'path': db_path,

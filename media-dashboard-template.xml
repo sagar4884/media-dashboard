@@ -33,23 +33,18 @@
   <Data>
     <Volume>
       <HostDir>/mnt/user/appdata/media-dashboard</HostDir>
-      <ContainerDir>/database</ContainerDir>
-      <Mode>rw</Mode>
-    </Volume>
-    <Volume>
-      <HostDir>/mnt/user/appdata/media-dashboard/posters</HostDir>
-      <ContainerDir>/app/static/posters</ContainerDir>
+      <ContainerDir>/appdata</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
   </Data>
   <Environment>
     <Variable>
-      <Value>sqlite:////database/app.db</Value>
+      <Value>sqlite:////appdata/database/app.db</Value>
       <Name>DATABASE_URL</Name>
     </Variable>
   </Environment>
   <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="WebUI port" Type="Port" Display="always" Required="true"/>
-  <Config Name="Appdata" Target="/database" Default="/mnt/user/appdata/media-dashboard" Mode="rw" Description="Database and instance storage" Type="Path" Display="always" Required="true"/>
-  <Config Name="Database URL" Target="DATABASE_URL" Default="sqlite:////database/app.db" Description="Database connection string" Type="Variable" Display="always" Required="true"/>
+  <Config Name="Appdata" Target="/appdata" Default="/mnt/user/appdata/media-dashboard" Mode="rw" Description="Database and instance storage" Type="Path" Display="always" Required="true"/>
+  <Config Name="Database URL" Target="DATABASE_URL" Default="sqlite:////appdata/database/app.db" Description="Database connection string" Type="Variable" Display="always" Required="true"/>
   <Config Name="Redis URL" Target="REDIS_URL" Default="redis://[YOUR_UNRAID_IP]:6379/0" Description="Redis connection string" Type="Variable" Display="always" Required="true"/>
 </Container>

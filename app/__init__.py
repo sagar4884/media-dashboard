@@ -24,7 +24,7 @@ def create_app():
     # Configuration
     app.config.from_mapping(
         SECRET_KEY='a_very_secret_key',  # Change this!
-        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite:////database/app.db'),
+        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite:////appdata/database/app.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 

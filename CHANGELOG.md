@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.720] - 2025-11-19
+### Changed
+- Refactored the application to use a single, unified `/appdata` volume for all persistent data. This simplifies the deployment process and makes the application more robust and future-proof. All relevant files, including `docker-compose.yml`, the Unraid template, `entrypoint.sh`, and the application's core logic, have been updated to use the new data structure.
+
 ## [0.719] - 2025-11-19
 ### Fixed
 - Corrected a flaw in the Unraid template that was causing the `REDIS_URL` to be reset to its default value on every update. The hardcoded, conflicting variable has been removed.
