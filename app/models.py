@@ -8,6 +8,7 @@ class ServiceSettings(db.Model):
     grace_days = db.Column(db.Integer, default=30)
     retention_days = db.Column(db.Integer, default=365)
     tmdb_api_key = db.Column(db.String(100))
+    seasonal_min_episodes = db.Column(db.Integer, default=1)
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)

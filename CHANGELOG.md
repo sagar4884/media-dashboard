@@ -204,3 +204,12 @@ All notable changes to this project will be documented in this file.
     - **Not Scored:** Reset score for multiple items.
     - **Delete Now:** Immediately delete multiple items from the service and database.
     - **Reset Grace Period:** Reset the deletion timer for multiple items.
+
+## [0.78] - 2025-11-19
+### Added
+- **Seasonal Maintenance:** Implemented a new feature to automate the cleanup of "rolling" TV shows (e.g., Reality TV).
+    - **New Page:** Added a dedicated "Seasonal Maintenance" page.
+    - **Smart Scanning:** Scans Sonarr for shows marked as 'Seasonal'. If the newest season has a configurable number of downloaded episodes (default: 1), previous seasons are flagged for removal.
+    - **Automated Cleanup:** Users can review and confirm the cleanup, which unmonitors previous seasons and deletes their files from Sonarr.
+    - **Settings:** Added a global setting to define the "Minimum New Episodes" threshold.
+    - **Database Migration:** Added automatic migration to support the new settings.

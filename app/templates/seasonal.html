@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seasonal Maintenance - Media Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <div class="min-h-screen">
+        {% include 'header.html' %}
+        <main class="container mx-auto p-4 sm:p-6 lg:p-8" x-data="seasonalMaintenance()">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-white">Seasonal Maintenance</h1>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8">
+                <h2 class="text-xl font-semibold text-white mb-4">Settings</h2>
+                <form action="{{ url_for('seasonal_settings') }}" method="POST" class="flex items-end space-x-4">
+                    <div>
+                        <label for="seasonal_min_episodes" class="block text-sm font-medium text-gray-400 mb-1">Minimum New Episodes (Downloaded)</label>
+                        <input type="number" id="seasonal_min_episodes" name="seasonal_min_episodes" value="{{ settings.seasonal_min_episodes or 1 }}" min="1" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-2.5">
+                        <p class="mt-1 text-xs text-gray-500">Delete previous seasons when the newest season has this many downloaded episodes.</p>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors">Save Settings</button>
+                </form>
+            </div>
+
+            <!-- Action Section -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-semibold text-white">Scan for Expired Seasons</h2>
+                        <p class="text-gray-400 mt-1">Check all 'Seasonal' shows. If the newest season meets the criteria, previous seasons will be listed for deletion.</p>
+                    </div>
+                    <button @click="scanForCleanup" :disabled="scanning" class="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center">
+                        <svg x-show="scanning" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="scanning ? 'Scanning...' : 'Scan Now'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div x-show="results.length > 0" class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8" style="display: none;">
+                <h2 class="text-xl font-semibold text-white mb-4">Proposed Cleanup</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700/50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-10">
+                                    <input type="checkbox" @click="toggleAll" x-model="allSelected" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Show</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Newest Season</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Seasons to Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-800 divide-y divide-gray-700">
+                            <template x-for="item in results" :key="item.sonarr_id">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" x-model="item.selected" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" x-text="item.title"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                        Season <span x-text="item.newest_season_number"></span> 
+                                        (<span x-text="item.downloaded_episodes"></span> eps)
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-400" x-text="item.seasons_to_delete.join(', ')"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button @click="executeCleanup" :disabled="executing || selectedCount === 0" class="bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center">
+                        <svg x-show="executing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="executing ? 'Deleting...' : 'Delete & Unmonitor Selected'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- No Results Message -->
+            <div x-show="scanned && results.length === 0" class="bg-gray-800 p-6 rounded-lg shadow-xl mb-8 text-center" style="display: none;">
+                <p class="text-gray-300 text-lg">No seasonal shows met the cleanup criteria.</p>
+            </div>
+
+            <!-- Current Seasonal Library (Reference) -->
+            <div class="mt-12">
+                <h3 class="text-lg font-medium text-gray-400 mb-4">Current Seasonal Library ({{ seasonal_shows|length }} Shows)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {% for show in seasonal_shows %}
+                    <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
+                        <img src="{{ url_for('static', filename=show.local_poster_path) if show.local_poster_path else 'https://placehold.co/50x75/111827/4b5563?text=N/A' }}" class="w-10 h-auto rounded">
+                        <span class="text-sm text-gray-300 truncate" title="{{ show.title }}">{{ show.title }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function seasonalMaintenance() {
+            return {
+                scanning: false,
+                scanned: false,
+                executing: false,
+                results: [],
+                allSelected: true,
+
+                get selectedCount() {
+                    return this.results.filter(i => i.selected).length;
+                },
+
+                toggleAll() {
+                    // allSelected is already toggled by the checkbox before this runs, 
+                    // but x-model update happens after click. 
+                    // Actually x-model handles the state, we just need to sync items.
+                    // Wait for next tick or just use the current value of allSelected
+                    this.results.forEach(item => item.selected = this.allSelected);
+                },
+
+                async scanForCleanup() {
+                    this.scanning = true;
+                    this.scanned = false;
+                    this.results = [];
+                    try {
+                        const response = await fetch('/seasonal/scan', { method: 'POST' });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.results = data.data.map(item => ({...item, selected: true}));
+                            this.scanned = true;
+                            this.allSelected = true;
+                        } else {
+                            alert('Error scanning: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Error scanning: ' + e);
+                    } finally {
+                        this.scanning = false;
+                    }
+                },
+
+                async executeCleanup() {
+                    if (!confirm(`Are you sure you want to delete and unmonitor previous seasons for ${this.selectedCount} shows? This cannot be undone.`)) return;
+
+                    this.executing = true;
+                    const selectedItems = this.results.filter(i => i.selected);
+                    
+                    try {
+                        const response = await fetch('/seasonal/execute', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ items: selectedItems })
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            alert(`Cleanup complete. Processed ${data.count} shows.`);
+                            this.results = []; // Clear results
+                            this.scanned = false;
+                        } else {
+                            alert('Error executing cleanup: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Error executing cleanup: ' + e);
+                    } finally {
+                        this.executing = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

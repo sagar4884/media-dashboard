@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
+from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
 from rq import Queue
 from rq.registry import StartedJobRegistry
@@ -47,5 +47,18 @@ def create_app():
 
     with app.app_context():
         from . import routes
+        
+        # Migration for v0.8: Add seasonal_min_episodes
+        try:
+            with db.engine.connect() as conn:
+                # Check if column exists to avoid error log spam (optional, but cleaner)
+                # SQLite doesn't support IF NOT EXISTS for columns in older versions, 
+                # so we just try and catch.
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN seasonal_min_episodes INTEGER DEFAULT 1"))
+                conn.commit()
+                print("Migrated database: Added seasonal_min_episodes column.")
+        except Exception as e:
+            # Column likely exists or table doesn't exist yet (fresh install handled by entrypoint)
+            pass
 
     return app
