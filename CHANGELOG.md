@@ -191,3 +191,16 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Corrected a CSS overflow issue where long summaries would break the layout of the table view hover card. The card now wraps text and expands vertically to fit the content.
+
+## [0.75] - 2025-11-19
+### Added
+- **Mass Edit Mode:** Introduced a new "Mass Edit" mode for Radarr, Sonarr, and Deletion Manager pages.
+    - Users can now select multiple items using checkboxes (with Shift-Click support for ranges).
+    - A floating action bar appears to perform bulk actions on selected items.
+- **Bulk Actions:** Implemented backend support for mass operations including:
+    - **Keep:** Mark multiple items to keep.
+    - **Delete:** Mark multiple items for deletion.
+    - **Seasonal:** (Sonarr only) Mark shows as seasonal.
+    - **Not Scored:** Reset score for multiple items.
+    - **Delete Now:** Immediately delete multiple items from the service and database.
+    - **Reset Grace Period:** Reset the deletion timer for multiple items.

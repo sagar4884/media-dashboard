@@ -2,6 +2,7 @@
     <table class="min-w-full divide-y divide-gray-700">
         <thead class="bg-gray-700/50">
             <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-10"></th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Poster</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     {% set next_order = 'desc' if sort_by == 'title' and sort_order == 'asc' else 'asc' %}
@@ -30,6 +31,9 @@
         <tbody class="bg-gray-800 divide-y divide-gray-700">
             {% for item in items %}
             <tr class="group">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <input type="checkbox" class="mass-edit-checkbox hidden w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" value="{{ item.id }}" data-media-type="{{ media_type }}">
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap relative">
                     <img src="{{ url_for('static', filename=item.local_poster_path) if item.local_poster_path else 'https://placehold.co/50x75/111827/4b5563?text=N/A' }}" alt="{{ item.title }} poster" class="w-12 h-auto rounded">
                     <!-- Hover Card -->
