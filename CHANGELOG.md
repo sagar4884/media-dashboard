@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.717] - 2025-11-19
+### Changed
+- The deletion logic for Radarr and Sonarr has been made more robust to ensure that files are deleted from the disk when an item is removed from the Deletion Manager.
+
 ## [0.716] - 2025-11-18
 ### Fixed
 - Corrected a critical bug that was causing all poster images to be broken. The issue was caused by an incorrect order of operations in the application's initialization file.

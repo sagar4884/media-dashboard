@@ -343,18 +343,22 @@ def purge():
     deleted_movies_count = 0
     if radarr_settings:
         headers = {'X-Api-Key': radarr_settings.api_key}
+        base_url = radarr_settings.url.rstrip('/')
         for movie in movies_to_delete:
-            url = f"{radarr_settings.url}/api/v3/movie/{movie.radarr_id}?deleteFiles=true"
-            session.delete(url, headers=headers)
+            url = f"{base_url}/api/v3/movie/{movie.radarr_id}"
+            params = {'deleteFiles': 'true', 'addImportListExclusion': 'false'}
+            session.delete(url, headers=headers, params=params)
             db.session.delete(movie)
             deleted_movies_count += 1
 
     deleted_shows_count = 0
     if sonarr_settings:
         headers = {'X-Api-Key': sonarr_settings.api_key}
+        base_url = sonarr_settings.url.rstrip('/')
         for show in shows_to_delete:
-            url = f"{sonarr_settings.url}/api/v3/series/{show.sonarr_id}?deleteFiles=true"
-            session.delete(url, headers=headers)
+            url = f"{base_url}/api/v3/series/{show.sonarr_id}"
+            params = {'deleteFiles': 'true', 'addExclusion': 'false'}
+            session.delete(url, headers=headers, params=params)
             db.session.delete(show)
             deleted_shows_count += 1
             
@@ -372,9 +376,11 @@ def delete_media(media_type, media_id):
         settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
         if settings:
             headers = {'X-Api-Key': settings.api_key}
-            url = f"{settings.url}/api/v3/movie/{item.radarr_id}?deleteFiles=true"
+            base_url = settings.url.rstrip('/')
+            url = f"{base_url}/api/v3/movie/{item.radarr_id}"
+            params = {'deleteFiles': 'true', 'addImportListExclusion': 'false'}
             try:
-                response = session.delete(url, headers=headers)
+                response = session.delete(url, headers=headers, params=params)
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 flash(f'Error deleting movie from Radarr: {e}', 'error')
@@ -387,9 +393,11 @@ def delete_media(media_type, media_id):
         settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
         if settings:
             headers = {'X-Api-Key': settings.api_key}
-            url = f"{settings.url}/api/v3/series/{item.sonarr_id}?deleteFiles=true"
+            base_url = settings.url.rstrip('/')
+            url = f"{base_url}/api/v3/series/{item.sonarr_id}"
+            params = {'deleteFiles': 'true', 'addExclusion': 'false'}
             try:
-                response = session.delete(url, headers=headers)
+                response = session.delete(url, headers=headers, params=params)
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 flash(f'Error deleting show from Sonarr: {e}', 'error')
