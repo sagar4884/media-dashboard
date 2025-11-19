@@ -10,6 +10,10 @@ A dashboard for managing your media library. This application interfaces with Ra
 -   **Automated Tagging:** Scoring an item automatically updates its tags in Radarr or Sonarr.
 -   **Tautulli Integration:** Sync your watch history from Tautulli to automatically "rescue" recently watched items that were marked for deletion.
 -   **Deletion Manager:** A dedicated page to review and manage all items marked for deletion.
+-   **Mass Edit Mode:** Quickly select and update multiple items at once.
+-   **Seasonal Maintenance:** Automatically manage and clean up rolling TV show seasons based on episode counts.
+-   **Kometa Overlays:** Generate YAML configuration files for Kometa to display "Leaving Soon" overlays on your Plex media.
+-   **Database Management:** Backup, import, and maintain your application database directly from the UI.
 -   **Background Syncing:** Syncs with your media servers run as background jobs, so the UI remains responsive.
 -   **Dockerized:** The application is fully containerized for easy deployment.
 
@@ -85,3 +89,13 @@ Once the application is running, you will need to configure it to connect to you
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+### Data Directory Structure
+
+The mapped `/appdata` volume will automatically populate with the following structure:
+
+-   `/database`: Contains the SQLite database (`app.db`).
+-   `/posters`: Stores downloaded media posters.
+-   `/kometa`: Contains generated overlay YAML files (`media_dashboard_overlays_movies.yaml` and `media_dashboard_overlays_shows.yaml`) for use with Kometa.
+-   `/Backup`: Stores database backups created via the UI.
+-   `/Imports`: Place `.db` files here to import them via the UI.
