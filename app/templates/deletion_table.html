@@ -44,15 +44,13 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{ item.title }} ({{ item.year }})</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{{ "%.2f"|format(item.size_gb) }} GB</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                    {% if item.marked_for_deletion_at %}
-                        {% set grace = timedelta(days=grace_days) %}
-                        {% set delete_date = item.marked_for_deletion_at.replace(tzinfo=None) + grace %}
-                        {% set remaining = delete_date - now.replace(tzinfo=None) %}
+                    {% if item.delete_at %}
+                        {% set remaining = item.delete_at.replace(tzinfo=None) - now.replace(tzinfo=None) %}
                         {% if remaining.total_seconds() > 0 %}
                             {% if remaining.days > 0 %}
                                 {{ remaining.days }} days
                             {% else %}
-                                {{ remaining.seconds // 3600 }} hours
+                                {{ (remaining.seconds // 3600) | int }} hours
                             {% endif %}
                         {% else %}
                             Expired

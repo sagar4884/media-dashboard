@@ -179,7 +179,9 @@ def deletion_page():
                            stats=stats,
                            radarr_settings=radarr_settings,
                            sonarr_settings=sonarr_settings,
-                           now=datetime.utcnow())
+                           now=datetime.utcnow(),
+                           sort_by=sort_by,
+                           sort_order=sort_order)
 
 @current_app.route('/database')
 def database_page():
@@ -317,23 +319,27 @@ def media_action(media_type, media_id, action):
 
     if action == 'keep':
         item.score = 'Keep'
+        item.marked_for_deletion_at = None
         item.delete_at = None
         tags_to_add.append('ai-keep')
         tags_to_remove.extend(['ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'delete':
         item.score = 'Delete'
+        item.marked_for_deletion_at = datetime.utcnow()
         settings = ServiceSettings.query.filter_by(service_name=service_name).first()
         grace_days = settings.grace_days if settings else 30
-        item.delete_at = datetime.utcnow() + timedelta(days=grace_days)
+        item.delete_at = item.marked_for_deletion_at + timedelta(days=grace_days)
         tags_to_add.append('ai-delete')
         tags_to_remove.extend(['ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     elif action == 'seasonal' and media_type == 'show':
         item.score = 'Seasonal'
+        item.marked_for_deletion_at = None
         item.delete_at = None
         tags_to_add.append('ai-rolling-keep')
         tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-tautulli-keep'])
     elif action == 'not_scored':
         item.score = 'Not Scored'
+        item.marked_for_deletion_at = None
         item.delete_at = None
         tags_to_remove.extend(['ai-delete', 'ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep'])
     

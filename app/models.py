@@ -19,6 +19,7 @@ class Movie(db.Model):
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
     marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
+    delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
 
@@ -32,6 +33,7 @@ class Show(db.Model):
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
     marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
+    delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
 
