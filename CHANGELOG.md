@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.853] - 2025-11-19
+### Added
+- **Command Center:** Transformed the dashboard's "Service Sync" panel into a modern "Command Center".
+- **Visual Controls:** Added dedicated cards for Radarr, Sonarr, and Tautulli with status indicators and clear, labeled sync buttons.
+- **Interactive UI:** Enhanced buttons with icons and hover effects for better feedback.
+
 ## [0.852] - 2025-11-19
 ### Added
 - **Hero Headers:** Introduced a reusable `hero_header` macro in `_macros.html` to provide consistent, visually appealing page titles with decorative background elements.
