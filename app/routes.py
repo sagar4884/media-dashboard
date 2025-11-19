@@ -9,6 +9,7 @@ from rq.job import Job
 from rq.exceptions import NoSuchJobError
 from rq.registry import StartedJobRegistry
 from datetime import datetime, timedelta
+import yaml
 
 @current_app.route('/')
 def dashboard():
@@ -724,3 +725,117 @@ def seasonal_execute():
             continue
 
     return jsonify({'status': 'success', 'count': processed_count})
+
+@current_app.route('/overlays')
+def overlays_page():
+    settings = ServiceSettings.query.filter_by(service_name='Radarr').first() # Use Radarr settings to store template for now, or create a generic one
+    # If we don't have a generic settings row, let's use the first one we find or create a dummy one if needed.
+    # Actually, let's stick to the plan: add column to ServiceSettings.
+    # We can just pick one service to store it, say 'Radarr' since it's usually present.
+    
+    template = ""
+    if settings and settings.overlay_template:
+        template = settings.overlay_template
+    
+    return render_template('overlays.html', template=template)
+
+@current_app.route('/overlays/save_template', methods=['POST'])
+def save_overlay_template():
+    data = request.get_json()
+    template = data.get('template')
+    
+    # Store in Radarr settings for now as a global place
+    settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
+    if not settings:
+        # Should not happen in a configured app, but handle it
+        return jsonify({'status': 'error', 'message': 'Radarr settings not found (used for storage)'})
+        
+    settings.overlay_template = template
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+def generate_overlay_yaml():
+    # 1. Get Template
+    settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
+    raw_template = settings.overlay_template if settings and settings.overlay_template else """overlay:
+  name: text(Leaving <DATE>)
+  horizontal_align: center
+  vertical_align: bottom
+  vertical_offset: 50
+  font_size: 65
+  font_color: '#FF0000'
+  weight: 25"""
+
+    # 2. Get Items
+    movies = Movie.query.filter(Movie.delete_at.isnot(None)).all()
+    shows = Show.query.filter(Show.delete_at.isnot(None)).all()
+    
+    # 3. Group by Date
+    grouped_items = {}
+    
+    for item in movies:
+        date_str = item.delete_at.strftime('%b %d') # e.g. Nov 24
+        if date_str not in grouped_items:
+            grouped_items[date_str] = {'tmdb_movie': [], 'tvdb_show': []}
+        if item.tmdb_id:
+            grouped_items[date_str]['tmdb_movie'].append(item.tmdb_id)
+
+    for item in shows:
+        date_str = item.delete_at.strftime('%b %d')
+        if date_str not in grouped_items:
+            grouped_items[date_str] = {'tmdb_movie': [], 'tvdb_show': []}
+        if item.tvdb_id:
+            grouped_items[date_str]['tvdb_show'].append(item.tvdb_id)
+
+    # 4. Build YAML Structure
+    overlays_data = {'overlays': {}}
+    
+    for date_str, ids in grouped_items.items():
+        key = f"MEDIADASHBOARD_LEAVING_{date_str.upper().replace(' ', '_')}"
+        
+        # Parse the raw template to a dict
+        try:
+            # Replace placeholder in the raw string first
+            current_template_str = raw_template.replace('<DATE>', date_str)
+            current_template = yaml.safe_load(current_template_str)
+            
+            # If the user pasted "overlay: ...", use it. If they pasted just the content, wrap it.
+            if 'overlay' not in current_template:
+                current_template = {'overlay': current_template}
+                
+        except yaml.YAMLError:
+            # Fallback if template is invalid YAML
+            current_template = {'overlay': {'name': f'text(Leaving {date_str})'}}
+
+        entry = current_template
+        
+        if ids['tmdb_movie']:
+            entry['tmdb_movie'] = ids['tmdb_movie']
+        if ids['tvdb_show']:
+            entry['tvdb_show'] = ids['tvdb_show']
+            
+        overlays_data['overlays'][key] = entry
+
+    return yaml.dump(overlays_data, sort_keys=False)
+
+@current_app.route('/overlays/preview')
+def preview_overlay():
+    yaml_content = generate_overlay_yaml()
+    return jsonify({'content': yaml_content})
+
+@current_app.route('/overlays/generate', methods=['POST'])
+def generate_overlay_file():
+    yaml_content = generate_overlay_yaml()
+    
+    # Ensure directory exists
+    output_dir = '/appdata/kometa'
+    os.makedirs(output_dir, exist_ok=True)
+    
+    file_path = os.path.join(output_dir, 'media_dashboard_overlays.yaml')
+    
+    try:
+        with open(file_path, 'w') as f:
+            f.write(yaml_content)
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})

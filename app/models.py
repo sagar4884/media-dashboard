@@ -9,6 +9,7 @@ class ServiceSettings(db.Model):
     retention_days = db.Column(db.Integer, default=365)
     tmdb_api_key = db.Column(db.String(100))
     seasonal_min_episodes = db.Column(db.Integer, default=1)
+    overlay_template = db.Column(db.Text)
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -61,4 +61,13 @@ def create_app():
             # Column likely exists or table doesn't exist yet (fresh install handled by entrypoint)
             pass
 
+        # Migration for v0.80: Add overlay_template
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_template TEXT"))
+                conn.commit()
+                print("Migrated database: Added overlay_template column.")
+        except Exception as e:
+            pass
+
     return app

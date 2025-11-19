@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kometa Overlays - Media Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <div class="min-h-screen">
+        {% include 'header.html' %}
+        <main class="container mx-auto p-4 sm:p-6 lg:p-8" x-data="overlays()">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-white">Kometa Overlays</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Template Editor -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-xl font-semibold text-white mb-4">Overlay Template</h2>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Define the style for your overlays. Use <code>&lt;DATE&gt;</code> as a placeholder for the deletion date (e.g., "Nov 24").
+                    </p>
+                    <form @submit.prevent="saveTemplate">
+                        <textarea x-model="template" rows="12" class="w-full bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500 mb-4" spellcheck="false"></textarea>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" @click="resetDefault" class="text-gray-400 hover:text-white text-sm font-medium px-4 py-2">Reset to Default</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Save Template</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Preview & Generate -->
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-white">Generated YAML Preview</h2>
+                        <button @click="generateFile" :disabled="generating" class="bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center text-sm">
+                            <svg x-show="generating" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="generating ? 'Generating...' : 'Generate File Now'"></span>
+                        </button>
+                    </div>
+                    <div class="flex-1 bg-gray-900 rounded-lg border border-gray-700 overflow-hidden relative">
+                        <div class="absolute top-0 right-0 p-2">
+                            <span class="text-xs text-gray-500">/appdata/kometa/media_dashboard_overlays.yaml</span>
+                        </div>
+                        <pre class="p-4 text-xs text-green-400 font-mono overflow-auto h-[24rem]" x-text="preview"></pre>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 text-right">
+                        Last generated: <span x-text="lastGenerated || 'Never'"></span>
+                    </p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const defaultTemplate = `overlay:
+  name: text(Leaving <DATE>)
+  horizontal_align: center
+  vertical_align: bottom
+  vertical_offset: 50
+  font_size: 65
+  font_color: '#FF0000'
+  weight: 25`;
+
+        function overlays() {
+            return {
+                template: `{{ template | safe }}`,
+                preview: 'Loading preview...',
+                generating: false,
+                lastGenerated: null,
+
+                init() {
+                    if (!this.template) {
+                        this.template = defaultTemplate;
+                    }
+                    this.fetchPreview();
+                },
+
+                resetDefault() {
+                    if(confirm('Reset template to default?')) {
+                        this.template = defaultTemplate;
+                    }
+                },
+
+                async saveTemplate() {
+                    try {
+                        const response = await fetch('/overlays/save_template', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ template: this.template })
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            alert('Template saved!');
+                            this.fetchPreview();
+                        } else {
+                            alert('Error saving: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Error saving: ' + e);
+                    }
+                },
+
+                async fetchPreview() {
+                    try {
+                        const response = await fetch('/overlays/preview');
+                        const data = await response.json();
+                        this.preview = data.content;
+                    } catch (e) {
+                        this.preview = '# Error loading preview';
+                    }
+                },
+
+                async generateFile() {
+                    this.generating = true;
+                    try {
+                        const response = await fetch('/overlays/generate', { method: 'POST' });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            alert('Overlay file generated successfully!');
+                            this.lastGenerated = new Date().toLocaleTimeString();
+                        } else {
+                            alert('Error generating file: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Error generating file: ' + e);
+                    } finally {
+                        this.generating = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

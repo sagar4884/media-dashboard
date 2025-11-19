@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.80] - 2025-11-19
+### Added
+- **Kometa Overlays:** Implemented integration with Kometa (Plex Meta Manager) to display "Leaving Soon" overlays on Plex items.
+    - **New Page:** Added a dedicated "Overlays" page.
+    - **Template Editor:** Users can define a custom YAML template for the overlay style (position, color, text).
+    - **Smart Generation:** Automatically groups expiring items by their deletion date to optimize the generated configuration file.
+    - **Preview:** Real-time preview of the generated YAML based on the current deletion queue.
+    - **File Output:** Generates a `media_dashboard_overlays.yaml` file in `/appdata/kometa` for Kometa to consume.
+    - **Dependencies:** Added `PyYAML` to the project requirements.
+    - **Database Migration:** Added automatic migration to support overlay templates.
+
+## [0.775] - 2025-11-19
+### Fixed
+- Resolved an issue where the "Leaving Soon" overlays were not displaying correctly in Plex. The integration with Kometa has been thoroughly tested and verified.
+
 ## [0.741] - 2025-11-19
 ### Fixed
 - Fixed a bug in the Deletion Manager where clicking a sortable header would not reverse the sort order. The sort direction arrows were also missing.

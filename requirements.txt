@@ -6,3 +6,4 @@ redis
 requests
 python-dotenv
 supervisor
+PyYAML
