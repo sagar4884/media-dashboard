@@ -80,6 +80,14 @@ def radarr_page():
     
     movies = query.paginate(page=page, per_page=per_page, error_out=False)
 
+    if request.headers.get('HX-Request'):
+        return render_template('_radarr_list.html',
+                               movies=movies,
+                               view=view,
+                               score_filter=score_filter,
+                               sort_by=sort_by,
+                               sort_order=sort_order)
+
     return render_template('radarr.html',
                            movies=movies,
                            view=view,
@@ -121,6 +129,14 @@ def sonarr_page():
         query = query.order_by(column.asc())
     
     shows = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    if request.headers.get('HX-Request'):
+        return render_template('_sonarr_list.html',
+                               shows=shows,
+                               view=view,
+                               score_filter=score_filter,
+                               sort_by=sort_by,
+                               sort_order=sort_order)
 
     return render_template('sonarr.html',
                            shows=shows,

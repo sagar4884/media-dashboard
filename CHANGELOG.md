@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.850] - 2025-11-19
+### Added
+- **SPA Core:** Refactored Radarr and Sonarr library views to use HTMX for Pagination, Sorting, and Filtering. This eliminates full page reloads for these actions, providing a smoother "Single Page Application" feel.
+- **Partial Rendering:** Implemented server-side partial rendering for movie and show lists (`_radarr_list.html`, `_sonarr_list.html`) to support efficient HTMX updates.
+- **Reusable Pagination:** Created a unified `_pagination.html` component that handles HTMX state for page navigation and "Per Page" selection.
+- **URL History:** Integrated `hx-push-url` to ensure browser history and back button functionality work correctly with the new dynamic updates.
+
 ## [0.842] - 2025-11-19
 ### Added
 - **Library Performance:** Implemented lazy loading (`loading="lazy"`) for all movie and show posters in Radarr, Sonarr, and Deletion views. This significantly improves initial page load time and reduces bandwidth usage.

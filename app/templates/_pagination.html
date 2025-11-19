@@ -1,0 +1,50 @@
+<div class="flex items-center space-x-2">
+    <label for="per_page" class="text-sm font-medium text-gray-300">Per Page:</label>
+    <select id="per_page" name="per_page" 
+            hx-get="{{ url_for(request.endpoint) }}" 
+            hx-target="#content-area" 
+            hx-push-url="true"
+            hx-trigger="change"
+            hx-vals='{"page": 1, "view": "{{ view }}", "score_filter": "{{ score_filter or "" }}", "sort_by": "{{ sort_by }}", "sort_order": "{{ sort_order }}"}'
+            class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        {% for val in [50, 100, 250, 1000] %}
+            <option value="{{ val }}" {% if pagination.per_page == val %}selected{% endif %}>{{ val }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="flex items-center space-x-2">
+    <button hx-get="{{ url_for(request.endpoint, page=1, per_page=pagination.per_page, view=view, score_filter=score_filter, sort_by=sort_by, sort_order=sort_order) }}" 
+            hx-target="#content-area" 
+            hx-push-url="true"
+            {% if not pagination.has_prev %}disabled{% endif %}
+            class="px-3 py-2 rounded-md text-sm font-medium {% if not pagination.has_prev %}bg-gray-700 text-gray-500 cursor-not-allowed{% else %}bg-gray-600 text-white hover:bg-gray-500 cursor-pointer{% endif %}">First</button>
+    
+    <button hx-get="{{ url_for(request.endpoint, page=pagination.prev_num, per_page=pagination.per_page, view=view, score_filter=score_filter, sort_by=sort_by, sort_order=sort_order) }}" 
+            hx-target="#content-area" 
+            hx-push-url="true"
+            {% if not pagination.has_prev %}disabled{% endif %}
+            class="px-3 py-2 rounded-md text-sm font-medium {% if not pagination.has_prev %}bg-gray-700 text-gray-500 cursor-not-allowed{% else %}bg-gray-600 text-white hover:bg-gray-500 cursor-pointer{% endif %}">Prev</button>
+    
+    <input type="text" name="page" value="{{ pagination.page }}" 
+           hx-get="{{ url_for(request.endpoint) }}" 
+           hx-target="#content-area" 
+           hx-push-url="true"
+           hx-trigger="change"
+           hx-vals='{"per_page": "{{ pagination.per_page }}", "view": "{{ view }}", "score_filter": "{{ score_filter or "" }}", "sort_by": "{{ sort_by }}", "sort_order": "{{ sort_order }}"}'
+           class="w-16 bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 text-center">
+    
+    <button hx-get="{{ url_for(request.endpoint, page=pagination.next_num, per_page=pagination.per_page, view=view, score_filter=score_filter, sort_by=sort_by, sort_order=sort_order) }}" 
+            hx-target="#content-area" 
+            hx-push-url="true"
+            {% if not pagination.has_next %}disabled{% endif %}
+            class="px-3 py-2 rounded-md text-sm font-medium {% if not pagination.has_next %}bg-gray-700 text-gray-500 cursor-not-allowed{% else %}bg-gray-600 text-white hover:bg-gray-500 cursor-pointer{% endif %}">Next</button>
+    
+    <button hx-get="{{ url_for(request.endpoint, page=pagination.pages, per_page=pagination.per_page, view=view, score_filter=score_filter, sort_by=sort_by, sort_order=sort_order) }}" 
+            hx-target="#content-area" 
+            hx-push-url="true"
+            {% if not pagination.has_next %}disabled{% endif %}
+            class="px-3 py-2 rounded-md text-sm font-medium {% if not pagination.has_next %}bg-gray-700 text-gray-500 cursor-not-allowed{% else %}bg-gray-600 text-white hover:bg-gray-500 cursor-pointer{% endif %}">Last</button>
+</div>
+<div class="text-sm text-gray-400">
+    Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} items)
+</div>
