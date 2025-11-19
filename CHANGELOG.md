@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.852] - 2025-11-19
+### Added
+- **Hero Headers:** Introduced a reusable `hero_header` macro in `_macros.html` to provide consistent, visually appealing page titles with decorative background elements.
+- **Unified Design:** Implemented Hero Headers across all major pages (Dashboard, Radarr, Sonarr, Tautulli, Seasonal, Overlays, Deletion, Database, Settings).
+
+### Changed
+- **Dashboard:** Redesigned the dashboard header to integrate service health indicators directly into the Hero Header.
+- **Navigation:** Updated library pages (Radarr, Sonarr) to include "Mass Edit" and view toggle controls directly within the Hero Header for better accessibility.
+
 ## [0.851] - 2025-11-19
 ### Added
 - **Foundation:** Created `_layout_head.html` to centralize `<head>` configuration, including Tailwind CSS, Inter font, and global scripts.
