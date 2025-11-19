@@ -1,4 +1,7 @@
 <!-- Sticky Header -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 <header class="sticky top-0 bg-gray-800/50 backdrop-blur-md shadow-lg z-10">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -19,3 +22,165 @@
         </div>
     </div>
 </header>
+
+<!-- Global Job ID Holder -->
+<div id="global-job-id" data-job-id="{{ active_job_id or 'None' }}" style="display: none;"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Handle Flash Messages as Toasts
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                Toastify({
+                    text: "{{ message }}",
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "{{ 'linear-gradient(to right, #00b09b, #96c93d)' if category == 'success' else 'linear-gradient(to right, #ff5f6d, #ffc371)' }}",
+                    stopOnFocus: true
+                }).showToast();
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        // 2. Global Job Polling
+        const jobElement = document.getElementById('global-job-id');
+        let activeJobId = jobElement.dataset.jobId;
+        let pollingInterval = null;
+        let progressToast = null;
+
+        function disableSyncButtons() {
+            const buttons = document.querySelectorAll('.sync-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerText;
+                btn.innerText = 'Syncing...';
+            });
+        }
+
+        function enableSyncButtons() {
+            const buttons = document.querySelectorAll('.sync-btn');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (btn.dataset.originalText) btn.innerText = btn.dataset.originalText;
+            });
+        }
+
+        function startGlobalPolling(jobId) {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            disableSyncButtons();
+
+            // Create sticky toast if not exists
+            if (!progressToast) {
+                progressToast = Toastify({
+                    text: "Background Task Running...",
+                    duration: -1, // Persistent
+                    close: false,
+                    gravity: "bottom",
+                    position: "right",
+                    backgroundColor: "#2d3748", // Gray-800
+                    className: "progress-toast",
+                    escapeMarkup: false
+                }).showToast();
+            }
+
+            pollingInterval = setInterval(() => {
+                fetch('/task_status/' + jobId)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update Toast Content
+                        const progress = data.progress || 0;
+                        const eta = data.eta || 'Calculating...';
+                        
+                        // We need to update the toast DOM directly since Toastify doesn't have an update method
+                        // This is a bit hacky but works. Better would be to close and reopen or use a custom node.
+                        const toastElement = document.querySelector('.progress-toast');
+                        if (toastElement) {
+                            toastElement.innerHTML = `
+                                <div class="flex flex-col min-w-[250px]">
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-bold text-sm">Syncing...</span>
+                                        <span class="text-xs text-gray-300">${eta}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-600 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                                    </div>
+                                    <div class="mt-2 text-right">
+                                        <button onclick="stopJob()" class="text-xs text-red-400 hover:text-red-300">Stop</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        if (data.status === 'finished' || data.status === 'failed') {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                            enableSyncButtons();
+                            
+                            // Close progress toast
+                            const toastInstance = progressToast; // Reference to close
+                            // Toastify doesn't expose a clean .hide() on the instance easily in all versions, 
+                            // but we can remove the element or let it expire if we set duration.
+                            // Since we set duration -1, we must remove it.
+                            if (toastElement) toastElement.remove();
+                            progressToast = null;
+
+                            if (data.status === 'finished') {
+                                Toastify({
+                                    text: "Task Completed Successfully!",
+                                    duration: 3000,
+                                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                }).showToast();
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                Toastify({
+                                    text: "Task Failed!",
+                                    duration: 5000,
+                                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                }).showToast();
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Polling error:", err);
+                        clearInterval(pollingInterval);
+                        enableSyncButtons();
+                    });
+            }, 2000);
+        }
+
+        // Start if job exists on load
+        if (activeJobId && activeJobId !== 'None') {
+            startGlobalPolling(activeJobId);
+        }
+
+        // Listen for HTMX events (when a sync button is clicked)
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            try {
+                const response = JSON.parse(evt.detail.xhr.responseText);
+                if (response.job_id) {
+                    startGlobalPolling(response.job_id);
+                }
+            } catch (e) {
+                // Ignore non-JSON responses
+            }
+        });
+
+        // Global Stop Job Function
+        window.stopJob = function() {
+            fetch('/stop-job', { method: 'POST' })
+                .then(() => {
+                    Toastify({
+                        text: "Stopping task...",
+                        duration: 2000,
+                        backgroundColor: "#4a5568"
+                    }).showToast();
+                });
+        };
+    });
+</script>

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.840] - 2025-11-19
+### Added
+- **Feedback Layer:** Integrated `Toastify.js` to replace standard Flask flash messages with modern, non-intrusive toast notifications.
+- **Global Task Monitoring:** Implemented a persistent "Task Toast" that appears on every page when a background job is running. This allows users to navigate the app without losing track of sync progress.
+- **HTMX Polling:** The global task monitor uses HTMX polling to update the progress bar and ETA in real-time.
+
+### Changed
+- **Dashboard:** Removed the local progress bar from the dashboard in favor of the global task monitor in the header.
+- **UI/UX:** Improved the visual feedback for sync operations. Sync buttons now disable and show "Syncing..." state globally.
+
 ## [0.831] - 2025-11-19
 ### Fixed
 - **Sync Bug:** Fixed a critical issue where `local_poster_path` was being assigned a tuple instead of a string during Radarr/Sonarr sync, causing a `sqlite3.ProgrammingError`.
@@ -10,38 +20,60 @@ All notable changes to this project will be documented in this file.
 ## [0.83] - 2025-11-19
 ### Changed
 - **Kometa Overlays:**
-    - **Separate Output Files:** The overlay generation process now creates two separate files: `media_dashboard_overlays_movies.yaml` and `media_dashboard_overlays_shows.yaml`. This allows for cleaner organization and independent management of movie and show overlays in Kometa.
+    - **Separate Output Files:** The overlay generation process now creates two separate files: `media_dashboard_overlays_movies.yaml` and `media_dashboard_overlays_shows.yaml`. This allows for cleaner organization and independent management of movie and show overlays in Kometa.
 
 ## [0.82] - 2025-11-19
 ### Added
 - **Database Management:**
-    - **Backup:** Added a "Backup Database" button to the Database page. Backups are saved as timestamped `.db` files in `/appdata/Backup`.
-    - **Import:** Added an "Import Database" button. This allows restoring the database from the newest `.db` file found in `/appdata/Imports`.
-    - **Auto-Migration:** The import process automatically applies any necessary schema updates (migrations) to ensure compatibility with the current version.
-    - **Raw File Support:** The import function supports importing raw SQLite backups (including `.db-wal` and `.db-shm` files) if they are present in the Imports folder.
+    - **Backup:** Added a "Backup Database" button to the Database page. Backups are saved as timestamped `.db` files in `/appdata/Backup`.
+    - **Import:** Added an "Import Database" button. This allows restoring the database from the newest `.db` file found in `/appdata/Imports`.
+    - **Auto-Migration:** The import process automatically applies any necessary schema updates (migrations) to ensure compatibility with the current version.
+    - **Raw File Support:** The import function supports importing raw SQLite backups (including `.db-wal` and `.db-shm` files) if they are present in the Imports folder.
 
 ## [0.81] - 2025-11-19
 ### Changed
 - **Kometa Overlays Refinement:**
-    - **Split Templates:** Separated the overlay template configuration into distinct "Movies" and "TV Shows" sections for greater flexibility.
-    - **ID Selection:** Added a toggle to choose between TVDB (default) and TMDB IDs for TV Shows in the generated YAML.
-    - **Backend Logic:** Updated generation logic to respect the selected ID type and use separate templates.
-    - **Task Update:** Enhanced background sync to fetch and store TMDB IDs for shows to support the new option.
+    - **Split Templates:** Separated the overlay template configuration into distinct "Movies" and "TV Shows" sections for greater flexibility.
+    - **ID Selection:** Added a toggle to choose between TVDB (default) and TMDB IDs for TV Shows in the generated YAML.
+    - **Backend Logic:** Updated generation logic to respect the selected ID type and use separate templates.
+    - **Task Update:** Enhanced background sync to fetch and store TMDB IDs for shows to support the new option.
 
 ## [0.80] - 2025-11-19
 ### Added
 - **Kometa Overlays:** Implemented integration with Kometa (Plex Meta Manager) to display "Leaving Soon" overlays on Plex items.
-    - **New Page:** Added a dedicated "Overlays" page.
-    - **Template Editor:** Users can define a custom YAML template for the overlay style (position, color, text).
-    - **Smart Generation:** Automatically groups expiring items by their deletion date to optimize the generated configuration file.
-    - **Preview:** Real-time preview of the generated YAML based on the current deletion queue.
-    - **File Output:** Generates a `media_dashboard_overlays.yaml` file in `/appdata/kometa` for Kometa to consume.
-    - **Dependencies:** Added `PyYAML` to the project requirements.
-    - **Database Migration:** Added automatic migration to support overlay templates.
+    - **New Page:** Added a dedicated "Overlays" page.
+    - **Template Editor:** Users can define a custom YAML template for the overlay style (position, color, text).
+    - **Smart Generation:** Automatically groups expiring items by their deletion date to optimize the generated configuration file.
+    - **Preview:** Real-time preview of the generated YAML based on the current deletion queue.
+    - **File Output:** Generates a `media_dashboard_overlays.yaml` file in `/appdata/kometa` for Kometa to consume.
+    - **Dependencies:** Added `PyYAML` to the project requirements.
+    - **Database Migration:** Added automatic migration to support overlay templates.
+
+## [0.78] - 2025-11-19
+### Added
+- **Seasonal Maintenance:** Implemented a new feature to automate the cleanup of "rolling" TV shows (e.g., Reality TV).
+    - **New Page:** Added a dedicated "Seasonal Maintenance" page.
+    - **Smart Scanning:** Scans Sonarr for shows marked as 'Seasonal'. If the newest season has a configurable number of downloaded episodes (default: 1), previous seasons are flagged for removal.
+    - **Automated Cleanup:** Users can review and confirm the cleanup, which unmonitors previous seasons and deletes their files from Sonarr.
+    - **Settings:** Added a global setting to define the "Minimum New Episodes" threshold.
+    - **Database Migration:** Added automatic migration to support the new settings.
 
 ## [0.775] - 2025-11-19
 ### Fixed
 - Resolved an issue where the "Leaving Soon" overlays were not displaying correctly in Plex. The integration with Kometa has been thoroughly tested and verified.
+
+## [0.75] - 2025-11-19
+### Added
+- **Mass Edit Mode:** Introduced a new "Mass Edit" mode for Radarr, Sonarr, and Deletion Manager pages.
+    - Users can now select multiple items using checkboxes (with Shift-Click support for ranges).
+    - A floating action bar appears to perform bulk actions on selected items.
+- **Bulk Actions:** Implemented backend support for mass operations including:
+    - **Keep:** Mark multiple items to keep.
+    - **Delete:** Mark multiple items for deletion.
+    - **Seasonal:** (Sonarr only) Mark shows as seasonal.
+    - **Not Scored:** Reset score for multiple items.
+    - **Delete Now:** Immediately delete multiple items from the service and database.
+    - **Reset Grace Period:** Reset the deletion timer for multiple items.
 
 ## [0.741] - 2025-11-19
 ### Fixed
@@ -232,25 +264,3 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Corrected a CSS overflow issue where long summaries would break the layout of the table view hover card. The card now wraps text and expands vertically to fit the content.
-
-## [0.75] - 2025-11-19
-### Added
-- **Mass Edit Mode:** Introduced a new "Mass Edit" mode for Radarr, Sonarr, and Deletion Manager pages.
-    - Users can now select multiple items using checkboxes (with Shift-Click support for ranges).
-    - A floating action bar appears to perform bulk actions on selected items.
-- **Bulk Actions:** Implemented backend support for mass operations including:
-    - **Keep:** Mark multiple items to keep.
-    - **Delete:** Mark multiple items for deletion.
-    - **Seasonal:** (Sonarr only) Mark shows as seasonal.
-    - **Not Scored:** Reset score for multiple items.
-    - **Delete Now:** Immediately delete multiple items from the service and database.
-    - **Reset Grace Period:** Reset the deletion timer for multiple items.
-
-## [0.78] - 2025-11-19
-### Added
-- **Seasonal Maintenance:** Implemented a new feature to automate the cleanup of "rolling" TV shows (e.g., Reality TV).
-    - **New Page:** Added a dedicated "Seasonal Maintenance" page.
-    - **Smart Scanning:** Scans Sonarr for shows marked as 'Seasonal'. If the newest season has a configurable number of downloaded episodes (default: 1), previous seasons are flagged for removal.
-    - **Automated Cleanup:** Users can review and confirm the cleanup, which unmonitors previous seasons and deletes their files from Sonarr.
-    - **Settings:** Added a global setting to define the "Minimum New Episodes" threshold.
-    - **Database Migration:** Added automatic migration to support the new settings.
