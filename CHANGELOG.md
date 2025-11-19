@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.713] - 2025-11-18
+### Fixed
+- Corrected a critical bug where Sonarr posters would not download because the TMDB API key was being looked up incorrectly. The system now correctly retrieves the key from the Radarr settings.
+- Fixed an issue where summaries (overviews) for TV shows were not being saved during the sync process.
+
 ## [0.712] - 2025-11-18
 ### Fixed
 - Fixed a `TypeError` on the Sonarr page caused by missing `size_gb` data. The Sonarr sync task now correctly saves the size and year for shows, and the templates have been made more robust to handle missing data.

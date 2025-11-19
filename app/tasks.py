@@ -338,7 +338,7 @@ def sync_tautulli_history(full_sync=False):
     return {'status': 'Completed', 'history_synced': len(history_data), 'rescued_movies': len(rescued_movies), 'rescued_shows': len(rescued_shows)}
 
 def fetch_tmdb_assets(media_id, media_type='movie'):
-    settings = ServiceSettings.query.first()
+    settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     if not settings or not settings.tmdb_api_key:
         return None
         
@@ -388,6 +388,11 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
             
             if media_type == 'movie':
                 item = Movie.query.filter_by(tmdb_id=media_id).first()
+                if item:
+                    item.overview = data.get('overview')
+                    db.session.commit()
+            elif media_type == 'tv':
+                item = Show.query.filter_by(tvdb_id=media_id).first()
                 if item:
                     item.overview = data.get('overview')
                     db.session.commit()
