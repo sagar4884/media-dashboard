@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.712] - 2025-11-18
 ### Fixed
-- Increased the Gunicorn worker timeout from 120 to 300 seconds to prevent `WORKER TIMEOUT` errors when loading pages with large datasets.
+- Fixed a `TypeError` on the Sonarr page caused by missing `size_gb` data. The Sonarr sync task now correctly saves the size and year for shows, and the templates have been made more robust to handle missing data.
 
 ## [0.711] - 2025-11-18
 ### Fixed

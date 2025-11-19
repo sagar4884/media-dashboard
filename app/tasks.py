@@ -173,6 +173,9 @@ def sync_sonarr_shows(full_sync=False):
 
         show.tvdb_id = show_data.get('tvdbId')
         show.title = show_data.get('title')
+        show.year = show_data.get('year')
+        if 'statistics' in show_data:
+            show.size_gb = show_data['statistics'].get('sizeOnDisk', 0) / (1024**3)
         show.overview = show_data.get('overview')
         tag_ids = show_data.get('tags', [])
         show.labels = ",".join([tag_map.get(tag_id) for tag_id in tag_ids if tag_id in tag_map])
