@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.854] - 2025-11-19
+### Fixed
+- **Sonarr Mass Edit:** Fixed a bug where the "Mass Edit" button in Sonarr was unresponsive due to a duplicate script inclusion.
+- **Deletion Manager:** Fixed a similar duplicate script issue in the Deletion Manager.
+
+### Changed
+- **Navigation:** Updated the main header navigation to visually highlight the active page, improving wayfinding.
+- **Polish:** Refined hover states and transitions in the header for a smoother feel.
+
 ## [0.853] - 2025-11-19
 ### Added
 - **Command Center:** Transformed the dashboard's "Service Sync" panel into a modern "Command Center".
