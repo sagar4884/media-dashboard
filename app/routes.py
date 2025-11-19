@@ -105,7 +105,8 @@ def sonarr_page():
             query = query.filter(Show.score == score_filter)
 
     # Apply sorting
-    sortable_columns = ['title', 'size_gb', 'score', 'year']
+    sortable_columns = ['title', 'size_gb', 'score', 'year'
+    ]
     if sort_by not in sortable_columns:
         sort_by = 'title'
         
@@ -464,3 +465,123 @@ def test_connection(service):
         return f'<span class="text-red-400">Connection Failed: The request timed out.</span>'
     except requests.exceptions.RequestException as e:
         return f'<span class="text-red-400">Connection Failed: {e}</span>'
+
+@current_app.route('/media/bulk_action', methods=['POST'])
+def bulk_action():
+    data = request.get_json()
+    media_type = data.get('media_type')
+    action = data.get('action')
+    ids = data.get('ids', [])
+
+    if not ids:
+        return jsonify({'status': 'success', 'message': 'No items selected'})
+
+    if media_type == 'movie':
+        model = Movie
+        service_name = 'Radarr'
+        id_key = 'movieIds'
+        item_id_attr = 'radarr_id'
+    elif media_type == 'show':
+        model = Show
+        service_name = 'Sonarr'
+        id_key = 'seriesIds'
+        item_id_attr = 'sonarr_id'
+    else:
+        return jsonify({'error': 'Invalid media type'}), 400
+
+    items = model.query.filter(model.id.in_(ids)).all()
+    
+    tags_to_add = []
+    tags_to_remove = []
+    service_ids_to_update = []
+
+    # For delete_now, we need settings
+    settings = None
+    session = None
+    if action == 'delete_now':
+        settings = ServiceSettings.query.filter_by(service_name=service_name).first()
+        session = get_retry_session()
+
+    # For delete/reset_grace_period, we need settings for grace days
+    if action in ['delete', 'reset_grace_period']:
+        if not settings:
+            settings = ServiceSettings.query.filter_by(service_name=service_name).first()
+        grace_days = settings.grace_days if settings else 30
+
+    count = 0
+    for item in items:
+        if action == 'keep':
+            item.score = 'Keep'
+            item.marked_for_deletion_at = None
+            item.delete_at = None
+            tags_to_add = ['ai-keep']
+            tags_to_remove = ['ai-delete', 'ai-rolling-keep', 'ai-tautulli-keep']
+            service_ids_to_update.append(getattr(item, item_id_attr))
+        
+        elif action == 'delete':
+            item.score = 'Delete'
+            item.marked_for_deletion_at = datetime.utcnow()
+            item.delete_at = item.marked_for_deletion_at + timedelta(days=grace_days)
+            tags_to_add = ['ai-delete']
+            tags_to_remove = ['ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep']
+            service_ids_to_update.append(getattr(item, item_id_attr))
+
+        elif action == 'seasonal' and media_type == 'show':
+            item.score = 'Seasonal'
+            item.marked_for_deletion_at = None
+            item.delete_at = None
+            tags_to_add = ['ai-rolling-keep']
+            tags_to_remove = ['ai-delete', 'ai-keep', 'ai-tautulli-keep']
+            service_ids_to_update.append(getattr(item, item_id_attr))
+
+        elif action == 'not_scored':
+            item.score = 'Not Scored'
+            item.marked_for_deletion_at = None
+            item.delete_at = None
+            tags_to_add = [] # No tags to add
+            tags_to_remove = ['ai-delete', 'ai-keep', 'ai-rolling-keep', 'ai-tautulli-keep']
+            service_ids_to_update.append(getattr(item, item_id_attr))
+
+        elif action == 'reset_grace_period':
+            if item.score == 'Delete':
+                item.marked_for_deletion_at = datetime.utcnow()
+                item.delete_at = item.marked_for_deletion_at + timedelta(days=grace_days)
+        
+        elif action == 'delete_now':
+            # This is destructive and interacts with external API
+            if settings:
+                headers = {'X-Api-Key': settings.api_key}
+                base_url = settings.url.rstrip('/')
+                
+                if media_type == 'movie':
+                    url = f"{base_url}/api/v3/movie/{item.radarr_id}"
+                    params = {'deleteFiles': 'true', 'addImportListExclusion': 'false'}
+                else:
+                    url = f"{base_url}/api/v3/series/{item.sonarr_id}"
+                    params = {'deleteFiles': 'true', 'addExclusion': 'false'}
+                
+                try:
+                    session.delete(url, headers=headers, params=params)
+                except Exception as e:
+                    print(f"Error deleting {media_type} {item.id}: {e}")
+                    continue # Skip DB delete if API fails? Or delete anyway? Better to skip.
+            
+            db.session.delete(item)
+            count += 1
+            continue # Skip the db.session.add(item) below
+
+        db.session.add(item)
+        count += 1
+
+    db.session.commit()
+
+    # Batch update tags if needed
+    if service_ids_to_update and action in ['keep', 'delete', 'seasonal', 'not_scored']:
+        payload = {
+            id_key: service_ids_to_update,
+            'tagsToAdd': tags_to_add,
+            'tagsToRemove': tags_to_remove
+        }
+        update_service_tags(service_name, payload)
+
+    return jsonify({'status': 'success', 'count': count})
