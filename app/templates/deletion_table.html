@@ -3,9 +3,27 @@
         <thead class="bg-gray-700/50">
             <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Poster</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Size</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deletes In</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    {% set next_order = 'desc' if sort_by == 'title' and sort_order == 'asc' else 'asc' %}
+                    <a href="{{ url_for(request.endpoint, sort_by='title', sort_order=next_order) }}">
+                        Title
+                        {% if sort_by == 'title' %}<span class="ml-1">{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    {% set next_order = 'desc' if sort_by == 'size_gb' and sort_order == 'asc' else 'asc' %}
+                    <a href="{{ url_for(request.endpoint, sort_by='size_gb', sort_order=next_order) }}">
+                        Size
+                        {% if sort_by == 'size_gb' %}<span class="ml-1">{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}</span>{% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    {% set next_order = 'desc' if sort_by == 'marked_for_deletion_at' and sort_order == 'asc' else 'asc' %}
+                    <a href="{{ url_for(request.endpoint, sort_by='marked_for_deletion_at', sort_order=next_order) }}">
+                        Deletes In
+                        {% if sort_by == 'marked_for_deletion_at' %}<span class="ml-1">{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}</span>{% endif %}
+                    </a>
+                </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>

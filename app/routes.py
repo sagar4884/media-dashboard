@@ -141,11 +141,28 @@ def tautulli_page():
 
 @current_app.route('/deletion')
 def deletion_page():
-    radarr_items = Movie.query.filter(Movie.score == 'Delete').order_by(Movie.marked_for_deletion_at.asc()).all()
-    sonarr_items = Show.query.filter(Show.score == 'Delete').order_by(Show.marked_for_deletion_at.asc()).all()
+    sort_by = request.args.get('sort_by', 'title')
+    sort_order = request.args.get('sort_order', 'asc')
 
-    radarr_space = sum(item.size_gb for item in radarr_items)
-    sonarr_space = sum(item.size_gb for item in sonarr_items)
+    sortable_columns = ['title', 'size_gb', 'marked_for_deletion_at']
+    if sort_by not in sortable_columns:
+        sort_by = 'title'
+
+    radarr_query = Movie.query.filter(Movie.score == 'Delete')
+    sonarr_query = Show.query.filter(Show.score == 'Delete')
+
+    radarr_column = getattr(Movie, sort_by)
+    sonarr_column = getattr(Show, sort_by)
+
+    if sort_order == 'desc':
+        radarr_items = radarr_query.order_by(radarr_column.desc()).all()
+        sonarr_items = sonarr_query.order_by(sonarr_column.desc()).all()
+    else:
+        radarr_items = radarr_query.order_by(radarr_column.asc()).all()
+        sonarr_items = sonarr_query.order_by(sonarr_column.asc()).all()
+
+    radarr_space = sum(item.size_gb for item in radarr_items if item.size_gb is not None)
+    sonarr_space = sum(item.size_gb for item in sonarr_items if item.size_gb is not None)
 
     stats = {
         'radarr': {'pending': len(radarr_items)},

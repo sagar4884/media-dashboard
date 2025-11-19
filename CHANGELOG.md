@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.74] - 2025-11-19
+### Added
+- Added sorting functionality to the Deletion Manager page. Users can now sort the Radarr and Sonarr tabs by 'Title', 'Size', and 'Deletes In'.
+
 ## [0.73] - 2025-11-19
 ### Added
 - Implemented a "Safe Stop" feature for all sync tasks. Users can now click a "Stop Sync" button to gracefully terminate a running sync. The task will save all progress it has made up to that point, allowing a "Quick Sync" to effectively resume the process later.
