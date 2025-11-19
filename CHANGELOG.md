@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.712] - 2025-11-18
+### Fixed
+- Increased the Gunicorn worker timeout from 120 to 300 seconds to prevent `WORKER TIMEOUT` errors when loading pages with large datasets.
+
 ## [0.711] - 2025-11-18
 ### Fixed
 - Increased the timeout for Radarr and Sonarr sync jobs from 15 minutes to 3 hours to prevent `JobTimeoutException` on large libraries during a full sync.
