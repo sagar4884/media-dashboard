@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.741] - 2025-11-19
+### Fixed
+- Fixed a bug in the Deletion Manager where clicking a sortable header would not reverse the sort order. The sort direction arrows were also missing.
+
 ## [0.74] - 2025-11-19
 ### Added
 - Added sorting functionality to the Deletion Manager page. Users can now sort the Radarr and Sonarr tabs by 'Title', 'Size', and 'Deletes In'.

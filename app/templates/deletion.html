@@ -61,14 +61,14 @@
 
                 <!-- Radarr Content -->
                 <div x-show="tab === 'radarr'" class="mt-6">
-                    {% with items=radarr_items, media_type='movie', grace_days=radarr_settings.grace_days, sort_by=sort_by, sort_order=sort_order %}
+                    {% with items=radarr_items, media_type='movie', grace_days=radarr_settings.grace_days, sort_by=sort_by, sort_order=sort_order, now=now %}
                         {% include 'deletion_table.html' %}
                     {% endwith %}
                 </div>
 
                 <!-- Sonarr Content -->
                 <div x-show="tab === 'sonarr'" class="mt-6">
-                    {% with items=sonarr_items, media_type='show', grace_days=sonarr_settings.grace_days, sort_by=sort_by, sort_order=sort_order %}
+                    {% with items=sonarr_items, media_type='show', grace_days=sonarr_settings.grace_days, sort_by=sort_by, sort_order=sort_order, now=now %}
                         {% include 'deletion_table.html' %}
                     {% endwith %}
                 </div>
