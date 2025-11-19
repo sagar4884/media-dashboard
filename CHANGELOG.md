@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.719] - 2025-11-19
+### Fixed
+- Corrected a flaw in the Unraid template that was causing the `REDIS_URL` to be reset to its default value on every update. The hardcoded, conflicting variable has been removed.
+
 ## [0.718] - 2025-11-19
 ### Changed
 - The `posters` directory has been made a persistent volume in Docker. This prevents poster images from being deleted when the application is updated. The `docker-compose.yml`, Unraid template, and `README.md` have all been updated to reflect this change.

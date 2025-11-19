@@ -47,10 +47,6 @@
       <Value>sqlite:////database/app.db</Value>
       <Name>DATABASE_URL</Name>
     </Variable>
-    <Variable>
-      <Value>redis://192.168.2.25:6379/0</Value>
-      <Name>REDIS_URL</Name>
-    </Variable>
   </Environment>
   <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="WebUI port" Type="Port" Display="always" Required="true"/>
   <Config Name="Appdata" Target="/database" Default="/mnt/user/appdata/media-dashboard" Mode="rw" Description="Database and instance storage" Type="Path" Display="always" Required="true"/>
