@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.8] - 2025-11-19
+### Fixed
+- **Mass Edit Visibility:** Fixed a regression where the Mass Edit floating bar was visible on page load in Radarr and Sonarr views. It now correctly stays hidden until items are selected.
+- **Double Scrollbars:** Resolved an issue where data tables in Radarr, Sonarr, and Deletion Manager displayed unnecessary vertical scrollbars. Added `overflow-y-hidden` to table containers to ensure the main page scrollbar handles vertical navigation.
+
 ## [0.86.7] - 2025-11-19
 ### Added
 - **Micro-Interactions:** Implemented a global ripple effect system for buttons to enhance tactile feedback.
