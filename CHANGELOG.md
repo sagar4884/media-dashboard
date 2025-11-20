@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.87.1] - 2025-11-20
+### Added
+- **UX Overhaul:** Replaced native browser alerts and confirms with Toastify.js notifications and a custom modal for a modern, non-blocking experience.
+- **Search:** Added real-time search functionality to Radarr and Sonarr lists.
+- **Empty States:** Added visual empty state components when no items are found in lists.
+- **Feedback:** Implemented a global top-loading progress bar for HTMX requests.
+- **Navigation:** Added a "Scroll to Top" button for long lists.
+- **Dashboard:** Added count badges to the Command Center cards for Radarr and Sonarr.
+
 ## [0.86.9] - 2025-11-19
 ### Changed
 - **UI Consistency:** Updated the "Keep" action icon in the Sonarr table view to use a checkmark instead of a flag/bookmark, ensuring visual consistency with the Radarr view.

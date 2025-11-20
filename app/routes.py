@@ -64,9 +64,14 @@ def radarr_page():
     score_filter = request.args.get('score_filter', 'all')
     sort_by = request.args.get('sort_by', 'title')
     sort_order = request.args.get('sort_order', 'asc')
+    search_query = request.args.get('search', '')
 
     # Base query
     query = Movie.query
+
+    # Apply search
+    if search_query:
+        query = query.filter(Movie.title.ilike(f'%{search_query}%'))
 
     # Apply filter
     if score_filter and score_filter != 'all':
@@ -94,14 +99,16 @@ def radarr_page():
                                view=view,
                                score_filter=score_filter,
                                sort_by=sort_by,
-                               sort_order=sort_order)
+                               sort_order=sort_order,
+                               search=search_query)
 
     return render_template('radarr.html',
                            movies=movies,
                            view=view,
                            score_filter=score_filter,
                            sort_by=sort_by,
-                           sort_order=sort_order)
+                           sort_order=sort_order,
+                           search=search_query)
 
 @current_app.route('/sonarr')
 def sonarr_page():
@@ -113,9 +120,14 @@ def sonarr_page():
     score_filter = request.args.get('score_filter', 'all')
     sort_by = request.args.get('sort_by', 'title')
     sort_order = request.args.get('sort_order', 'asc')
+    search_query = request.args.get('search', '')
 
     # Base query
     query = Show.query
+
+    # Apply search
+    if search_query:
+        query = query.filter(Show.title.ilike(f'%{search_query}%'))
 
     # Apply filter
     if score_filter and score_filter != 'all':
@@ -144,14 +156,16 @@ def sonarr_page():
                                view=view,
                                score_filter=score_filter,
                                sort_by=sort_by,
-                               sort_order=sort_order)
+                               sort_order=sort_order,
+                               search=search_query)
 
     return render_template('sonarr.html',
                            shows=shows,
                            view=view,
                            score_filter=score_filter,
                            sort_by=sort_by,
-                           sort_order=sort_order)
+                           sort_order=sort_order,
+                           search=search_query)
 
 @current_app.route('/tautulli')
 def tautulli_page():

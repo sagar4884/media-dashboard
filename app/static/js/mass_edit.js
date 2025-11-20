@@ -70,7 +70,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedCheckboxes = document.querySelectorAll('.mass-edit-checkbox:checked');
             if (selectedCheckboxes.length === 0) return;
 
-            if (!confirm(`Are you sure you want to ${action.replace(/_/g, ' ')} for ${selectedCheckboxes.length} items?`)) return;
+            // Use custom confirm modal if available, fallback to native
+            const message = `Are you sure you want to ${action.replace(/_/g, ' ')} for ${selectedCheckboxes.length} items?`;
+            const confirmed = window.confirmAction 
+                ? await window.confirmAction('Confirm Mass Edit', message)
+                : confirm(message);
+            
+            if (!confirmed) return;
 
             // Show loading state on button
             const originalText = this.textContent;
@@ -106,7 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred: ' + error.message);
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: "Error: " + error.message,
+                        duration: 5000,
+                        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        close: true
+                    }).showToast();
+                } else {
+                    alert('An error occurred: ' + error.message);
+                }
                 this.textContent = originalText;
                 this.disabled = false;
             }

@@ -45,7 +45,10 @@
                     <!-- Radarr Controls -->
                     <div class="bg-gray-800/50 rounded-xl p-4 border border-white/5 hover:border-blue-500/30 transition-colors group">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-semibold text-gray-200 group-hover:text-blue-400 transition-colors">Radarr</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-semibold text-gray-200 group-hover:text-blue-400 transition-colors">Radarr</h3>
+                                <span class="px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-300 text-xs border border-blue-800/50 font-mono">{{ stats.radarr.total }} Movies</span>
+                            </div>
                             <div class="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
                         </div>
                         <div class="space-y-2">
@@ -63,7 +66,10 @@
                     <!-- Sonarr Controls -->
                     <div class="bg-gray-800/50 rounded-xl p-4 border border-white/5 hover:border-green-500/30 transition-colors group">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-semibold text-gray-200 group-hover:text-green-400 transition-colors">Sonarr</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-semibold text-gray-200 group-hover:text-green-400 transition-colors">Sonarr</h3>
+                                <span class="px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 text-xs border border-green-800/50 font-mono">{{ stats.sonarr.total }} Shows</span>
+                            </div>
                             <div class="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
                         </div>
                         <div class="space-y-2">

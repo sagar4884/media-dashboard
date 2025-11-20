@@ -19,13 +19,27 @@
             {% endcall %}
 
             <div class="flex items-center space-x-4 mb-4">
+                <div class="flex-1 max-w-xs">
+                     <label for="search" class="text-sm font-medium text-gray-300 block mb-1">Search</label>
+                     <input type="search" id="search" name="search" 
+                           value="{{ search }}"
+                           placeholder="Search titles..."
+                           hx-get="{{ url_for(request.endpoint) }}" 
+                           hx-target="#content-area" 
+                           hx-push-url="true"
+                           hx-trigger="keyup changed delay:500ms, search"
+                           hx-include="#score_filter"
+                           hx-vals='{"view": "{{ view }}", "sort_by": "{{ sort_by }}", "sort_order": "{{ sort_order }}", "per_page": "{{ movies.per_page }}"}'
+                           class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
                 <div>
-                    <label for="score_filter" class="text-sm font-medium text-gray-300">Filter by Score:</label>
+                    <label for="score_filter" class="text-sm font-medium text-gray-300 block mb-1">Filter by Score</label>
                     <select id="score_filter" name="score_filter" 
                             hx-get="{{ url_for(request.endpoint) }}" 
                             hx-target="#content-area" 
                             hx-push-url="true"
                             hx-trigger="change"
+                            hx-include="#search"
                             hx-vals='{"view": "{{ view }}", "sort_by": "{{ sort_by }}", "sort_order": "{{ sort_order }}", "per_page": "{{ movies.per_page }}"}'
                             class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option value="all" {% if score_filter == 'all' %}selected{% endif %}>All</option>

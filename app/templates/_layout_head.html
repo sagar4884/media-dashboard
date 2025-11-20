@@ -1,4 +1,4 @@
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -88,6 +88,21 @@
             }
         }
     </style>
+    <style>
+        /* Global Progress Bar */
+        #nprogress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            z-index: 9999;
+            transition: width 0.2s ease, opacity 0.2s ease;
+            width: 0%;
+            opacity: 0;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
     <script>
         document.addEventListener('click', function(e) {
             const target = e.target.closest('.btn-ripple');
@@ -110,5 +125,35 @@
                 
                 target.appendChild(circle);
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create progress bar element
+            const progressBar = document.createElement('div');
+            progressBar.id = 'nprogress-bar';
+            document.body.appendChild(progressBar);
+
+            // HTMX Events for Progress Bar
+            document.body.addEventListener('htmx:beforeRequest', () => {
+                progressBar.style.width = '30%';
+                progressBar.style.opacity = '1';
+            });
+
+            document.body.addEventListener('htmx:afterRequest', () => {
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressBar.style.opacity = '0';
+                    setTimeout(() => {
+                        progressBar.style.width = '0%';
+                    }, 200);
+                }, 300);
+            });
+            
+            // Also trigger on normal page loads (simulated)
+            window.addEventListener('beforeunload', () => {
+                progressBar.style.width = '30%';
+                progressBar.style.opacity = '1';
+            });
         });
     </script>
