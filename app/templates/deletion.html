@@ -13,7 +13,7 @@
             
             {% call hero_header(title="Deletion Manager", subtitle="Review and purge expired media") %}
                 <button id="mass-edit-toggle" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors border border-transparent hover:border-white/10">Mass Edit</button>
-                <a href="{{ url_for('purge') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-lg shadow-red-900/20">Purge All Expired</a>
+                <a href="{{ url_for('deletion.purge') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-lg shadow-red-900/20">Purge All Expired</a>
             {% endcall %}
             
             <!-- Deletion Stats -->

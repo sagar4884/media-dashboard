@@ -128,7 +128,7 @@
 
                 async saveTemplate() {
                     try {
-                        const response = await fetch('/overlays/save_template', {
+                        const response = await fetch("{{ url_for('radarr.save_overlay_template') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -153,7 +153,7 @@
 
                 async fetchPreview() {
                     try {
-                        const response = await fetch('/overlays/preview', {
+                        const response = await fetch("{{ url_for('radarr.preview_overlay') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -174,7 +174,7 @@
                 async generateFile() {
                     this.generating = true;
                     try {
-                        const response = await fetch('/overlays/generate', { method: 'POST' });
+                        const response = await fetch("{{ url_for('radarr.generate_overlay_file') }}", { method: 'POST' });
                         const data = await response.json();
                         if (data.status === 'success') {
                             alert('Overlay file generated successfully!');

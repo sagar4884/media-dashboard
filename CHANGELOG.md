@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.88.0] - 2025-11-20
+### Refactor
+- **Architecture:** Major refactor of the backend structure. Split the monolithic `routes.py` (1000+ lines) into modular Flask Blueprints:
+    - `main`: Dashboard and core routing.
+    - `radarr`: Radarr list and overlay logic.
+    - `sonarr`: Sonarr list and seasonal logic.
+    - `tautulli`: History views.
+    - `deletion`: Deletion manager.
+    - `settings`: Configuration and database management.
+    - `api`: Media actions and bulk operations.
+- **Routes:** Deleted `app/routes.py` and updated `app/__init__.py` to register the new blueprints.
+- **Templates:** Updated all Jinja2 templates to use namespaced `url_for` calls (e.g., `settings.settings` instead of `settings`).
+
 ## [0.87.2] - 2025-11-20
 ### Added
 - **Mass Edit:** Added a "Select All" checkbox to Radarr, Sonarr, and Deletion tables for easier bulk management.

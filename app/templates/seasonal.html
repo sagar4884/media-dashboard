@@ -16,7 +16,7 @@
             <!-- Settings Section -->
             <div class="glass-panel p-6 rounded-lg shadow-xl mb-8">
                 <h2 class="text-xl font-semibold text-white mb-4">Settings</h2>
-                <form action="{{ url_for('seasonal_settings') }}" method="POST" class="flex items-end space-x-4">
+                <form action="{{ url_for('sonarr.seasonal_settings') }}" method="POST" class="flex items-end space-x-4">
                     <div>
                         <label for="seasonal_min_episodes" class="block text-sm font-medium text-gray-400 mb-1">Minimum New Episodes (Downloaded)</label>
                         <input type="number" id="seasonal_min_episodes" name="seasonal_min_episodes" value="{{ settings.seasonal_min_episodes or 1 }}" min="1" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-2.5">
@@ -133,7 +133,7 @@
                     this.scanned = false;
                     this.results = [];
                     try {
-                        const response = await fetch('/seasonal/scan', { method: 'POST' });
+                        const response = await fetch("{{ url_for('sonarr.seasonal_scan') }}", { method: 'POST' });
                         const data = await response.json();
                         if (data.status === 'success') {
                             this.results = data.data.map(item => ({...item, selected: true}));
@@ -156,7 +156,7 @@
                     const selectedItems = this.results.filter(i => i.selected);
                     
                     try {
-                        const response = await fetch('/seasonal/execute', {
+                        const response = await fetch("{{ url_for('sonarr.seasonal_execute') }}", {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ items: selectedItems })

@@ -12,7 +12,7 @@
                 {% from '_macros.html' import hero_header %}
                 {{ hero_header(title="Settings", subtitle="Configure application preferences and connections") }}
 
-                <form action="{{ url_for('settings') }}" method="POST" class="glass-panel p-6 rounded-lg shadow-xl">
+                                <form action="{{ url_for('settings.settings') }}" method="POST" class="glass-panel p-6 rounded-lg shadow-xl">
                     <div class="mb-8 p-4 border border-gray-700 rounded-lg">
                         <h2 class="text-2xl font-bold mb-4 text-white">Radarr</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -52,7 +52,7 @@
                         </div>
                         <div class="mt-4">
                             <button type="button" 
-                                    hx-post="/test_connection/radarr" 
+                                    hx-post="{{ url_for('settings.test_connection', service='radarr') }}" 
                                     hx-target="#radarr-test-result" 
                                     hx-include="[name='Radarr_url'], [name='Radarr_api_key']" 
                                     hx-on::after-request="
@@ -117,7 +117,7 @@
                         </div>
                         <div class="mt-4">
                             <button type="button" 
-                                    hx-post="/test_connection/sonarr" 
+                                    hx-post="{{ url_for('settings.test_connection', service='sonarr') }}" 
                                     hx-target="#sonarr-test-result" 
                                     hx-include="[name='Sonarr_url'], [name='Sonarr_api_key']" 
                                     hx-on::after-request="
@@ -182,7 +182,7 @@
                         </div>
                         <div class="mt-4">
                             <button type="button" 
-                                    hx-post="/test_connection/tautulli" 
+                                    hx-post="{{ url_for('settings.test_connection', service='tautulli') }}" 
                                     hx-target="#tautulli-test-result" 
                                     hx-include="[name='Tautulli_url'], [name='Tautulli_api_key']" 
                                     hx-on::after-request="
@@ -225,7 +225,7 @@
                         </div>
                         <div class="mt-4">
                             <button type="button" 
-                                    hx-post="/test_connection/tmdb" 
+                                    hx-post="{{ url_for('settings.test_connection', service='tmdb') }}" 
                                     hx-target="#tmdb-test-result" 
                                     hx-include="[name='tmdb_api_key']" 
                                     hx-on::after-request="

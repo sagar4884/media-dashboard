@@ -26,21 +26,21 @@
                     <div>
                         <h5 class="font-semibold">Integrity Check</h5>
                         <p class="text-gray-400">Verify the integrity of the database file. Checks for corruption.</p>
-                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/integrity_check', 'integrity-result')" {% if active_job_id %}disabled{% endif %}>Run Integrity Check</button>
+                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('{{ url_for('settings.integrity_check') }}', 'integrity-result')" {% if active_job_id %}disabled{% endif %}>Run Integrity Check</button>
                         <pre id="integrity-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
                     </div>
                     <hr class="border-gray-700">
                     <div>
                         <h5 class="font-semibold">Optimize Database</h5>
                         <p class="text-gray-400">Run the OPTIMIZE command to reclaim unused space and defragment the database.</p>
-                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/optimize', 'optimize-result')" {% if active_job_id %}disabled{% endif %}>Optimize Database</button>
+                        <button class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('{{ url_for('settings.optimize_db') }}', 'optimize-result')" {% if active_job_id %}disabled{% endif %}>Optimize Database</button>
                         <pre id="optimize-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
                     </div>
                     <hr class="border-gray-700">
                     <div>
                         <h5 class="font-semibold">Vacuum Database</h5>
                         <p class="text-gray-400">Rebuild the entire database to reclaim space from deleted data. This can take a while and will lock the database.</p>
-                        <button class="mt-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="startBackgroundTask('/database/vacuum', 'vacuum-status')" {% if active_job_id %}disabled{% endif %}>Vacuum Database</button>
+                        <button class="mt-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="startBackgroundTask('{{ url_for('settings.vacuum_db') }}', 'vacuum-status')" {% if active_job_id %}disabled{% endif %}>Vacuum Database</button>
                         <div id="vacuum-status" class="mt-2" style="display: none;">
                             <div class="w-full bg-gray-700 rounded-full h-2.5">
                                 <div class="bg-blue-600 h-2.5 rounded-full" style="width: 0%;"></div>
@@ -53,8 +53,8 @@
                         <h5 class="font-semibold">Backup & Import</h5>
                         <p class="text-gray-400 mb-2">Manage database backups. Backups are saved to <code>/appdata/Backup</code>. To import, place a <code>.db</code> file in <code>/appdata/Imports</code>.</p>
                         <div class="flex space-x-4">
-                            <button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('/database/backup', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Backup Database</button>
-                            <button class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="if(confirm('Are you sure? This will overwrite the current database with the newest file in /appdata/Imports.')) performAction('/database/import', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Import Database</button>
+                            <button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="performAction('{{ url_for('settings.backup_database') }}', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Backup Database</button>
+                            <button class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium disabled:opacity-50" onclick="if(confirm('Are you sure? This will overwrite the current database with the newest file in /appdata/Imports.')) performAction('{{ url_for('settings.import_database') }}', 'backup-result')" {% if active_job_id %}disabled{% endif %}>Import Database</button>
                         </div>
                         <pre id="backup-result" class="mt-2 p-2 bg-gray-900 border border-gray-700 rounded" style="display: none;"></pre>
                     </div>
@@ -94,7 +94,7 @@
                 statusText.textContent = 'Task started...';
 
                 const interval = setInterval(() => {
-                    fetch(`/task_status/${jobId}`)
+                    fetch("{{ url_for('settings.task_status', job_id='') }}" + jobId)
                         .then(response => response.json())
                         .then(job => {
                             if (job.status === 'finished') {

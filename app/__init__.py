@@ -46,7 +46,23 @@ def create_app():
         return dict(active_job_id=active_job_id)
 
     with app.app_context():
-        from . import routes
+        # Register Blueprints
+        from .blueprints.main import bp as main_bp
+        from .blueprints.radarr import bp as radarr_bp
+        from .blueprints.sonarr import bp as sonarr_bp
+        from .blueprints.tautulli import bp as tautulli_bp
+        from .blueprints.deletion import bp as deletion_bp
+        from .blueprints.settings import bp as settings_bp
+        from .blueprints.api import bp as api_bp
+
+        app.register_blueprint(main_bp)
+        app.register_blueprint(radarr_bp)
+        app.register_blueprint(sonarr_bp)
+        app.register_blueprint(tautulli_bp)
+        app.register_blueprint(deletion_bp)
+        app.register_blueprint(settings_bp)
+        app.register_blueprint(api_bp)
+
         run_migrations(app)
 
     return app
