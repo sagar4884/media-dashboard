@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.5] - 2025-11-19
+### Fixed
+- **Mobile Menu:** Fixed an issue where the hamburger menu was unresponsive.
+    - Added `x-cloak` to prevent flash of unstyled content.
+    - Configured the menu to position absolutely (`absolute w-full`) to ensure it overlays content correctly instead of being hidden or displacing layout.
+    - Removed inline `display: none` in favor of Alpine's reactive state management.
+
 ## [0.86.4] - 2025-11-19
 ### Added
 - **Micro-Interactions:** Added staggered fade-in animations to all data tables (Radarr, Sonarr, Deletion) for a smoother page load experience.
