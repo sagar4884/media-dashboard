@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.9] - 2025-11-19
+### Changed
+- **UI Consistency:** Updated the "Keep" action icon in the Sonarr table view to use a checkmark instead of a flag/bookmark, ensuring visual consistency with the Radarr view.
+
 ## [0.86.8] - 2025-11-19
 ### Fixed
 - **Mass Edit Visibility:** Fixed a regression where the Mass Edit floating bar was visible on page load in Radarr and Sonarr views. It now correctly stays hidden until items are selected.
