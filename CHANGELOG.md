@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.0] - 2025-11-19
+### Added
+- **Modern Data Tables:** Completely redesigned the list views for Radarr, Sonarr, and Deletion Manager.
+    - **Sticky Headers:** Table headers now stick to the top of the view with a glassmorphism blur effect.
+    - **Glass Rows:** Replaced standard table rows with floating "glass" cards for a modern look.
+    - **Status Pills:** Converted text status labels into colored pills with ring borders for better visibility.
+- **Tooltips:** Added native tooltips to all action buttons (Keep, Delete, Seasonal, etc.) in both Table and Poster views for better clarity.
+
 ## [0.854] - 2025-11-19
 ### Fixed
 - **Sonarr Mass Edit:** Fixed a bug where the "Mass Edit" button in Sonarr was unresponsive due to a duplicate script inclusion.
