@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.7] - 2025-11-19
+### Added
+- **Micro-Interactions:** Implemented a global ripple effect system for buttons to enhance tactile feedback.
+    - Added `.btn-ripple` class to Sync buttons in the Dashboard and Mass Edit action buttons.
+    - Implemented a vanilla JS ripple effect handler in `_layout_head.html`.
+- **Entry Animations:** Added smooth entry animations to key UI components.
+    - **Dashboard:** The "Command Center" card now slides in with a fade-up animation (`animate-fade-in-up`).
+    - **Mass Edit Bar:** The floating Mass Edit bar now smoothly slides up from the bottom when activated.
+
 ## [0.86.6] - 2025-11-19
 ### Fixed
 - **Hover Card Visibility:** Fixed a stacking context issue where text from subsequent table rows would bleed through or appear on top of the hover card.
