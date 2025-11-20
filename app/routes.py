@@ -3,7 +3,7 @@ import os
 import requests
 import shutil
 import sqlite3
-from sqlalchemy import text
+from sqlalchemy import text, func
 from . import db, run_migrations
 from .models import ServiceSettings, Movie, Show, TautulliHistory
 from .tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, update_service_tags, get_retry_session, vacuum_database
@@ -21,6 +21,8 @@ def dashboard():
     radarr_unscored = Movie.query.filter(Movie.score.in_(['Not Scored', None])).count()
     radarr_keep = Movie.query.filter_by(score='Keep').count()
     radarr_delete = Movie.query.filter_by(score='Delete').count()
+    radarr_archived = Movie.query.filter_by(score='Archived').count()
+    radarr_size = db.session.query(func.sum(Movie.size_gb)).scalar() or 0
 
     # Sonarr stats
     sonarr_total = Show.query.count()
@@ -28,20 +30,26 @@ def dashboard():
     sonarr_keep = Show.query.filter_by(score='Keep').count()
     sonarr_delete = Show.query.filter_by(score='Delete').count()
     sonarr_seasonal = Show.query.filter_by(score='Seasonal').count()
+    sonarr_archived = Show.query.filter_by(score='Archived').count()
+    sonarr_size = db.session.query(func.sum(Show.size_gb)).scalar() or 0
 
     stats = {
         'radarr': {
             'total': radarr_total,
             'unscored': radarr_unscored,
             'keep': radarr_keep,
-            'delete': radarr_delete
+            'delete': radarr_delete,
+            'archived': radarr_archived,
+            'size': round(radarr_size, 2)
         },
         'sonarr': {
             'total': sonarr_total,
             'unscored': sonarr_unscored,
             'keep': sonarr_keep,
             'delete': sonarr_delete,
-            'seasonal': sonarr_seasonal
+            'seasonal': sonarr_seasonal,
+            'archived': sonarr_archived,
+            'size': round(sonarr_size, 2)
         }
     }
     return render_template('dashboard.html', stats=stats)

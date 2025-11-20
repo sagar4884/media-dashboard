@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.2] - 2025-11-19
+### Added
+- **Enhanced Visualizations:** Upgraded the Dashboard charts to match the new glassmorphism aesthetic.
+    - **Custom Styling:** Configured Chart.js to use the "Inter" font and the app's color palette with transparent backgrounds.
+    - **Storage Chart:** Added a new horizontal bar chart to visualize storage usage for Movies vs TV Shows.
+    - **Tooltips:** Enabled and styled chart tooltips for better data visibility.
+
 ## [0.86.1] - 2025-11-19
 ### Fixed
 - **Hover Cards:** Fixed an issue where long titles and summaries in the hover cards were not wrapping correctly due to inherited table styles. Added `whitespace-normal` to ensure proper text display.
