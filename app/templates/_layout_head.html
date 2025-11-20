@@ -4,6 +4,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="{{ url_for('static', filename='js/mass_edit.js') }}" defer></script>
     <script>
@@ -37,5 +38,27 @@
             background-color: rgba(31, 41, 55, 0.7);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.4s ease-out forwards;
+            opacity: 0; /* Start hidden */
+        }
+
+        /* Micro-interactions */
+        .btn-click:active {
+            transform: scale(0.95);
         }
     </style>

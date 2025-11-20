@@ -43,7 +43,7 @@
             </thead>
             <tbody class="space-y-2">
                 {% for item in items %}
-                <tr class="group bg-white/5 hover:bg-white/10 transition-all duration-200">
+                <tr class="group bg-white/5 hover:bg-white/10 transition-all duration-200 animate-fade-in-up" style="animation-delay: {{ loop.index0 * 30 }}ms">
                     <td class="px-6 py-4 whitespace-nowrap rounded-l-lg border-y border-l border-white/5 group-hover:border-white/10">
                         <input type="checkbox" class="mass-edit-checkbox hidden w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" value="{{ item.id }}" data-media-type="{{ media_type }}">
                     </td>

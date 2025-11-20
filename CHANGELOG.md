@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.4] - 2025-11-19
+### Added
+- **Micro-Interactions:** Added staggered fade-in animations to all data tables (Radarr, Sonarr, Deletion) for a smoother page load experience.
+- **Mobile Polish:** Integrated Alpine.js to provide smooth slide/fade transitions for the mobile navigation menu.
+- **Interactive Elements:** Added `active:scale-95` press effects to mobile navigation links and the hamburger menu button for better tactile feedback.
+
 ## [0.86.3] - 2025-11-19
 ### Added
 - **Mobile Navigation:** Implemented a responsive mobile menu with a hamburger toggle for better usability on smaller screens.
