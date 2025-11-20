@@ -17,21 +17,63 @@
                         <h2 class="text-2xl font-bold mb-4 text-white">Radarr</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="Radarr_url" class="block text-sm font-medium text-gray-400">URL</label>
-                                <input type="text" id="Radarr_url" name="Radarr_url" value="{{ radarr_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
+                                <label for="Radarr_url" class="block text-sm font-medium text-gray-400 mb-1">URL</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Radarr_url" name="Radarr_url" value="{{ radarr_settings.url or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                             <div>
-                                <label for="Radarr_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
-                                <input type="text" id="Radarr_api_key" name="Radarr_api_key" value="{{ radarr_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Radarr_api_key" class="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Radarr_api_key" name="Radarr_api_key" value="{{ radarr_settings.api_key or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                             <div>
-                                <label for="Radarr_grace_days" class="block text-sm font-medium text-gray-400">Grace Days</label>
-                                <input type="number" id="Radarr_grace_days" name="Radarr_grace_days" value="{{ radarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Radarr_grace_days" class="block text-sm font-medium text-gray-400 mb-1">Grace Days</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <input type="number" id="Radarr_grace_days" name="Radarr_grace_days" value="{{ radarr_settings.grace_days or 30 }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="button" hx-post="/test_connection/radarr" hx-target="#radarr-test-result" hx-include="[name='Radarr_url'], [name='Radarr_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
-                            <div id="radarr-test-result" class="mt-2"></div>
+                            <button type="button" 
+                                    hx-post="/test_connection/radarr" 
+                                    hx-target="#radarr-test-result" 
+                                    hx-include="[name='Radarr_url'], [name='Radarr_api_key']" 
+                                    hx-on::after-request="
+                                        const response = event.detail.xhr.response;
+                                        const isSuccess = response.includes('Successful');
+                                        Toastify({
+                                            text: isSuccess ? 'Radarr Connection Successful' : 'Radarr Connection Failed',
+                                            duration: 3000,
+                                            gravity: 'top',
+                                            position: 'right',
+                                            backgroundColor: isSuccess ? '#10B981' : '#EF4444',
+                                            stopOnFocus: true
+                                        }).showToast();
+                                    "
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Test Connection
+                            </button>
+                            <div id="radarr-test-result" class="mt-2 text-sm font-medium"></div>
                         </div>
                     </div>
 
@@ -40,21 +82,63 @@
                         <h2 class="text-2xl font-bold mb-4 text-white">Sonarr</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div>
-                                <label for="Sonarr_url" class="block text-sm font-medium text-gray-400">URL</label>
-                                <input type="text" id="Sonarr_url" name="Sonarr_url" value="{{ sonarr_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Sonarr_url" class="block text-sm font-medium text-gray-400 mb-1">URL</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Sonarr_url" name="Sonarr_url" value="{{ sonarr_settings.url or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                             <div>
-                                <label for="Sonarr_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
-                                <input type="text" id="Sonarr_api_key" name="Sonarr_api_key" value="{{ sonarr_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Sonarr_api_key" class="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Sonarr_api_key" name="Sonarr_api_key" value="{{ sonarr_settings.api_key or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                              <div>
-                                <label for="Sonarr_grace_days" class="block text-sm font-medium text-gray-400">Grace Days</label>
-                                <input type="number" id="Sonarr_grace_days" name="Sonarr_grace_days" value="{{ sonarr_settings.grace_days or 30 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Sonarr_grace_days" class="block text-sm font-medium text-gray-400 mb-1">Grace Days</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <input type="number" id="Sonarr_grace_days" name="Sonarr_grace_days" value="{{ sonarr_settings.grace_days or 30 }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="button" hx-post="/test_connection/sonarr" hx-target="#sonarr-test-result" hx-include="[name='Sonarr_url'], [name='Sonarr_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
-                            <div id="sonarr-test-result" class="mt-2"></div>
+                            <button type="button" 
+                                    hx-post="/test_connection/sonarr" 
+                                    hx-target="#sonarr-test-result" 
+                                    hx-include="[name='Sonarr_url'], [name='Sonarr_api_key']" 
+                                    hx-on::after-request="
+                                        const response = event.detail.xhr.response;
+                                        const isSuccess = response.includes('Successful');
+                                        Toastify({
+                                            text: isSuccess ? 'Sonarr Connection Successful' : 'Sonarr Connection Failed',
+                                            duration: 3000,
+                                            gravity: 'top',
+                                            position: 'right',
+                                            backgroundColor: isSuccess ? '#10B981' : '#EF4444',
+                                            stopOnFocus: true
+                                        }).showToast();
+                                    "
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Test Connection
+                            </button>
+                            <div id="sonarr-test-result" class="mt-2 text-sm font-medium"></div>
                         </div>
                     </div>
 
@@ -63,21 +147,63 @@
                         <h2 class="text-2xl font-bold mb-4 text-white">Tautulli</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="Tautulli_url" class="block text-sm font-medium text-gray-400">URL</label>
-                                <input type="text" id="Tautulli_url" name="Tautulli_url" value="{{ tautulli_settings.url or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Tautulli_url" class="block text-sm font-medium text-gray-400 mb-1">URL</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Tautulli_url" name="Tautulli_url" value="{{ tautulli_settings.url or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                             <div>
-                                <label for="Tautulli_api_key" class="block text-sm font-medium text-gray-400">API Key</label>
-                                <input type="text" id="Tautulli_api_key" name="Tautulli_api_key" value="{{ tautulli_settings.api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Tautulli_api_key" class="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="Tautulli_api_key" name="Tautulli_api_key" value="{{ tautulli_settings.api_key or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                             <div>
-                                <label for="Tautulli_retention_days" class="block text-sm font-medium text-gray-400">Retention Days</for>
-                                <input type="number" id="Tautulli_retention_days" name="Tautulli_retention_days" value="{{ tautulli_settings.retention_days or 365 }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="Tautulli_retention_days" class="block text-sm font-medium text-gray-400 mb-1">Retention Days</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <input type="number" id="Tautulli_retention_days" name="Tautulli_retention_days" value="{{ tautulli_settings.retention_days or 365 }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="button" hx-post="/test_connection/tautulli" hx-target="#tautulli-test-result" hx-include="[name='Tautulli_url'], [name='Tautulli_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
-                            <div id="tautulli-test-result" class="mt-2"></div>
+                            <button type="button" 
+                                    hx-post="/test_connection/tautulli" 
+                                    hx-target="#tautulli-test-result" 
+                                    hx-include="[name='Tautulli_url'], [name='Tautulli_api_key']" 
+                                    hx-on::after-request="
+                                        const response = event.detail.xhr.response;
+                                        const isSuccess = response.includes('Successful');
+                                        Toastify({
+                                            text: isSuccess ? 'Tautulli Connection Successful' : 'Tautulli Connection Failed',
+                                            duration: 3000,
+                                            gravity: 'top',
+                                            position: 'right',
+                                            backgroundColor: isSuccess ? '#10B981' : '#EF4444',
+                                            stopOnFocus: true
+                                        }).showToast();
+                                    "
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Test Connection
+                            </button>
+                            <div id="tautulli-test-result" class="mt-2 text-sm font-medium"></div>
                         </div>
                     </div>
 
@@ -86,13 +212,41 @@
                         <h2 class="text-2xl font-bold mb-4 text-white">TMDB</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="tmdb_api_key" class="block text-sm font-medium text-gray-400">TMDB API Key</label>
-                                <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm">
+                                <label for="tmdb_api_key" class="block text-sm font-medium text-gray-400 mb-1">TMDB API Key</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ radarr_settings.tmdb_api_key or '' }}" class="pl-10 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="button" hx-post="/test_connection/tmdb" hx-target="#tmdb-test-result" hx-include="[name='tmdb_api_key']" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Test</button>
-                            <div id="tmdb-test-result" class="mt-2"></div>
+                            <button type="button" 
+                                    hx-post="/test_connection/tmdb" 
+                                    hx-target="#tmdb-test-result" 
+                                    hx-include="[name='tmdb_api_key']" 
+                                    hx-on::after-request="
+                                        const response = event.detail.xhr.response;
+                                        const isSuccess = response.includes('Successful');
+                                        Toastify({
+                                            text: isSuccess ? 'TMDB Connection Successful' : 'TMDB Connection Failed',
+                                            duration: 3000,
+                                            gravity: 'top',
+                                            position: 'right',
+                                            backgroundColor: isSuccess ? '#10B981' : '#EF4444',
+                                            stopOnFocus: true
+                                        }).showToast();
+                                    "
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Test Connection
+                            </button>
+                            <div id="tmdb-test-result" class="mt-2 text-sm font-medium"></div>
                         </div>
                     </div>
                     

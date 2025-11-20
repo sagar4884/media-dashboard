@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const massEditToggle = document.getElementById('mass-edit-toggle');
     if (!massEditToggle) return;
 
-    const checkboxes = document.querySelectorAll('.mass-edit-checkbox');
+    const checkboxes = document.querySelectorAll('.mass-edit-checkbox:not(#select-all)');
+    const selectAllCheckbox = document.getElementById('select-all');
     const fab = document.getElementById('mass-edit-fab');
     const selectedCountSpan = document.getElementById('selected-count');
     let lastChecked = null;
@@ -25,9 +26,26 @@ document.addEventListener('DOMContentLoaded', function() {
             cb.classList.toggle('hidden', !isActive);
             if (!isActive) cb.checked = false;
         });
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.classList.toggle('hidden', !isActive);
+            if (!isActive) selectAllCheckbox.checked = false;
+        }
         
         if (!isActive) updateFab();
     });
+
+    // Select All Logic
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            checkboxes.forEach(cb => {
+                // Only check visible checkboxes (in case of filtering, though currently filtering reloads page)
+                cb.checked = isChecked;
+            });
+            updateFab();
+        });
+    }
 
     // Checkbox Logic
     checkboxes.forEach(checkbox => {
@@ -44,12 +62,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             lastChecked = this;
+            
+            // Update Select All state
+            if (selectAllCheckbox) {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            }
+
             updateFab();
         });
     });
 
     function updateFab() {
-        const selected = document.querySelectorAll('.mass-edit-checkbox:checked');
+        const selected = document.querySelectorAll('.mass-edit-checkbox:checked:not(#select-all)');
         const count = selected.length;
         if (selectedCountSpan) selectedCountSpan.textContent = count;
         
@@ -67,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', async function() {
             const action = this.dataset.action;
             
-            const selectedCheckboxes = document.querySelectorAll('.mass-edit-checkbox:checked');
+            const selectedCheckboxes = document.querySelectorAll('.mass-edit-checkbox:checked:not(#select-all)');
             if (selectedCheckboxes.length === 0) return;
 
             // Use custom confirm modal if available, fallback to native

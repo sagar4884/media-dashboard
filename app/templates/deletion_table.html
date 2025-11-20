@@ -3,7 +3,9 @@
         <table class="min-w-full border-separate border-spacing-y-1">
             <thead class="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm">
                 <tr>
-                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10 rounded-l-lg"></th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10 rounded-l-lg">
+                        <input type="checkbox" id="select-all" class="mass-edit-checkbox hidden w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
+                    </th>
                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Poster</th>
                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         {% set next_order = 'desc' if sort_by == 'title' and sort_order == 'asc' else 'asc' %}

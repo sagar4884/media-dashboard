@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.87.2] - 2025-11-20
+### Added
+- **Mass Edit:** Added a "Select All" checkbox to Radarr, Sonarr, and Deletion tables for easier bulk management.
+- **Shortcuts:** Implemented global keyboard shortcuts:
+    - `/` to focus search.
+    - `m` to toggle Mass Edit.
+    - `Esc` to close modals or cancel actions.
+    - `Shift + ?` to show the shortcuts help modal.
+- **Persistence:** Added smart filter persistence. View mode, sort order, and per-page settings are now saved to `localStorage` and restored on page load.
+- **Settings Polish:** Updated the Settings page with input icons and Toastify notifications for connection tests.
+
 ## [0.87.1] - 2025-11-20
 ### Added
 - **UX Overhaul:** Replaced native browser alerts and confirms with Toastify.js notifications and a custom modal for a modern, non-blocking experience.
