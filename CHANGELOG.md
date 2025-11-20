@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.1] - 2025-11-19
+### Fixed
+- **Hover Cards:** Fixed an issue where long titles and summaries in the hover cards were not wrapping correctly due to inherited table styles. Added `whitespace-normal` to ensure proper text display.
+
 ## [0.86.0] - 2025-11-19
 ### Added
 - **Modern Data Tables:** Completely redesigned the list views for Radarr, Sonarr, and Deletion Manager.

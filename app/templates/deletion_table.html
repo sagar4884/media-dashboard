@@ -54,7 +54,7 @@
                              class="w-full h-full object-cover">
                     </div>
                     <!-- Hover Card -->
-                    <div class="absolute top-0 left-full ml-4 w-[24rem] bg-gray-800/95 backdrop-blur-xl p-4 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 flex items-start border border-white/10 translate-x-[-10px] group-hover:translate-x-0">
+                    <div class="absolute top-0 left-full ml-4 w-[24rem] bg-gray-800/95 backdrop-blur-xl p-4 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 flex items-start border border-white/10 translate-x-[-10px] group-hover:translate-x-0 whitespace-normal">
                         <img src="{{ url_for('static', filename=item.local_poster_path) if item.local_poster_path else 'https://placehold.co/150x225/111827/4b5563?text=N/A' }}" class="w-32 h-auto rounded-lg shadow-lg mr-4 flex-shrink-0">
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold text-white text-lg leading-tight">{{ item.title }}</h4>
