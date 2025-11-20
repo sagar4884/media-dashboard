@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.3] - 2025-11-19
+### Added
+- **Mobile Navigation:** Implemented a responsive mobile menu with a hamburger toggle for better usability on smaller screens.
+- **Responsive Tables:** Wrapped data tables in `overflow-x-auto` containers to ensure they remain accessible on mobile devices without breaking the layout.
+
+### Fixed
+- **Hover Cards:** Removed the `line-clamp-6` restriction from hover cards in Radarr, Sonarr, and Deletion tables. Summaries now expand the card vertically to fit the full text, improving readability.
+
 ## [0.86.2] - 2025-11-19
 ### Added
 - **Enhanced Visualizations:** Upgraded the Dashboard charts to match the new glassmorphism aesthetic.

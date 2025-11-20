@@ -1,9 +1,11 @@
 <!-- Sticky Header -->
-<header class="sticky top-0 glass-header z-50">
+<header class="sticky top-0 glass-header z-50" x-data="{ mobileMenuOpen: false }">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <a href="{{ url_for('dashboard') }}" class="text-2xl font-bold text-white">Media Dashboard</a>
-            <nav class="flex items-center space-x-4">
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-4">
                 <a href="{{ url_for('radarr_page') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.endpoint == 'radarr_page' %}bg-white/10 text-white shadow-sm border border-white/10{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Radarr</a>
                 <a href="{{ url_for('sonarr_page') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.endpoint == 'sonarr_page' %}bg-white/10 text-white shadow-sm border border-white/10{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Sonarr</a>
                 <a href="{{ url_for('tautulli_page') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {% if request.endpoint == 'tautulli_page' %}bg-white/10 text-white shadow-sm border border-white/10{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Tautulli</a>
@@ -16,6 +18,30 @@
                     Settings
                 </a>
             </nav>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="text-gray-300 hover:text-white focus:outline-none focus:text-white" aria-label="Toggle menu">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': mobileMenuOpen, 'inline-flex': !mobileMenuOpen }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': !mobileMenuOpen, 'inline-flex': mobileMenuOpen }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" class="hidden md:hidden bg-gray-900/95 backdrop-blur-xl border-t border-white/10">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="{{ url_for('radarr_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'radarr_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Radarr</a>
+            <a href="{{ url_for('sonarr_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'sonarr_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Sonarr</a>
+            <a href="{{ url_for('tautulli_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'tautulli_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Tautulli</a>
+            <a href="{{ url_for('seasonal_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'seasonal_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Seasonal</a>
+            <a href="{{ url_for('overlays_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'overlays_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Overlays</a>
+            <a href="{{ url_for('deletion_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'deletion_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Deletion Manager</a>
+            <a href="{{ url_for('database_page') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'database_page' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Database</a>
+            <a href="{{ url_for('settings') }}" class="block px-3 py-2 rounded-md text-base font-medium transition-colors {% if request.endpoint == 'settings' %}bg-white/10 text-white{% else %}text-gray-300 hover:bg-white/5 hover:text-white{% endif %}">Settings</a>
         </div>
     </div>
 </header>
