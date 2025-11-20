@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.86.6] - 2025-11-19
+### Fixed
+- **Hover Card Visibility:** Fixed a stacking context issue where text from subsequent table rows would bleed through or appear on top of the hover card.
+    - Added `relative hover:z-50` to table rows to ensure the hovered row and its popup always sit above other content.
+    - Changed the hover card background to solid `bg-gray-900` (removing opacity/blur) to prevent any content bleed-through and improve text readability.
+
 ## [0.86.5] - 2025-11-19
 ### Fixed
 - **Mobile Menu:** Fixed an issue where the hamburger menu was unresponsive.
