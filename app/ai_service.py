@@ -28,10 +28,13 @@ class AIService:
         
         Based on this data, identify patterns in the user's taste. Focus on genres, years, themes, keywords in overviews, and implied ratings.
         
-        Instead of just outputting a list, you must propose changes to the rules.
+        Instead of binary "Keep" or "Delete" rules, generate rules that influence the score (0-100).
+        Use phrases like "Score higher for...", "Score lower for...", "Boost score if...", "Reduce score if...", "Slightly increase score for...".
+        This allows for more nuanced scoring and incremental learning.
+        
         Output a JSON object with two keys: "refinements" and "new_rules".
         
-        "refinements": A list of objects where you modify an existing rule to be more accurate.
+        "refinements": A list of objects where you modify an existing rule to be more accurate or convert a binary rule to a scoring rule.
         Format: {{ "original_rule": "...", "new_rule": "...", "reason": "..." }}
         
         "new_rules": A list of objects for completely new patterns you found.
@@ -42,13 +45,13 @@ class AIService:
           "refinements": [
             {{
               "original_rule": "Keep Action Movies",
-              "new_rule": "Keep Action Movies rated 7.0+",
-              "reason": "User deletes low-rated action movies."
+              "new_rule": "Score higher for Action Movies, especially if rated 7.0+",
+              "reason": "User deletes low-rated action movies, so we should be more specific."
             }}
           ],
           "new_rules": [
             {{
-              "rule": "Delete Holiday Movies",
+              "rule": "Score lower for Holiday Movies",
               "reason": "User deleted 5 Christmas movies in this batch."
             }}
           ]
@@ -67,13 +70,17 @@ class AIService:
         prompt = f"""
         You are an expert media curator. Score the following items based on these rules:
         
-        RULES:
+        SCORING RULES:
         {rules}
         
         ITEMS TO SCORE:
         {json.dumps(items, indent=2)}
         
-        For each item, assign a score from 0 to 100, where 0 is a definite delete and 100 is a definite keep.
+        For each item, assign a score from 0 to 100 based on how well it fits the rules.
+        - 0-20: Strong candidate for deletion (matches "Score lower" or "Delete" rules).
+        - 80-100: Strong candidate for keeping (matches "Score higher" or "Keep" rules).
+        - 40-60: Neutral or mixed signals.
+        
         Return the result as a JSON object where the keys are the item IDs (radarr_id or sonarr_id) and the values are the integer scores.
         Example format: {{ "123": 85, "456": 10 }}
         Do not include markdown formatting like ```json. Just the raw JSON string.

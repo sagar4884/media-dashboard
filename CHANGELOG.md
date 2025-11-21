@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.911] - 2025-11-21
+### Changed
+- **AI Curator:** Shifted rule generation strategy from binary "Keep/Delete" to nuanced "Score Higher/Lower". This allows for incremental learning and more granular scoring (0-100) based on multiple contributing factors rather than hard rules.
+
 ## [0.910] - 2025-11-21
 ### Added
 - **AI Curator:** Implemented "Interactive AI Rule Proposals". Instead of overwriting rules automatically, the AI now generates proposals (Refinements vs. New Rules) that users can review, confirm, or decline.
