@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.906] - 2025-11-21
+### Maintenance
+- **Build:** Version bump to ensure all recent AI fixes (timeouts, retries, enqueueing) and UI updates (column renaming) are correctly propagated to the Docker build.
+
 ## [0.905] - 2025-11-20
 ### Fixed
 - **AI Curator:** Increased the background task timeout for AI operations (Learning: 10m, Scoring: 20m) to prevent timeouts when processing large batches or waiting for API retries.
