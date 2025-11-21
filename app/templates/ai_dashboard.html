@@ -32,6 +32,55 @@
 
                 <!-- Radarr Content -->
                 <div x-show="activeTab === 'radarr'" class="space-y-6">
+                    {% if radarr_proposals %}
+                    <div class="bg-indigo-900/30 border border-indigo-500/50 rounded-lg p-6 mb-6 animate-fade-in-up">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-indigo-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                                AI Rule Proposals Available
+                            </h3>
+                            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-full">Review Required</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            {% for item in radarr_proposals.refinements %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700" id="proposal-{{ item.id }}">
+                                <div class="flex justify-between items-start gap-4">
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Refinement</div>
+                                        <div class="text-red-400 line-through text-sm mb-1">{{ item.original_rule }}</div>
+                                        <div class="text-green-400 font-medium text-sm">{{ item.new_rule }}</div>
+                                        <div class="text-gray-500 text-xs mt-2 italic">"{{ item.reason }}"</div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <button onclick="applyProposal('Radarr', 'refinement', '{{ item.id }}', 'confirm')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">Confirm</button>
+                                        <button onclick="applyProposal('Radarr', 'refinement', '{{ item.id }}', 'decline')" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded text-xs font-medium transition-colors">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% for item in radarr_proposals.new_rules %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700" id="proposal-{{ item.id }}">
+                                <div class="flex justify-between items-start gap-4">
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">New Rule</div>
+                                        <div class="text-green-400 font-medium text-sm">{{ item.rule }}</div>
+                                        <div class="text-gray-500 text-xs mt-2 italic">"{{ item.reason }}"</div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <button onclick="applyProposal('Radarr', 'new', '{{ item.id }}', 'confirm')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">Confirm</button>
+                                        <button onclick="applyProposal('Radarr', 'new', '{{ item.id }}', 'decline')" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded text-xs font-medium transition-colors">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="glass-panel p-6 rounded-lg shadow-xl">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
@@ -61,6 +110,55 @@
 
                 <!-- Sonarr Content -->
                 <div x-show="activeTab === 'sonarr'" class="space-y-6" style="display: none;">
+                    {% if sonarr_proposals %}
+                    <div class="bg-indigo-900/30 border border-indigo-500/50 rounded-lg p-6 mb-6 animate-fade-in-up">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-indigo-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                                AI Rule Proposals Available
+                            </h3>
+                            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-full">Review Required</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            {% for item in sonarr_proposals.refinements %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700" id="proposal-{{ item.id }}">
+                                <div class="flex justify-between items-start gap-4">
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Refinement</div>
+                                        <div class="text-red-400 line-through text-sm mb-1">{{ item.original_rule }}</div>
+                                        <div class="text-green-400 font-medium text-sm">{{ item.new_rule }}</div>
+                                        <div class="text-gray-500 text-xs mt-2 italic">"{{ item.reason }}"</div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <button onclick="applyProposal('Sonarr', 'refinement', '{{ item.id }}', 'confirm')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">Confirm</button>
+                                        <button onclick="applyProposal('Sonarr', 'refinement', '{{ item.id }}', 'decline')" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded text-xs font-medium transition-colors">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% for item in sonarr_proposals.new_rules %}
+                            <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700" id="proposal-{{ item.id }}">
+                                <div class="flex justify-between items-start gap-4">
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">New Rule</div>
+                                        <div class="text-green-400 font-medium text-sm">{{ item.rule }}</div>
+                                        <div class="text-gray-500 text-xs mt-2 italic">"{{ item.reason }}"</div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <button onclick="applyProposal('Sonarr', 'new', '{{ item.id }}', 'confirm')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">Confirm</button>
+                                        <button onclick="applyProposal('Sonarr', 'new', '{{ item.id }}', 'decline')" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded text-xs font-medium transition-colors">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="glass-panel p-6 rounded-lg shadow-xl">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
@@ -92,6 +190,66 @@
     </div>
 
     <script>
+        function applyProposal(service, type, id, action) {
+            fetch('/ai/proposal/apply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    service_name: service,
+                    type: type,
+                    id: id,
+                    action: action
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove the element
+                    const elementId = 'proposal-' + id;
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.remove();
+                    }
+                    
+                    // If confirmed, update the rules textarea
+                    if (action === 'confirm' && data.rules) {
+                        const textarea = document.getElementById(service.toLowerCase() + '-rules');
+                        if (textarea) {
+                            textarea.value = data.rules;
+                        }
+                    }
+
+                    Toastify({
+                        text: action === 'confirm' ? "Rule applied successfully" : "Proposal declined",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#10B981",
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: "Error: " + (data.message || "Unknown error"),
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#EF4444",
+                    }).showToast();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Toastify({
+                    text: "An error occurred",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#EF4444",
+                }).showToast();
+            });
+        }
+
         function saveRules(service) {
             const rules = document.getElementById(service.toLowerCase() + '-rules').value;
             fetch('/ai/save_rules', {

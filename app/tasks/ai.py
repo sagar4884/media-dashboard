@@ -2,8 +2,11 @@ from .. import db
 from ..models import Movie, Show, ServiceSettings, AISettings
 from ..ai_service import AIService
 from rq import get_current_job
+from sqlalchemy import func
 import time
 import logging
+import json
+import uuid
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -36,11 +39,16 @@ def learn_user_preferences(service_name):
         batch_size = ai_settings.batch_size_shows_learn
 
     print(f"Fetching samples with batch size {batch_size}")
-    # Fetch samples
-    kept_items = ModelClass.query.filter_by(score='Keep').order_by(ModelClass.id.desc()).limit(batch_size).all()
-    deleted_items = ModelClass.query.filter_by(score='Delete').order_by(ModelClass.id.desc()).limit(batch_size).all()
     
-    print(f"Found {len(kept_items)} kept items and {len(deleted_items)} deleted items")
+    # Fetch samples using random ordering
+    # Include 'Tautulli Keep' as a positive signal along with 'Keep'
+    kept_items = ModelClass.query.filter(
+        ModelClass.score.in_(['Keep', 'Tautulli Keep'])
+    ).order_by(func.random()).limit(batch_size).all()
+    
+    deleted_items = ModelClass.query.filter_by(score='Delete').order_by(func.random()).limit(batch_size).all()
+    
+    print(f"Found {len(kept_items)} kept/tautulli-kept items and {len(deleted_items)} deleted items")
 
     if not kept_items and not deleted_items:
         print("No history found to learn from.")
@@ -52,7 +60,8 @@ def learn_user_preferences(service_name):
             'title': item.title,
             'year': item.year,
             'overview': item.overview,
-            'labels': item.labels
+            'labels': item.labels,
+            'status': item.score # Include status so AI knows if it was explicit Keep or Tautulli Keep
         }
         
     kept_data = [serialize(item) for item in kept_items]
@@ -61,14 +70,38 @@ def learn_user_preferences(service_name):
     current_rules = service_settings.ai_rules or ""
     
     try:
-        print("Calling AI service to generate rules...")
-        new_rules = ai_service.generate_rules(kept_data, deleted_data, current_rules)
-        print(f"Generated rules: {new_rules}")
+        print("Calling AI service to generate rule proposals...")
+        # Now returns a JSON string representing the proposals
+        proposals_json = ai_service.generate_rules(kept_data, deleted_data, current_rules)
+        print(f"Generated proposals: {proposals_json}")
         
-        service_settings.ai_rules = new_rules
+        # Validate that it's valid JSON and add IDs
+        try:
+            proposals = json.loads(proposals_json)
+            # Ensure structure
+            if 'refinements' not in proposals: proposals['refinements'] = []
+            if 'new_rules' not in proposals: proposals['new_rules'] = []
+            
+            # Add IDs
+            for item in proposals['refinements']:
+                item['id'] = str(uuid.uuid4())
+            for item in proposals['new_rules']:
+                item['id'] = str(uuid.uuid4())
+                
+            proposals_json = json.dumps(proposals)
+            
+        except json.JSONDecodeError:
+             # Fallback if AI returns plain text (should be handled in ai_service but double check)
+             print("AI returned invalid JSON, attempting to wrap...")
+             proposals_json = json.dumps({
+                 "refinements": [],
+                 "new_rules": [{"id": str(uuid.uuid4()), "rule": line, "reason": "Generated from plain text output"} for line in proposals_json.split('\n') if line.strip()]
+             })
+
+        service_settings.ai_rule_proposals = proposals_json
         db.session.commit()
-        print("Rules saved to database.")
-        return {'status': 'success', 'message': 'Rules updated'}
+        print("Rule proposals saved to database.")
+        return {'status': 'success', 'message': 'Rule proposals generated. Please review them in the dashboard.'}
         
     except Exception as e:
         print(f"Error generating rules: {str(e)}")

@@ -17,7 +17,7 @@ class AIService:
         prompt = f"""
         You are an expert media curator. Analyze the user's library to understand their taste.
         
-        Here are items the user explicitly KEPT:
+        Here are items the user explicitly KEPT (or watched via Tautulli):
         {json.dumps(kept_items, indent=2)}
         
         Here are items the user explicitly DELETED:
@@ -26,13 +26,42 @@ class AIService:
         Current Rules (if any):
         {current_rules}
         
-        Based on this data, generate a concise list of scoring rules that capture the user's preferences.
-        Focus on genres, years, themes, keywords in overviews, and ratings.
-        The output should be a plain text list of rules, one per line.
-        Do not include introductory text, just the rules.
+        Based on this data, identify patterns in the user's taste. Focus on genres, years, themes, keywords in overviews, and implied ratings.
+        
+        Instead of just outputting a list, you must propose changes to the rules.
+        Output a JSON object with two keys: "refinements" and "new_rules".
+        
+        "refinements": A list of objects where you modify an existing rule to be more accurate.
+        Format: {{ "original_rule": "...", "new_rule": "...", "reason": "..." }}
+        
+        "new_rules": A list of objects for completely new patterns you found.
+        Format: {{ "rule": "...", "reason": "..." }}
+        
+        Example Output:
+        {{
+          "refinements": [
+            {{
+              "original_rule": "Keep Action Movies",
+              "new_rule": "Keep Action Movies rated 7.0+",
+              "reason": "User deletes low-rated action movies."
+            }}
+          ],
+          "new_rules": [
+            {{
+              "rule": "Delete Holiday Movies",
+              "reason": "User deleted 5 Christmas movies in this batch."
+            }}
+          ]
+        }}
+        
+        Do not include markdown formatting like ```json. Just the raw JSON string.
         """
         
-        return self._call_model(prompt, model_type='learning')
+        response_text = self._call_model(prompt, model_type='learning')
+        
+        # Clean up potential markdown formatting
+        cleaned_text = response_text.replace('```json', '').replace('```', '').strip()
+        return cleaned_text
 
     def score_items(self, items, rules):
         prompt = f"""

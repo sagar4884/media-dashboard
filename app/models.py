@@ -14,6 +14,7 @@ class ServiceSettings(db.Model):
     overlay_show_template = db.Column(db.Text)
     overlay_use_tmdb_for_shows = db.Column(db.Boolean, default=False)
     ai_rules = db.Column(db.Text)
+    ai_rule_proposals = db.Column(db.Text) # Stores JSON proposals for rule updates
 
 class AISettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)

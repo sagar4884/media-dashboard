@@ -84,7 +84,7 @@ def run_migrations(app):
             # Column likely exists or table doesn't exist yet (fresh install handled by entrypoint)
             pass
 
-        # Migration for v0.80: Add overlay_template
+        # Migration for v0.8: Add overlay_template
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_template TEXT"))
@@ -93,7 +93,7 @@ def run_migrations(app):
         except Exception as e:
             pass
 
-        # Migration for v0.80: Add overlay_movie_template
+        # Migration for v0.8: Add overlay_movie_template
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_movie_template TEXT"))
@@ -102,7 +102,7 @@ def run_migrations(app):
         except Exception as e:
             pass
 
-        # Migration for v0.80: Add overlay_show_template
+        # Migration for v0.8: Add overlay_show_template
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_show_template TEXT"))
@@ -111,7 +111,7 @@ def run_migrations(app):
         except Exception as e:
             pass
 
-        # Migration for v0.80: Add overlay_use_tmdb_for_shows
+        # Migration for v0.8: Add overlay_use_tmdb_for_shows
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE service_settings ADD COLUMN overlay_use_tmdb_for_shows BOOLEAN DEFAULT 0"))
@@ -120,7 +120,7 @@ def run_migrations(app):
         except Exception as e:
             pass
 
-        # Migration for v0.80: Add tmdb_id to Show
+        # Migration for v0.8: Add tmdb_id to Show
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE show ADD COLUMN tmdb_id INTEGER"))
@@ -154,6 +154,15 @@ def run_migrations(app):
         except Exception as e:
             pass
         
+        # Migration for v0.909: Add ai_rule_proposals
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN ai_rule_proposals TEXT"))
+                conn.commit()
+                print("Migrated database: Added ai_rule_proposals column.")
+        except Exception as e:
+            pass
+
         # Create AISettings table if it doesn't exist
         try:
             db.create_all()

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.910] - 2025-11-21
+### Added
+- **AI Curator:** Implemented "Interactive AI Rule Proposals". Instead of overwriting rules automatically, the AI now generates proposals (Refinements vs. New Rules) that users can review, confirm, or decline.
+- **UI:** Added a new proposal review interface to the AI Dashboard with "Confirm" and "Decline" actions for each proposed rule change.
+- **Backend:** Added `ai_rule_proposals` database column and updated AI tasks to generate structured JSON proposals with unique IDs.
+
 ## [0.908] - 2025-11-21
 ### Changed
 - **AI Curator:** Updated scoring logic to re-score all items that are not in a final state (Keep, Delete, Tautulli Keep, Seasonal, Archived), allowing scores to evolve as rules change.
