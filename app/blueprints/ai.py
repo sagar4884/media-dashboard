@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, current_app
 from .. import db
 from ..models import ServiceSettings, AISettings
 from ..tasks.ai import learn_user_preferences, score_media_items
@@ -32,10 +32,10 @@ def save_rules():
 
 @bp.route('/ai/learn/<service>', methods=['POST'])
 def start_learning(service):
-    job = learn_user_preferences.queue(service)
+    job = current_app.queue.enqueue(learn_user_preferences, service)
     return jsonify({'status': 'started', 'job_id': job.get_id()})
 
 @bp.route('/ai/score/<service>', methods=['POST'])
 def start_scoring(service):
-    job = score_media_items.queue(service)
+    job = current_app.queue.enqueue(score_media_items, service)
     return jsonify({'status': 'started', 'job_id': job.get_id()})
