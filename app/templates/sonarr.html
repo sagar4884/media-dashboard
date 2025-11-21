@@ -57,46 +57,46 @@
                 {% include '_sonarr_list.html' %}
             </div>
 
-            <!-- Mass Edit Floating Bar -->
-            <div id="mass-edit-fab" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800/95 backdrop-blur-md border border-blue-500/30 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-6 transition-all duration-300 translate-y-full opacity-0 w-[90%] max-w-2xl">
-                <div class="flex items-center gap-4">
-                    <span class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg shadow-blue-600/20" id="selected-count">0 Selected</span>
-                    <div class="h-8 w-px bg-gray-700"></div>
-                    <div class="flex items-center gap-2">
-                        <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 hover:text-green-300 rounded-lg border border-green-500/20 transition-all text-sm font-medium group" data-action="keep">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Keep
-                        </button>
-                        <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/20 transition-all text-sm font-medium group" data-action="delete">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Delete
-                        </button>
-                        <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 rounded-lg border border-purple-500/20 transition-all text-sm font-medium group" data-action="seasonal">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Seasonal
-                        </button>
-                        <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 hover:text-white rounded-lg border border-gray-600/30 transition-all text-sm font-medium group" data-action="not_scored">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Not Scored
-                        </button>
-                    </div>
-                </div>
-                <button id="mass-edit-close" class="ml-auto p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
         </main>
+        
+        <!-- Mass Edit Floating Bar (Moved outside main to prevent HTMX interference) -->
+        <div id="mass-edit-fab" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800/95 backdrop-blur-md border border-blue-500/30 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-6 transition-all duration-300 translate-y-full opacity-0 w-[90%] max-w-2xl">
+            <div class="flex items-center gap-4">
+                <span class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg shadow-blue-600/20" id="selected-count">0 Selected</span>
+                <div class="h-8 w-px bg-gray-700"></div>
+                <div class="flex items-center gap-2">
+                    <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 hover:text-green-300 rounded-lg border border-green-500/20 transition-all text-sm font-medium group" data-action="keep">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Keep
+                    </button>
+                    <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/20 transition-all text-sm font-medium group" data-action="delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                    </button>
+                    <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 rounded-lg border border-purple-500/20 transition-all text-sm font-medium group" data-action="seasonal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Seasonal
+                    </button>
+                    <button class="mass-edit-action btn-ripple flex items-center gap-2 px-4 py-2 bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 hover:text-white rounded-lg border border-gray-600/30 transition-all text-sm font-medium group" data-action="not_scored">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Not Scored
+                    </button>
+                </div>
+            </div>
+            <button id="mass-edit-close" class="ml-auto p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
     </div>
 </body>
 </html>

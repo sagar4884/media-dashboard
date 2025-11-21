@@ -26,9 +26,12 @@ function initMassEditSystem() {
     // --- Initialization & State Management ---
 
     function initMassEdit() {
+        console.log('initMassEdit called. Active:', isMassEditActive);
         // Re-query elements that might have been swapped by HTMX
         const checkboxes = document.querySelectorAll('.mass-edit-checkbox:not(#select-all)');
         const selectAllCheckbox = document.getElementById('select-all');
+
+        console.log('Found', checkboxes.length, 'checkboxes');
 
         // Sync visibility with active state
         checkboxes.forEach(cb => {
@@ -124,12 +127,14 @@ function initMassEditSystem() {
 
     // HTMX Integration
     // Use document instead of body for better reliability
-    document.addEventListener('htmx:afterSettle', function(evt) {
-        console.log('HTMX Settle Event Detected');
-        // When content is swapped (search/filter), re-initialize mass edit state
-        // We need to ensure we are using the current isMassEditActive state
-        // Add a small delay to ensure DOM is fully ready
-        setTimeout(initMassEdit, 50);
+    ['htmx:afterSettle', 'htmx:afterSwap', 'htmx:load'].forEach(eventName => {
+        document.addEventListener(eventName, function(evt) {
+            console.log(`Event ${eventName} Detected`, evt.detail);
+            // When content is swapped (search/filter), re-initialize mass edit state
+            // We need to ensure we are using the current isMassEditActive state
+            // Add a small delay to ensure DOM is fully ready
+            setTimeout(initMassEdit, 50);
+        });
     });
 
     // Also listen for history restore (back button)
@@ -248,4 +253,16 @@ function initMassEditSystem() {
             }
         });
     });
+
+    // Fallback: MutationObserver to detect changes in content-area if HTMX events fail
+    const contentArea = document.getElementById('content-area');
+    if (contentArea) {
+        const observer = new MutationObserver(function(mutations) {
+            console.log('MutationObserver: Content area changed');
+            // Debounce initMassEdit
+            if (window.massEditTimeout) clearTimeout(window.massEditTimeout);
+            window.massEditTimeout = setTimeout(initMassEdit, 100);
+        });
+        observer.observe(contentArea, { childList: true, subtree: true });
+    }
 }
