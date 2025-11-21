@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.932] - 2025-11-21
+### Fixed
+- **UI:** Fixed issue where the Mass Edit floating action bar would not appear in Sonarr when items were selected.
+- **UI:** Added missing close button functionality to the Mass Edit floating bar.
+
 ## [0.931] - 2025-11-21
 ### Fixed
 - **UI:** Fixed glitchy Mass Edit behavior where checkboxes wouldn't appear or persist correctly.

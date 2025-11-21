@@ -104,9 +104,28 @@ document.addEventListener('DOMContentLoaded', function() {
         initMassEdit();
     });
 
+    // Close Button Logic
+    const closeBtn = document.getElementById('mass-edit-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            document.querySelectorAll('.mass-edit-checkbox').forEach(cb => cb.checked = false);
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+            updateFab();
+        });
+    }
+
     function updateFab() {
+        // Re-query elements to ensure we have the correct reference
+        const fab = document.getElementById('mass-edit-fab');
+        const selectedCountSpan = document.getElementById('selected-count');
+
         const selected = document.querySelectorAll('.mass-edit-checkbox:checked:not(#select-all)');
         const count = selected.length;
+        
         if (selectedCountSpan) selectedCountSpan.textContent = count + ' Selected';
         
         if (fab) {
