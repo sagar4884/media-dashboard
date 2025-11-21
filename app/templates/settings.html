@@ -59,6 +59,27 @@
                                 <input type="number" id="batch_size_shows_score" name="batch_size_shows_score" value="{{ ai_settings.batch_size_shows_score or 20 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
                             </div>
                         </div>
+
+                        <h3 class="text-lg font-semibold mt-6 mb-2 text-white">Advanced Settings</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="max_items_limit" class="block text-sm font-medium text-gray-400 mb-1">Max Items Limit</label>
+                                <input type="number" id="max_items_limit" name="max_items_limit" value="{{ ai_settings.max_items_limit or 0 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                <p class="text-xs text-gray-500 mt-1">Limit items per run (0 = Unlimited).</p>
+                            </div>
+                            <div>
+                                <label for="log_retention" class="block text-sm font-medium text-gray-400 mb-1">Log Retention (Days)</label>
+                                <input type="number" id="log_retention" name="log_retention" value="{{ ai_settings.log_retention or 7 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                            <div class="flex items-center h-full pt-6">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="verbose_logging" name="verbose_logging" {% if ai_settings.verbose_logging %}checked{% endif %} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="verbose_logging" class="ml-2 block text-sm text-gray-300">
+                                        Enable Verbose Logging
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Radarr Settings -->

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.921] - 2025-11-21
+### Added
+- **Settings UI:** Exposed "Advanced Settings" in the AI Configuration section, allowing users to configure `Max Items Limit`, `Log Retention`, and `Verbose Logging` directly from the web interface.
+
 ## [0.920] - 2025-11-21
 ### Added
 - **AI Curator:** Added "Stop Active Task" button to gracefully interrupt long-running scoring or learning jobs.
