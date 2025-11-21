@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.934] - 2025-11-21
+### Fixed
+- **UI:** Fixed issue where the Mass Edit floating bar would not appear in Sonarr when searching or filtering.
+- **UI:** Improved Mass Edit stability by using `htmx:afterSettle` for re-initialization and preventing duplicate event listeners.
+
 ## [0.933] - 2025-11-21
 ### Fixed
 - **UI:** Fixed issue where the Mass Edit floating bar would not appear on initial page load when using "Select All".

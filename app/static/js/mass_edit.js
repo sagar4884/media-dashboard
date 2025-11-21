@@ -17,23 +17,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Sync visibility with active state
         checkboxes.forEach(cb => {
             cb.classList.toggle('hidden', !isMassEditActive);
-            // If we just swapped content, new checkboxes are unchecked by default.
-            // We don't necessarily want to uncheck them if we are just refreshing the view,
-            // but typically a filter change implies a new dataset, so clearing selection is safer/expected.
         });
 
         if (selectAllCheckbox) {
             selectAllCheckbox.classList.toggle('hidden', !isMassEditActive);
-            // Re-bind Select All listener (since it might be a new element)
-            // Remove old listener first to be safe? simpler to just overwrite onchange or use a flag
-            // But since it's a new element, it has no listeners.
-            selectAllCheckbox.addEventListener('change', function() {
+            
+            // Use .onchange to prevent stacking event listeners if initMassEdit is called multiple times
+            selectAllCheckbox.onchange = function() {
                 const isChecked = this.checked;
                 document.querySelectorAll('.mass-edit-checkbox:not(#select-all)').forEach(cb => {
                     cb.checked = isChecked;
                 });
                 updateFab();
-            });
+            };
         }
 
         updateFab();
@@ -99,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // HTMX Integration
-    document.body.addEventListener('htmx:afterSwap', function(evt) {
+    document.body.addEventListener('htmx:afterSettle', function(evt) {
         // When content is swapped (search/filter), re-initialize mass edit state
         initMassEdit();
     });
@@ -126,7 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const fab = document.getElementById('mass-edit-fab');
         const selectedCountSpan = document.getElementById('selected-count');
 
-        const selected = document.querySelectorAll('.mass-edit-checkbox:checked:not(#select-all)');
+        // Use Array.from and filter for more robust selection
+        const selected = Array.from(document.querySelectorAll('.mass-edit-checkbox:checked')).filter(cb => cb.id !== 'select-all');
         const count = selected.length;
         
         if (selectedCountSpan) selectedCountSpan.textContent = count + ' Selected';
