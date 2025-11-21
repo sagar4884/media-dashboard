@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.90.0] - 2025-11-20
+### Added
+- **UX:** Implemented a global "Undo" toast notification system.
+- **UX:** Added fade-out animations for rows upon action.
+- **UX:** Enhanced keyboard navigation (`j`/`k` for up/down, `Enter` to keep, `x` to delete, `s` for seasonal).
+- **UX:** Added a visual focus ring for keyboard selection.
+- **UX:** Added a global loading progress bar for HTMX requests.
+- **UX:** Added tooltips to action buttons in list views.
+
+### Fixed
+- **Radarr:** Fixed the "Mass Edit" functionality on the Radarr page by adding the missing floating action bar.
+
 ## [0.89.0] - 2025-11-20
 ### Refactor
 - **Architecture:** Continued backend modularization by splitting the monolithic `tasks.py` into a `tasks` package:
