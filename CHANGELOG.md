@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.904] - 2025-11-20
+### Fixed
+- **AI Curator:** Implemented exponential backoff retry logic (up to 5 retries) for AI service calls to handle `429 Resource has been exhausted` errors more gracefully.
+
 ## [0.903] - 2025-11-20
 ### Added
 - **AI Curator:** Added detailed logging to background tasks to improve visibility into the learning and scoring process.

@@ -1,6 +1,10 @@
 import google.generativeai as genai
 from openai import OpenAI
 import json
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self, settings):
@@ -52,28 +56,46 @@ class AIService:
             cleaned_text = response_text.replace('```json', '').replace('```', '').strip()
             return json.loads(cleaned_text)
         except json.JSONDecodeError:
-            print(f"Failed to decode JSON from AI response: {response_text}")
+            logger.error(f"Failed to decode JSON from AI response: {response_text}")
             return {}
 
     def _call_model(self, prompt, model_type='learning'):
         model_name = self.learning_model if model_type == 'learning' else self.scoring_model
         
-        if self.provider == 'Gemini':
-            genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
-            return response.text
+        max_retries = 5
+        base_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                if self.provider == 'Gemini':
+                    genai.configure(api_key=self.api_key)
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content(prompt)
+                    return response.text
+                    
+                elif self.provider == 'OpenAI':
+                    client = OpenAI(api_key=self.api_key)
+                    response = client.chat.completions.create(
+                        model=model_name,
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    return response.choices[0].message.content
+                
+                else:
+                    raise ValueError(f"Unsupported provider: {self.provider}")
             
-        elif self.provider == 'OpenAI':
-            client = OpenAI(api_key=self.api_key)
-            response = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response.choices[0].message.content
-            
-        else:
-            raise ValueError(f"Unsupported provider: {self.provider}")
+            except Exception as e:
+                error_str = str(e)
+                if "429" in error_str or "Resource has been exhausted" in error_str:
+                    if attempt < max_retries - 1:
+                        sleep_time = base_delay * (2 ** attempt)
+                        logger.warning(f"Rate limit hit (429). Retrying in {sleep_time} seconds... (Attempt {attempt + 1}/{max_retries})")
+                        time.sleep(sleep_time)
+                        continue
+                    else:
+                        logger.error("Max retries reached for AI service.")
+                        raise Exception("AI Service Rate Limit Exceeded. Please check your API quota or try again later.") from e
+                raise e
