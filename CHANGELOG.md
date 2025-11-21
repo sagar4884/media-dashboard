@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.905] - 2025-11-20
+### Fixed
+- **AI Curator:** Increased the background task timeout for AI operations (Learning: 10m, Scoring: 20m) to prevent timeouts when processing large batches or waiting for API retries.
+
 ## [0.904] - 2025-11-20
 ### Fixed
 - **AI Curator:** Implemented exponential backoff retry logic (up to 5 retries) for AI service calls to handle `429 Resource has been exhausted` errors more gracefully.

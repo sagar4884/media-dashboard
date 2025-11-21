@@ -32,10 +32,12 @@ def save_rules():
 
 @bp.route('/ai/learn/<service>', methods=['POST'])
 def start_learning(service):
-    job = current_app.queue.enqueue(learn_user_preferences, service)
+    # Increase timeout to 10 minutes (600s) for learning tasks
+    job = current_app.queue.enqueue(learn_user_preferences, service, job_timeout=600)
     return jsonify({'status': 'started', 'job_id': job.get_id()})
 
 @bp.route('/ai/score/<service>', methods=['POST'])
 def start_scoring(service):
-    job = current_app.queue.enqueue(score_media_items, service)
+    # Increase timeout to 20 minutes (1200s) for scoring tasks to handle large batches and retries
+    job = current_app.queue.enqueue(score_media_items, service, job_timeout=1200)
     return jsonify({'status': 'started', 'job_id': job.get_id()})
