@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.913] - 2025-11-21
+### Fixed
+- **AI Curator:** Implemented a global lock for AI tasks ("Analyze Library" and "Rescore Library"). These buttons are now disabled if *any* background job (including Syncs) is running, preventing database contention and ensuring safe execution.
+- **Backend:** Added checks in AI endpoints to reject requests if a job is already active, returning a 409 Conflict error.
+
 ## [0.912] - 2025-11-21
 ### Changed
 - **AI Curator:** Updated "Rescore Library" logic to process the entire library in batches (looping until completion) instead of stopping after a single batch.

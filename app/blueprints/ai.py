@@ -4,6 +4,7 @@ from .. import db
 from ..models import ServiceSettings, AISettings
 from ..tasks.ai import learn_user_preferences, score_media_items
 from rq import Queue
+from rq.registry import StartedJobRegistry
 from redis import Redis
 import os
 
@@ -13,6 +14,11 @@ bp = Blueprint('ai', __name__)
 def ai_dashboard():
     radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
+    
+    # Check for active jobs
+    registry = StartedJobRegistry(queue=current_app.queue)
+    active_job_ids = registry.get_job_ids()
+    active_job_id = active_job_ids[0] if active_job_ids else None
     
     # Parse proposals if they exist
     radarr_proposals = None
@@ -33,7 +39,8 @@ def ai_dashboard():
                            radarr_rules=radarr_settings.ai_rules if radarr_settings else "",
                            sonarr_rules=sonarr_settings.ai_rules if sonarr_settings else "",
                            radarr_proposals=radarr_proposals,
-                           sonarr_proposals=sonarr_proposals)
+                           sonarr_proposals=sonarr_proposals,
+                           active_job_id=active_job_id)
 
 @bp.route('/ai/save_rules', methods=['POST'])
 def save_rules():
