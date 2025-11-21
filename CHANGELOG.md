@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.935] - 2025-11-21
+### Fixed
+- **UI:** Fixed Mass Edit mode in Sonarr sometimes requiring a page refresh to activate (handled BFCache restoration).
+- **UI:** Fixed Mass Edit floating bar not appearing when searching or filtering in Sonarr.
+- **UI:** Improved Mass Edit initialization to prevent conflicts and ensure reliable state management.
+
 ## [0.934] - 2025-11-21
 ### Fixed
 - **UI:** Fixed issue where the Mass Edit floating bar would not appear in Sonarr when searching or filtering.

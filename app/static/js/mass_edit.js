@@ -1,6 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
+    initMassEditSystem();
+});
+
+// Handle Back/Forward Cache (bfcache) restoration
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Re-initialize if restored from cache to ensure event listeners are active
+        initMassEditSystem();
+    }
+});
+
+function initMassEditSystem() {
     const massEditToggle = document.getElementById('mass-edit-toggle');
     if (!massEditToggle) return;
+
+    // Prevent multiple initializations on the same element
+    if (massEditToggle.dataset.massEditInitialized === 'true') return;
+    massEditToggle.dataset.massEditInitialized = 'true';
 
     const fab = document.getElementById('mass-edit-fab');
     const selectedCountSpan = document.getElementById('selected-count');
@@ -58,6 +74,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isMassEditActive) cb.checked = false;
         });
 
+        // Also uncheck select-all when exiting
+        if (!isMassEditActive) {
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+
         updateFab();
     });
 
@@ -84,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update Select All state
             const selectAllCheckbox = document.getElementById('select-all');
             if (selectAllCheckbox) {
-                const allChecked = checkboxes.every(cb => cb.checked);
+                const allChecked = checkboxes.length > 0 && checkboxes.every(cb => cb.checked);
                 const someChecked = checkboxes.some(cb => cb.checked);
                 selectAllCheckbox.checked = allChecked;
                 selectAllCheckbox.indeterminate = someChecked && !allChecked;
@@ -97,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // HTMX Integration
     document.body.addEventListener('htmx:afterSettle', function(evt) {
         // When content is swapped (search/filter), re-initialize mass edit state
+        // We need to ensure we are using the current isMassEditActive state
         initMassEdit();
     });
 
@@ -106,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close Button Logic
     const closeBtn = document.getElementById('mass-edit-close');
     if (closeBtn) {
+        // Remove old listener if any (though we can't easily, but cloning node works or just checking init flag)
+        // Since we check massEditInitialized on the toggle, we assume this runs once.
         closeBtn.addEventListener('click', function() {
             document.querySelectorAll('.mass-edit-checkbox').forEach(cb => cb.checked = false);
             const selectAll = document.getElementById('select-all');
@@ -202,4 +230,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
+}
