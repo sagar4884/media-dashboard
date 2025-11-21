@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.901] - 2025-11-20
+### Fixed
+- **AI Curator:** Fixed a `TemplateNotFound` error on the AI Dashboard by correcting the template inheritance structure (switched from `extends` to `include` to match the project's layout pattern).
+
 ## [0.900] - 2025-11-20
 ### Added
 - **AI Curator:** Introduced a comprehensive AI-powered scoring and learning system.
