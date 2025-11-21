@@ -2,19 +2,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const massEditToggle = document.getElementById('mass-edit-toggle');
     if (!massEditToggle) return;
 
-    const checkboxes = document.querySelectorAll('.mass-edit-checkbox:not(#select-all)');
-    const selectAllCheckbox = document.getElementById('select-all');
     const fab = document.getElementById('mass-edit-fab');
     const selectedCountSpan = document.getElementById('selected-count');
     let lastChecked = null;
+    let isMassEditActive = false;
+
+    // --- Initialization & State Management ---
+
+    function initMassEdit() {
+        // Re-query elements that might have been swapped by HTMX
+        const checkboxes = document.querySelectorAll('.mass-edit-checkbox:not(#select-all)');
+        const selectAllCheckbox = document.getElementById('select-all');
+
+        // Sync visibility with active state
+        checkboxes.forEach(cb => {
+            cb.classList.toggle('hidden', !isMassEditActive);
+            // If we just swapped content, new checkboxes are unchecked by default.
+            // We don't necessarily want to uncheck them if we are just refreshing the view,
+            // but typically a filter change implies a new dataset, so clearing selection is safer/expected.
+        });
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.classList.toggle('hidden', !isMassEditActive);
+            // Re-bind Select All listener (since it might be a new element)
+            // Remove old listener first to be safe? simpler to just overwrite onchange or use a flag
+            // But since it's a new element, it has no listeners.
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                document.querySelectorAll('.mass-edit-checkbox:not(#select-all)').forEach(cb => {
+                    cb.checked = isChecked;
+                });
+                updateFab();
+            });
+        }
+
+        updateFab();
+    }
+
+    // --- Event Listeners ---
 
     // Toggle Mass Edit Mode
     massEditToggle.addEventListener('click', function() {
-        const isActive = this.classList.toggle('active');
-        this.textContent = isActive ? 'Exit Mass Edit' : 'Mass Edit';
+        isMassEditActive = !isMassEditActive;
+        this.textContent = isMassEditActive ? 'Exit Mass Edit' : 'Mass Edit';
         
         // Toggle button styles
-        if (isActive) {
+        if (isMassEditActive) {
             this.classList.remove('text-gray-300', 'hover:bg-gray-700/50');
             this.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
         } else {
@@ -22,38 +55,27 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
         }
         
+        // Update visibility
+        const checkboxes = document.querySelectorAll('.mass-edit-checkbox');
         checkboxes.forEach(cb => {
-            cb.classList.toggle('hidden', !isActive);
-            if (!isActive) cb.checked = false;
+            cb.classList.toggle('hidden', !isMassEditActive);
+            if (!isMassEditActive) cb.checked = false;
         });
 
-        if (selectAllCheckbox) {
-            selectAllCheckbox.classList.toggle('hidden', !isActive);
-            if (!isActive) selectAllCheckbox.checked = false;
-        }
-        
-        if (!isActive) updateFab();
+        updateFab();
     });
 
-    // Select All Logic
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            checkboxes.forEach(cb => {
-                // Only check visible checkboxes (in case of filtering, though currently filtering reloads page)
-                cb.checked = isChecked;
-            });
-            updateFab();
-        });
-    }
-
-    // Checkbox Logic
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('click', function(e) {
+    // Event Delegation for Checkboxes (handles clicks on both static and dynamic elements)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('mass-edit-checkbox') && e.target.id !== 'select-all') {
+            const checkbox = e.target;
+            const checkboxes = Array.from(document.querySelectorAll('.mass-edit-checkbox:not(#select-all)'));
+            
+            // Shift+Click Logic
             let inBetween = false;
             if (e.shiftKey && lastChecked) {
                 checkboxes.forEach(cb => {
-                    if (cb === this || cb === lastChecked) {
+                    if (cb === checkbox || cb === lastChecked) {
                         inBetween = !inBetween;
                     }
                     if (inBetween) {
@@ -61,24 +83,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-            lastChecked = this;
+            lastChecked = checkbox;
             
             // Update Select All state
+            const selectAllCheckbox = document.getElementById('select-all');
             if (selectAllCheckbox) {
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+                const allChecked = checkboxes.every(cb => cb.checked);
+                const someChecked = checkboxes.some(cb => cb.checked);
                 selectAllCheckbox.checked = allChecked;
                 selectAllCheckbox.indeterminate = someChecked && !allChecked;
             }
 
             updateFab();
-        });
+        }
+    });
+
+    // HTMX Integration
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        // When content is swapped (search/filter), re-initialize mass edit state
+        initMassEdit();
     });
 
     function updateFab() {
         const selected = document.querySelectorAll('.mass-edit-checkbox:checked:not(#select-all)');
         const count = selected.length;
-        if (selectedCountSpan) selectedCountSpan.textContent = count;
+        if (selectedCountSpan) selectedCountSpan.textContent = count + ' Selected';
         
         if (fab) {
             if (count > 0) {

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.931] - 2025-11-21
+### Fixed
+- **UI:** Fixed glitchy Mass Edit behavior where checkboxes wouldn't appear or persist correctly.
+- **UI:** Fixed Mass Edit not working during search or filtering operations. Mass edit mode now persists across HTMX content swaps.
+
 ## [0.930] - 2025-11-21
 ### Added
 - **UI:** Added cast members to the hover cards in both Radarr and Sonarr views (Table and Poster).
