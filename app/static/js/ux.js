@@ -90,8 +90,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = btn.href;
 
         // Visual Feedback
+        // Instead of fading out the row, we'll just flash it or dim it slightly while processing
         if (row) {
-            row.classList.add('fade-out-row');
+            row.style.opacity = '0.7';
+            row.style.pointerEvents = 'none'; // Prevent double clicks
         }
 
         // Perform the action asynchronously
@@ -107,33 +109,60 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error('Network response was not ok');
         })
         .then(data => {
+            // Update the Badge
+            if (row) {
+                const badge = row.querySelector('.score-badge');
+                if (badge) {
+                    // Define styles for each score
+                    const styles = {
+                        'keep': { class: 'bg-green-400/10 text-green-400 ring-green-400/20', text: 'Keep' },
+                        'delete': { class: 'bg-red-400/10 text-red-400 ring-red-400/20', text: 'Delete' },
+                        'seasonal': { class: 'bg-purple-400/10 text-purple-400 ring-purple-400/20', text: 'Seasonal' },
+                        'not_scored': { class: 'bg-gray-400/10 text-gray-400 ring-gray-400/20', text: 'Not Scored' }
+                    };
+
+                    const newStyle = styles[action] || styles['not_scored'];
+                    
+                    // Animate badge change
+                    badge.style.transition = 'opacity 0.2s ease';
+                    badge.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        // Reset classes
+                        badge.className = 'score-badge inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ' + newStyle.class;
+                        badge.textContent = newStyle.text;
+                        badge.style.opacity = '1';
+                    }, 200);
+                }
+
+                // Restore row opacity
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
+                
+                // Optional: Flash success
+                row.animate([
+                    { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    { backgroundColor: 'transparent' }
+                ], {
+                    duration: 500,
+                    easing: 'ease-out'
+                });
+            }
+
             // Show Undo Toast
-            // We need to construct the undo URL. 
-            // Ideally the API returns the undo URL or we infer it.
-            // For now, let's assume 'not_scored' is the undo for everything, 
-            // OR we can use the one returned by the API if we update the API.
-            
             const undoUrl = data.undo_url; 
             const actionText = `Marked as ${action}`;
             
             if (window.triggerUndoToast && undoUrl) {
                 window.triggerUndoToast(actionText, undoUrl);
             }
-
-            // Remove the row from DOM after animation
-            setTimeout(() => {
-                if (row) {
-                    row.remove();
-                    // If no rows left, maybe reload or show empty state?
-                    // For now, just removing is fine.
-                }
-            }, 300);
         })
         .catch(error => {
             console.error('Error:', error);
             // Revert visual changes
             if (row) {
-                row.classList.remove('fade-out-row');
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
             }
             Toastify({
                 text: "Action failed: " + error.message,
