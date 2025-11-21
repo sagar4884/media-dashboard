@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.936] - 2025-11-21
+### Fixed
+- **UI:** Fixed Mass Edit floating bar not appearing in Sonarr after performing a search or filter (improved HTMX event handling).
+- **UI:** Added slight delay to Mass Edit initialization to ensure DOM is fully ready after content swaps.
+
 ## [0.935] - 2025-11-21
 ### Fixed
 - **UI:** Fixed Mass Edit mode in Sonarr sometimes requiring a page refresh to activate (handled BFCache restoration).

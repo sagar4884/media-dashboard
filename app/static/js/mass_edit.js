@@ -120,10 +120,17 @@ function initMassEditSystem() {
     });
 
     // HTMX Integration
-    document.body.addEventListener('htmx:afterSettle', function(evt) {
+    // Use document instead of body for better reliability
+    document.addEventListener('htmx:afterSettle', function(evt) {
         // When content is swapped (search/filter), re-initialize mass edit state
         // We need to ensure we are using the current isMassEditActive state
-        initMassEdit();
+        // Add a small delay to ensure DOM is fully ready
+        setTimeout(initMassEdit, 10);
+    });
+
+    // Also listen for history restore (back button)
+    document.addEventListener('htmx:historyRestore', function(evt) {
+        setTimeout(initMassEdit, 10);
     });
 
     // Initialize on load
@@ -151,7 +158,9 @@ function initMassEditSystem() {
         const selectedCountSpan = document.getElementById('selected-count');
 
         // Use Array.from and filter for more robust selection
-        const selected = Array.from(document.querySelectorAll('.mass-edit-checkbox:checked')).filter(cb => cb.id !== 'select-all');
+        // We query the document to ensure we catch all checkboxes, even those recently added by HTMX
+        const allCheckboxes = document.querySelectorAll('.mass-edit-checkbox');
+        const selected = Array.from(allCheckboxes).filter(cb => cb.checked && cb.id !== 'select-all');
         const count = selected.length;
         
         if (selectedCountSpan) selectedCountSpan.textContent = count + ' Selected';
