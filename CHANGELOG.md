@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.90.0] - 2025-11-20
+## [0.89.2] - 2025-11-20
+### Fixed
+- **UX:** Fixed the "Undo" and "Fade Out" features by implementing asynchronous API calls, preventing page reloads.
+- **UX:** Refined the action feedback loop: items now update in-place with a flash animation and badge update instead of being removed, preserving context.
+
+## [0.89.1] - 2025-11-20
 ### Added
 - **UX:** Implemented a global "Undo" toast notification system.
 - **UX:** Added fade-out animations for rows upon action.
