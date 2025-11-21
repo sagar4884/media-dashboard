@@ -26,6 +26,9 @@ class AISettings(db.Model):
     batch_size_movies_score = db.Column(db.Integer, default=50)
     batch_size_shows_learn = db.Column(db.Integer, default=10)
     batch_size_shows_score = db.Column(db.Integer, default=20)
+    verbose_logging = db.Column(db.Boolean, default=False)
+    log_retention = db.Column(db.Integer, default=7)
+    max_items_limit = db.Column(db.Integer, default=0)
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)

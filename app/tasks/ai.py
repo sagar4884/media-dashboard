@@ -107,20 +107,27 @@ def learn_user_preferences(service_name):
         print(f"Error generating rules: {str(e)}")
         return {'error': str(e)}
 
-def score_media_items(service_name):
-    print(f"Starting scoring task for {service_name}")
+def score_media_items(service_name, resume_mode=False):
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
     
     ai_settings = AISettings.query.first()
     if not ai_settings or not ai_settings.api_key:
-        print("Error: AI not configured")
+        logger.error("AI not configured")
         return {'error': 'AI not configured'}
         
+    # Configure logging verbosity based on settings
+    if ai_settings.verbose_logging:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        
+    logger.info(f"Starting scoring task for {service_name} (Resume: {resume_mode})")
+    
     service_settings = ServiceSettings.query.filter_by(service_name=service_name).first()
     if not service_settings or not service_settings.ai_rules:
-        print(f"Error: {service_name} rules not found. Please run Learn first.")
+        logger.error(f"{service_name} rules not found. Please run Learn first.")
         return {'error': f'{service_name} rules not found. Please run Learn first.'}
 
     ai_service = AIService(ai_settings)
@@ -132,47 +139,45 @@ def score_media_items(service_name):
         ModelClass = Show
         batch_size = ai_settings.batch_size_shows_score
 
-    print(f"Fetching unscored items with batch size {batch_size}")
+    logger.info(f"Fetching items with batch size {batch_size}")
     
     excluded_scores = ['Keep', 'Delete', 'Tautulli Keep', 'Seasonal', 'Archived']
     
-    # Get total count of items to score
-    total_items = ModelClass.query.filter(
-        (ModelClass.score.notin_(excluded_scores)) | (ModelClass.score == None)
-    ).count()
+    # Build Query
+    query = ModelClass.query.filter(ModelClass.score.notin_(excluded_scores))
     
-    print(f"Found {total_items} total items to score")
+    if resume_mode:
+        query = query.filter(ModelClass.ai_score == None)
+        
+    # Apply Max Items Limit
+    if ai_settings.max_items_limit > 0:
+        logger.info(f"Applying Max Items Limit: {ai_settings.max_items_limit}")
+        query = query.limit(ai_settings.max_items_limit)
+    
+    # Fetch all IDs first to ensure stability
+    all_items = query.all()
+    total_items = len(all_items)
+    
+    logger.info(f"Found {total_items} items to score")
 
     if total_items == 0:
-        return {'status': 'success', 'message': 'No unscored items found'}
+        return {'status': 'success', 'message': 'No items found to score'}
 
     processed_count = 0
     start_time = time.time()
+    redis_conn = job.connection
     
-    while processed_count < total_items:
-        # Fetch next batch
-        # We can't use offset reliably if we are updating scores and the query filters by score
-        # But here we filter by score NOT IN excluded. If we update the score to a number (e.g. 85), 
-        # it is still NOT IN excluded (Keep, Delete, etc), so it would be fetched again!
-        # Wait, the query is: score NOT IN ['Keep', 'Delete'...] OR score is None.
-        # If we update score to '85', it is NOT 'Keep'/'Delete', so it matches the filter.
-        # So we need to be careful not to re-process the same items in this run.
-        # A simple way is to fetch items where ai_score is NULL or we need a way to mark them as processed in this run.
-        # OR, we can just fetch all IDs first, then process in chunks.
+    # Process in batches
+    for i in range(0, total_items, batch_size):
+        # Check Stop Flag
+        if redis_conn.exists(f"stop_job_flag_{job.id}"):
+            logger.info("Stop flag detected. Gracefully stopping task.")
+            redis_conn.delete(f"stop_job_flag_{job.id}")
+            return {'status': 'stopped', 'message': f'Scoring stopped by user at {processed_count}/{total_items}'}
+
+        batch_items = all_items[i : i + batch_size]
         
-        # Let's fetch all IDs first to be safe and stable
-        if processed_count == 0:
-            all_items = ModelClass.query.filter(
-                (ModelClass.score.notin_(excluded_scores)) | (ModelClass.score == None)
-            ).all()
-            # We'll process this list in chunks
-            
-        # Calculate current batch slice
-        batch_items = all_items[processed_count : processed_count + batch_size]
-        if not batch_items:
-            break
-            
-        print(f"Processing batch of {len(batch_items)} items ({processed_count}/{total_items})")
+        logger.info(f"Processing batch of {len(batch_items)} items ({processed_count}/{total_items})")
         
         # Prepare data
         items_map = {}
@@ -191,7 +196,7 @@ def score_media_items(service_name):
             
         try:
             batch_start = time.time()
-            print("Calling AI service to score items...")
+            logger.debug("Calling AI service to score items...")
             scores = ai_service.score_items(items_data, service_settings.ai_rules)
             
             count = 0
@@ -201,8 +206,9 @@ def score_media_items(service_name):
                     try:
                         items_map[item_id_str].ai_score = int(score)
                         count += 1
+                        logger.debug(f"Scored {items_map[item_id_str].title}: {score}")
                     except (ValueError, TypeError):
-                        print(f"Invalid score value for item {item_id_str}: {score}")
+                        logger.warning(f"Invalid score value for item {item_id_str}: {score}")
             
             db.session.commit()
             processed_count += len(batch_items)
@@ -213,24 +219,26 @@ def score_media_items(service_name):
             
             # Calculate ETA
             batch_duration = time.time() - batch_start
-            avg_time_per_item = batch_duration / len(batch_items)
-            remaining_items = total_items - processed_count
-            eta_seconds = int(remaining_items * avg_time_per_item)
+            if processed_count > 0:
+                avg_time_per_item = (time.time() - start_time) / processed_count
+                remaining_items = total_items - processed_count
+                eta_seconds = int(remaining_items * avg_time_per_item)
+            else:
+                eta_seconds = 0
             
             job.meta['status'] = f"Scoring... {progress}% (ETA: {eta_seconds}s)"
             job.save_meta()
             
-            print(f"Batch complete. Scored {count}/{len(batch_items)}. Progress: {progress}%")
+            logger.info(f"Batch complete. Scored {count}/{len(batch_items)}. Progress: {progress}%")
             
-            # Sleep briefly to be nice to the API if needed, though ai_service handles retries
+            # Sleep briefly to be nice to the API
             time.sleep(1)
             
         except Exception as e:
-            print(f"Error scoring batch: {str(e)}")
-            # Continue to next batch instead of failing completely?
-            # If AI service fails completely (e.g. quota), we might want to stop.
-            # But ai_service retries 5 times. If it raises exception here, it's serious.
-            return {'error': f"Scoring failed at {processed_count}/{total_items}: {str(e)}"}
+            logger.error(f"Error scoring batch: {str(e)}")
+            # We continue to the next batch, but log the error
+            # return {'error': f"Scoring failed at {processed_count}/{total_items}: {str(e)}"}
 
     total_duration = int(time.time() - start_time)
+    logger.info(f"Scoring complete. Scored {total_items} items in {total_duration}s")
     return {'status': 'success', 'message': f'Scored {total_items} items in {total_duration}s'}

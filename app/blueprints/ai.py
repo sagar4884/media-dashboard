@@ -121,6 +121,31 @@ def start_learning(service):
 
 @bp.route('/ai/score/<service>', methods=['POST'])
 def start_scoring(service):
+    resume = request.args.get('resume', 'false').lower() == 'true'
     # Increase timeout to 20 minutes (1200s) for scoring tasks to handle large batches and retries
-    job = current_app.queue.enqueue(score_media_items, service, job_timeout=1200)
+    job = current_app.queue.enqueue(score_media_items, service, resume_mode=resume, job_timeout=1200)
     return jsonify({'status': 'started', 'job_id': job.get_id()})
+
+@bp.route('/ai/stop_job/<job_id>', methods=['POST'])
+def stop_job(job_id):
+    # Set a flag in Redis that the task checks
+    redis_conn = current_app.queue.connection
+    redis_conn.set(f"stop_job_flag_{job_id}", "1", ex=3600) # Expire in 1 hour just in case
+    return jsonify({'status': 'stopping', 'message': 'Stop signal sent to job'})
+
+@bp.route('/ai/logs')
+def get_logs():
+    try:
+        log_file = 'logs/media_dashboard.log'
+        if not os.path.exists(log_file):
+             return jsonify({'logs': 'No logs found.'})
+             
+        with open(log_file, 'r') as f:
+            # Read last 50KB
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - 50000), 0)
+            content = f.read()
+            return jsonify({'logs': content})
+    except Exception as e:
+        return jsonify({'logs': f'Error reading logs: {str(e)}'})

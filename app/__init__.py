@@ -21,6 +21,21 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 def create_app():
     app = Flask(__name__)
 
+    # Logging Configuration
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    
+    from logging.handlers import RotatingFileHandler
+    import logging
+    
+    file_handler = RotatingFileHandler('logs/media_dashboard.log', maxBytes=10*1024*1024, backupCount=10)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.DEBUG) # Allow DEBUG logs to be written if a logger permits it
+    
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO) # Default application log level
+    app.logger.info('Media Dashboard startup')
+
     # Configuration
     app.config.from_mapping(
         SECRET_KEY='a_very_secret_key',  # Change this!
@@ -161,6 +176,31 @@ def run_migrations(app):
                 conn.commit()
                 print("Migrated database: Added ai_rule_proposals column.")
         except Exception as e:
+            pass
+
+        # Migration for v0.920: Add verbose_logging, log_retention, max_items_limit to AISettings
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE ai_settings ADD COLUMN verbose_logging BOOLEAN DEFAULT 0"))
+                conn.commit()
+                print("Migrated database: Added verbose_logging column.")
+        except Exception:
+            pass
+        
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE ai_settings ADD COLUMN log_retention INTEGER DEFAULT 7"))
+                conn.commit()
+                print("Migrated database: Added log_retention column.")
+        except Exception:
+            pass
+
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE ai_settings ADD COLUMN max_items_limit INTEGER DEFAULT 0"))
+                conn.commit()
+                print("Migrated database: Added max_items_limit column.")
+        except Exception:
             pass
 
         # Create AISettings table if it doesn't exist

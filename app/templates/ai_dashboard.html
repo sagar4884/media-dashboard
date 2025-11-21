@@ -28,6 +28,22 @@
                             class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
                         Sonarr (Shows)
                     </button>
+                    <button @click="activeTab = 'logs'" 
+                            :class="{ 'border-indigo-500 text-indigo-400': activeTab === 'logs', 'border-transparent text-gray-400 hover:text-gray-300': activeTab !== 'logs' }"
+                            class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
+                        System Logs
+                    </button>
+                </div>
+
+                <!-- Logs Content -->
+                <div x-show="activeTab === 'logs'" class="space-y-6" x-data="{ logs: 'Loading...', fetchLogs() { fetch('/ai/logs').then(r => r.json()).then(d => this.logs = d.logs) } }" x-init="fetchLogs(); setInterval(fetchLogs, 5000)">
+                    <div class="glass-panel p-6 rounded-lg shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-white">System Logs</h2>
+                            <button @click="fetchLogs()" class="text-sm text-indigo-400 hover:text-indigo-300">Refresh</button>
+                        </div>
+                        <pre class="bg-gray-900 p-4 rounded text-xs font-mono text-gray-300 h-96 overflow-y-auto whitespace-pre-wrap" x-text="logs"></pre>
+                    </div>
                 </div>
 
                 <!-- Radarr Content -->
@@ -84,21 +100,34 @@
                     <div class="glass-panel p-6 rounded-lg shadow-xl">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
-                            <div class="space-x-2">
-                                <button hx-post="/ai/learn/Radarr" 
-                                        hx-swap="none"
-                                        onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
-                                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {% if active_job_id %}disabled{% endif %}>
-                                    Analyze Library & Update Rules
-                                </button>
-                                <button hx-post="/ai/score/Radarr" 
-                                        hx-swap="none"
-                                        onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {% if active_job_id %}disabled{% endif %}>
-                                    Rescore Library
-                                </button>
+                            <div class="space-x-2 flex items-center">
+                                {% if active_job_id %}
+                                    <button hx-post="/ai/stop_job/{{ active_job_id }}"
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Stopping Task...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#EF4444'}).showToast()"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 animate-pulse">
+                                        Stop Active Task
+                                    </button>
+                                {% else %}
+                                    <button hx-post="/ai/learn/Radarr" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
+                                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Analyze Library & Update Rules
+                                    </button>
+                                    <button hx-post="/ai/score/Radarr?resume=true" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Continuing Scoring...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#3B82F6'}).showToast()"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Continue Scoring
+                                    </button>
+                                    <button hx-post="/ai/score/Radarr" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Rescore Library
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                         <textarea id="radarr-rules" rows="15" 
@@ -166,21 +195,34 @@
                     <div class="glass-panel p-6 rounded-lg shadow-xl">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
-                            <div class="space-x-2">
-                                <button hx-post="/ai/learn/Sonarr" 
-                                        hx-swap="none"
-                                        onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
-                                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {% if active_job_id %}disabled{% endif %}>
-                                    Analyze Library & Update Rules
-                                </button>
-                                <button hx-post="/ai/score/Sonarr" 
-                                        hx-swap="none"
-                                        onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {% if active_job_id %}disabled{% endif %}>
-                                    Rescore Library
-                                </button>
+                            <div class="space-x-2 flex items-center">
+                                {% if active_job_id %}
+                                    <button hx-post="/ai/stop_job/{{ active_job_id }}"
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Stopping Task...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#EF4444'}).showToast()"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200 animate-pulse">
+                                        Stop Active Task
+                                    </button>
+                                {% else %}
+                                    <button hx-post="/ai/learn/Sonarr" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
+                                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Analyze Library & Update Rules
+                                    </button>
+                                    <button hx-post="/ai/score/Sonarr?resume=true" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Continuing Scoring...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#3B82F6'}).showToast()"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Continue Scoring
+                                    </button>
+                                    <button hx-post="/ai/score/Sonarr" 
+                                            hx-swap="none"
+                                            onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                        Rescore Library
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                         <textarea id="sonarr-rules" rows="15" 

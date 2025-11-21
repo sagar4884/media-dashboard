@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.920] - 2025-11-21
+### Added
+- **AI Curator:** Added "Stop Active Task" button to gracefully interrupt long-running scoring or learning jobs.
+- **AI Curator:** Added "Continue Scoring" button to resume scoring only for items that haven't been scored yet.
+- **AI Curator:** Added "System Logs" tab to the AI Dashboard for viewing real-time application logs.
+- **Settings:** Added `max_items_limit` setting to restrict the number of items processed in a single AI run.
+- **Settings:** Added `verbose_logging` setting to enable detailed debug logs for AI tasks.
+
+### Changed
+- **Logging:** Implemented a robust `RotatingFileHandler` logging system with configurable retention and verbosity.
+- **AI Curator:** Updated scoring logic to support "Resume" mode and respect the new "Stop" signal and "Max Items" limit.
+- **UI:** Improved dashboard controls with distinct buttons for "Analyze", "Continue", "Rescore", and "Stop".
+
 ## [0.913] - 2025-11-21
 ### Fixed
 - **AI Curator:** Implemented a global lock for AI tasks ("Analyze Library" and "Rescore Library"). These buttons are now disabled if *any* background job (including Syncs) is running, preventing database contention and ensuring safe execution.
