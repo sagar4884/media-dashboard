@@ -247,7 +247,8 @@ def task_status(job_id):
     response = {
         'status': job.get_status(),
         'progress': job.meta.get('progress', 0) if job.is_started else 0,
-        'eta': job.meta.get('eta', None)
+        'eta': job.meta.get('eta', None),
+        'func_name': job.func_name
     }
     if job.is_finished:
         response['result'] = job.result

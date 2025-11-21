@@ -129,8 +129,18 @@
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
                 if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerText;
-                btn.innerText = 'Syncing...';
+                btn.innerText = btn.dataset.loadingText || 'Processing...';
             });
+        }
+
+        function getJobDescription(funcName) {
+            if (!funcName) return 'Processing...';
+            if (funcName.includes('sync_radarr')) return 'Syncing Radarr';
+            if (funcName.includes('sync_sonarr')) return 'Syncing Sonarr';
+            if (funcName.includes('sync_tautulli')) return 'Syncing Tautulli';
+            if (funcName.includes('learn_user')) return 'Analyzing Library';
+            if (funcName.includes('score_media')) return 'Scoring Media';
+            return 'Processing...';
         }
 
         function enableSyncButtons() {
@@ -150,7 +160,7 @@
             // Create sticky toast if not exists
             if (!progressToast) {
                 progressToast = Toastify({
-                    text: "Background Task Running...",
+                    text: "Starting Task...",
                     duration: -1, // Persistent
                     close: false,
                     gravity: "bottom",
@@ -168,6 +178,7 @@
                         // Update Toast Content
                         const progress = data.progress || 0;
                         const eta = data.eta || 'Calculating...';
+                        const description = getJobDescription(data.func_name);
                         
                         // We need to update the toast DOM directly since Toastify doesn't have an update method
                         // This is a bit hacky but works. Better would be to close and reopen or use a custom node.
@@ -176,7 +187,7 @@
                             toastElement.innerHTML = `
                                 <div class="flex flex-col min-w-[250px]">
                                     <div class="flex justify-between mb-1">
-                                        <span class="font-bold text-sm">Syncing...</span>
+                                        <span class="font-bold text-sm">${description}</span>
                                         <span class="text-xs text-gray-300">${eta}</span>
                                     </div>
                                     <div class="w-full bg-gray-600 rounded-full h-2.5">

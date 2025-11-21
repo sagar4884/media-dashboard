@@ -111,20 +111,20 @@
                                 {% else %}
                                     <button hx-post="/ai/learn/Radarr" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
-                                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Analyzing..."
+                                            class="sync-btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Analyze Library & Update Rules
                                     </button>
                                     <button hx-post="/ai/score/Radarr?resume=true" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Continuing Scoring...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#3B82F6'}).showToast()"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Scoring..."
+                                            class="sync-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Continue Scoring
                                     </button>
                                     <button hx-post="/ai/score/Radarr" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Scoring..."
+                                            class="sync-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Rescore Library
                                     </button>
                                 {% endif %}
@@ -206,20 +206,20 @@
                                 {% else %}
                                     <button hx-post="/ai/learn/Sonarr" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Analyzing Library...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#8B5CF6'}).showToast()"
-                                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Analyzing..."
+                                            class="sync-btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Analyze Library & Update Rules
                                     </button>
                                     <button hx-post="/ai/score/Sonarr?resume=true" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Continuing Scoring...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#3B82F6'}).showToast()"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Scoring..."
+                                            class="sync-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Continue Scoring
                                     </button>
                                     <button hx-post="/ai/score/Sonarr" 
                                             hx-swap="none"
-                                            onclick="Toastify({text: 'Scoring Started...', duration: 3000, gravity: 'top', position: 'right', backgroundColor: '#10B981'}).showToast()"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                                            data-loading-text="Scoring..."
+                                            class="sync-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
                                         Rescore Library
                                     </button>
                                 {% endif %}

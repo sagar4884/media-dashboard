@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.922] - 2025-11-21
+### Changed
+- **UX:** Implemented immediate button locking for AI tasks ("Analyze", "Score", "Continue") to provide instant visual feedback and prevent double-clicks, matching the behavior of Sync buttons.
+- **UX:** Updated global progress Toast notifications to be context-aware, displaying specific task names (e.g., "Analyzing Library", "Scoring Media") instead of a generic "Syncing...".
+- **UX:** Added dynamic loading text to buttons (e.g., "Analyzing...", "Scoring...") while tasks are running.
+
 ## [0.921] - 2025-11-21
 ### Added
 - **Settings UI:** Exposed "Advanced Settings" in the AI Configuration section, allowing users to configure `Max Items Limit`, `Log Retention`, and `Verbose Logging` directly from the web interface.
