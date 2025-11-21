@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.937] - 2025-11-21
+### Fixed
+- **UI:** Fixed Sonarr Mass Edit FAB disappearing on search by moving it outside the dynamic content area.
+- **UI:** Added robust event handling (HTMX events + MutationObserver) to ensure Mass Edit state persists across all interactions.
+- **UI:** Added detailed logging for Mass Edit debugging.
+
 ## [0.936] - 2025-11-21
 ### Fixed
 - **UI:** Fixed Mass Edit floating bar not appearing in Sonarr after performing a search or filter (improved HTMX event handling).
