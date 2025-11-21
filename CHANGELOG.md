@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.912] - 2025-11-21
+### Changed
+- **AI Curator:** Updated "Rescore Library" logic to process the entire library in batches (looping until completion) instead of stopping after a single batch.
+- **AI Curator:** Added real-time progress tracking and ETA calculation for the scoring task.
+- **UI:** Renamed "Score Unscored Items" to "Rescore Library" to better reflect its function.
+- **UI:** Improved toast notifications for AI tasks ("Analyzing Library..." and "Scoring Started...") to provide clearer feedback.
+
 ## [0.911] - 2025-11-21
 ### Changed
 - **AI Curator:** Shifted rule generation strategy from binary "Keep/Delete" to nuanced "Score Higher/Lower". This allows for incremental learning and more granular scoring (0-100) based on multiple contributing factors rather than hard rules.

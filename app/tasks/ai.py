@@ -133,61 +133,104 @@ def score_media_items(service_name):
         batch_size = ai_settings.batch_size_shows_score
 
     print(f"Fetching unscored items with batch size {batch_size}")
-    # Fetch items that are not in a final state (Keep, Delete, Tautulli Keep, Seasonal)
-    # This includes 'Not Scored' and None, regardless of whether they have an ai_score already.
-    # We want to re-score them as rules might have changed.
     
     excluded_scores = ['Keep', 'Delete', 'Tautulli Keep', 'Seasonal', 'Archived']
     
-    unscored_items = ModelClass.query.filter(
+    # Get total count of items to score
+    total_items = ModelClass.query.filter(
         (ModelClass.score.notin_(excluded_scores)) | (ModelClass.score == None)
-    ).limit(batch_size).all()
+    ).count()
     
-    print(f"Found {len(unscored_items)} items to score")
+    print(f"Found {total_items} total items to score")
 
-    if not unscored_items:
+    if total_items == 0:
         return {'status': 'success', 'message': 'No unscored items found'}
 
-    # Prepare data
-    # Map using the correct ID type (int vs str) to ensure matching works
-    items_map = {}
-    for item in unscored_items:
-        key = str(item.radarr_id) if service_name == 'Radarr' else str(item.sonarr_id)
-        items_map[key] = item
-
-    items_data = []
-    for item in unscored_items:
-        items_data.append({
-            'id': item.radarr_id if service_name == 'Radarr' else item.sonarr_id,
-            'title': item.title,
-            'year': item.year,
-            'overview': item.overview,
-            'labels': item.labels
-        })
+    processed_count = 0
+    start_time = time.time()
+    
+    while processed_count < total_items:
+        # Fetch next batch
+        # We can't use offset reliably if we are updating scores and the query filters by score
+        # But here we filter by score NOT IN excluded. If we update the score to a number (e.g. 85), 
+        # it is still NOT IN excluded (Keep, Delete, etc), so it would be fetched again!
+        # Wait, the query is: score NOT IN ['Keep', 'Delete'...] OR score is None.
+        # If we update score to '85', it is NOT 'Keep'/'Delete', so it matches the filter.
+        # So we need to be careful not to re-process the same items in this run.
+        # A simple way is to fetch items where ai_score is NULL or we need a way to mark them as processed in this run.
+        # OR, we can just fetch all IDs first, then process in chunks.
         
-    try:
-        print("Calling AI service to score items...")
-        scores = ai_service.score_items(items_data, service_settings.ai_rules)
-        print(f"Received scores: {scores}")
-        
-        count = 0
-        for item_id, score in scores.items():
-            # Ensure item_id is string for lookup
-            item_id_str = str(item_id)
+        # Let's fetch all IDs first to be safe and stable
+        if processed_count == 0:
+            all_items = ModelClass.query.filter(
+                (ModelClass.score.notin_(excluded_scores)) | (ModelClass.score == None)
+            ).all()
+            # We'll process this list in chunks
             
-            if item_id_str in items_map:
-                try:
-                    items_map[item_id_str].ai_score = int(score)
-                    count += 1
-                except (ValueError, TypeError):
-                    print(f"Invalid score value for item {item_id_str}: {score}")
-            else:
-                print(f"Warning: Received score for unknown item ID: {item_id_str}")
+        # Calculate current batch slice
+        batch_items = all_items[processed_count : processed_count + batch_size]
+        if not batch_items:
+            break
+            
+        print(f"Processing batch of {len(batch_items)} items ({processed_count}/{total_items})")
         
-        db.session.commit()
-        print(f"Successfully scored {count} items.")
-        return {'status': 'success', 'message': f'Scored {count} items'}
+        # Prepare data
+        items_map = {}
+        items_data = []
         
-    except Exception as e:
-        print(f"Error scoring items: {str(e)}")
-        return {'error': str(e)}
+        for item in batch_items:
+            key = str(item.radarr_id) if service_name == 'Radarr' else str(item.sonarr_id)
+            items_map[key] = item
+            items_data.append({
+                'id': item.radarr_id if service_name == 'Radarr' else item.sonarr_id,
+                'title': item.title,
+                'year': item.year,
+                'overview': item.overview,
+                'labels': item.labels
+            })
+            
+        try:
+            batch_start = time.time()
+            print("Calling AI service to score items...")
+            scores = ai_service.score_items(items_data, service_settings.ai_rules)
+            
+            count = 0
+            for item_id, score in scores.items():
+                item_id_str = str(item_id)
+                if item_id_str in items_map:
+                    try:
+                        items_map[item_id_str].ai_score = int(score)
+                        count += 1
+                    except (ValueError, TypeError):
+                        print(f"Invalid score value for item {item_id_str}: {score}")
+            
+            db.session.commit()
+            processed_count += len(batch_items)
+            
+            # Update Progress
+            progress = int((processed_count / total_items) * 100)
+            job.meta['progress'] = progress
+            
+            # Calculate ETA
+            batch_duration = time.time() - batch_start
+            avg_time_per_item = batch_duration / len(batch_items)
+            remaining_items = total_items - processed_count
+            eta_seconds = int(remaining_items * avg_time_per_item)
+            
+            job.meta['status'] = f"Scoring... {progress}% (ETA: {eta_seconds}s)"
+            job.save_meta()
+            
+            print(f"Batch complete. Scored {count}/{len(batch_items)}. Progress: {progress}%")
+            
+            # Sleep briefly to be nice to the API if needed, though ai_service handles retries
+            time.sleep(1)
+            
+        except Exception as e:
+            print(f"Error scoring batch: {str(e)}")
+            # Continue to next batch instead of failing completely?
+            # If AI service fails completely (e.g. quota), we might want to stop.
+            # But ai_service retries 5 times. If it raises exception here, it's serious.
+            return {'error': f"Scoring failed at {processed_count}/{total_items}: {str(e)}"}
+
+    total_duration = int(time.time() - start_time)
+    return {'status': 'success', 'message': f'Scored {total_items} items in {total_duration}s'}
