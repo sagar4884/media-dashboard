@@ -99,6 +99,23 @@ def run_migrations(app):
             # Column likely exists or table doesn't exist yet (fresh install handled by entrypoint)
             pass
 
+        # Migration for v0.9: Add cast column to Movie and Show
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE movie ADD COLUMN cast TEXT"))
+                conn.commit()
+                print("Migrated database: Added cast column to Movie.")
+        except Exception as e:
+            pass
+
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE show ADD COLUMN cast TEXT"))
+                conn.commit()
+                print("Migrated database: Added cast column to Show.")
+        except Exception as e:
+            pass
+
         # Migration for v0.8: Add overlay_template
         try:
             with db.engine.connect() as conn:

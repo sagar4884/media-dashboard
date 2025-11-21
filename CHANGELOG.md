@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.930] - 2025-11-21
+### Added
+- **UI:** Added cast members to the hover cards in both Radarr and Sonarr views (Table and Poster).
+- **Backend:** Added `cast` column to `Movie` and `Show` models to store cast information.
+- **Backend:** Updated TMDB fetch task to retrieve and store top 5 cast members.
+
 ## [0.922] - 2025-11-21
 ### Changed
 - **UX:** Implemented immediate button locking for AI tasks ("Analyze", "Score", "Continue") to provide instant visual feedback and prevent double-clicks, matching the behavior of Sync buttons.

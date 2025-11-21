@@ -47,13 +47,21 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
         print(f"No TMDB ID found for {media_type} {media_id}")
         return None, None
 
-    url = f"https://api.themoviedb.org/3/{media_type}/{tmdb_id}?api_key={tmdb_api_key}"
+    url = f"https://api.themoviedb.org/3/{media_type}/{tmdb_id}?api_key={tmdb_api_key}&append_to_response=credits"
         
     try:
         response = session.get(url)
         response.raise_for_status()
         data = response.json()
         
+        # Extract cast
+        cast_list = []
+        if 'credits' in data and 'cast' in data['credits']:
+            # Get top 5 cast members
+            cast_list = [actor['name'] for actor in data['credits']['cast'][:5]]
+        
+        cast_str = ", ".join(cast_list)
+
         poster_path = data.get('poster_path')
         if poster_path:
             poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
@@ -72,11 +80,13 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
                 item = Movie.query.filter_by(tmdb_id=media_id).first()
                 if item:
                     item.overview = data.get('overview')
+                    item.cast = cast_str
                     db.session.commit()
             elif media_type == 'tv':
                 item = Show.query.filter_by(tvdb_id=media_id).first()
                 if item:
                     item.overview = data.get('overview')
+                    item.cast = cast_str
                     db.session.commit()
 
             return f"posters/{local_filename}", tmdb_id

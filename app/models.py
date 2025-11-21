@@ -44,6 +44,7 @@ class Movie(db.Model):
     delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
+    cast = db.Column(db.Text)
 
 class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -60,6 +61,7 @@ class Show(db.Model):
     delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
     local_poster_path = db.Column(db.String(200))
+    cast = db.Column(db.Text)
 
 class TautulliHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)

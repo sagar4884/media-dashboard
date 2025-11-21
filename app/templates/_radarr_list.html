@@ -108,6 +108,12 @@
                                     <span class="text-xs font-medium text-gray-400">{{ "%.2f"|format(movie.size_gb if movie.size_gb is not none else 0) }} GB</span>
                                 </div>
                                 <p class="text-sm text-gray-300 leading-relaxed">{{ movie.overview or 'No summary available.' }}</p>
+                                {% if movie.cast %}
+                                <div class="mt-3 pt-3 border-t border-white/10">
+                                    <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Cast</p>
+                                    <p class="text-xs text-gray-300">{{ movie.cast }}</p>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </td>
@@ -175,6 +181,12 @@
         <!-- Hover Overlay -->
         <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 overflow-y-auto">
             <p class="text-sm text-gray-200">{{ movie.overview or 'No summary available.' }}</p>
+            {% if movie.cast %}
+            <div class="mt-3 pt-3 border-t border-white/10">
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Cast</p>
+                <p class="text-xs text-gray-300">{{ movie.cast }}</p>
+            </div>
+            {% endif %}
         </div>
         <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
             <h3 class="font-bold text-lg text-white truncate">{{ movie.title }} ({{ movie.year }})</h3>
