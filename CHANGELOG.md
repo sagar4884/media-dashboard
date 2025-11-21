@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.903] - 2025-11-20
+### Added
+- **AI Curator:** Added detailed logging to background tasks to improve visibility into the learning and scoring process.
+- **AI Curator:** Added validation checks to gracefully handle cases where no user history exists for learning or no rules exist for scoring.
+
 ## [0.902] - 2025-11-20
 ### Fixed
 - **AI Curator:** Fixed a critical bug where starting AI tasks caused an `AttributeError` due to incorrect RQ enqueueing syntax.
