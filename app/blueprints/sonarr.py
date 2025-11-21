@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
+from sqlalchemy import case
 from .. import db
 from ..models import Show, ServiceSettings
 from ..tasks import get_retry_session
@@ -38,12 +39,19 @@ def sonarr_page():
         
     column = getattr(Show, sort_by)
     if sort_by == 'ai_score':
+        # Custom sorting for AI Score:
+        # Prioritize 'Not Scored' items (status) so they appear together
+        status_priority = case(
+            (Show.score.in_(['Not Scored', None]), 0),
+            else_=1
+        )
+        
         if sort_order == 'desc':
-             # High scores first. NULLs (Not Scored) last.
-             query = query.order_by(column.desc().nullslast(), Show.title.asc())
+             # Priority 0 (Not Scored) first, then by AI Score DESC
+             query = query.order_by(status_priority.asc(), column.desc().nullslast(), Show.title.asc())
         else:
-             # Low scores first. NULLs (Not Scored) last.
-             query = query.order_by(column.asc().nullslast(), Show.title.asc())
+             # Priority 0 (Not Scored) first, then by AI Score ASC
+             query = query.order_by(status_priority.asc(), column.asc().nullslast(), Show.title.asc())
     else:
         if sort_order == 'desc':
              query = query.order_by(column.desc())

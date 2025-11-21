@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.908] - 2025-11-21
+### Changed
+- **AI Curator:** Updated scoring logic to re-score all items that are not in a final state (Keep, Delete, Tautulli Keep, Seasonal, Archived), allowing scores to evolve as rules change.
+- **Sorting:** Refined "AI Score" sorting to prioritize items that need review (Not Scored) over items that have already been decided (Keep/Delete), grouping them logically.
+- **UI:** Added a dedicated "AI Score" column to Radarr and Sonarr lists with color-coded badges (Green/Yellow/Red) for better visibility.
+
 ## [0.907] - 2025-11-21
 ### Fixed
 - **Sorting:** Fixed sorting logic for "AI Score" in Radarr and Sonarr views. It now correctly handles unscored items (placing them at the bottom) and uses a secondary sort by title.

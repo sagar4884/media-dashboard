@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from sqlalchemy import case
 from .. import db
 from ..models import Movie, Show, ServiceSettings
 import yaml
@@ -40,20 +41,24 @@ def radarr_page():
     column = getattr(Movie, sort_by)
     if sort_by == 'ai_score':
         # Custom sorting for AI Score:
-        # 1. Group by Score Status (Not Scored, Keep, Tautulli Keep, Delete, etc.)
-        # 2. Then sort by AI Score
+        # We want to group items by their status (score) first, then by AI score.
+        # Specifically, we want 'Not Scored' items to be grouped together, and 'Decided' items (Keep, Delete, etc.)
+        # to be grouped together (or pushed to the end).
         
-        # Define a custom ordering for the 'score' column to group similar statuses
-        # We want 'Not Scored' first (or last depending on order), then the others.
-        # But the user asked to sort "Not Scored, Keep, Tautulli Keep, Delete, and Scored together"
-        # which implies a primary sort on the AI Score itself, but handling NULLs (Not Scored) correctly.
+        # Create a case statement to prioritize 'Not Scored' (and None)
+        # 0 = Not Scored / None
+        # 1 = Everything else (Keep, Delete, etc.)
+        status_priority = case(
+            (Movie.score.in_(['Not Scored', None]), 0),
+            else_=1
+        )
         
         if sort_order == 'desc':
-             # High scores first. NULLs (Not Scored) last.
-             query = query.order_by(column.desc().nullslast(), Movie.title.asc())
+             # Priority 0 (Not Scored) first, then by AI Score DESC
+             query = query.order_by(status_priority.asc(), column.desc().nullslast(), Movie.title.asc())
         else:
-             # Low scores first. NULLs (Not Scored) last.
-             query = query.order_by(column.asc().nullslast(), Movie.title.asc())
+             # Priority 0 (Not Scored) first, then by AI Score ASC
+             query = query.order_by(status_priority.asc(), column.asc().nullslast(), Movie.title.asc())
     else:
         if sort_order == 'desc':
              query = query.order_by(column.desc())

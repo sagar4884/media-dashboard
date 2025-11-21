@@ -128,14 +128,11 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap border-y border-white/5 group-hover:border-white/10">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {% if show.score == 'Keep' %}bg-green-100 text-green-800
-                            {% elif show.score == 'Delete' %}bg-red-100 text-red-800
-                            {% elif show.score == 'Seasonal' %}bg-blue-100 text-blue-800
-                            {% elif show.score == 'Archived' %}bg-gray-100 text-gray-800
-                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                            {{ show.score or 'Not Scored' }}
-                        </span>
+                        <div class="flex items-center">
+                            <span class="text-sm font-bold {% if show.ai_score is not none %}{% if show.ai_score >= 80 %}text-green-400{% elif show.ai_score >= 50 %}text-yellow-400{% else %}text-red-400{% endif %}{% else %}text-gray-600{% endif %}">
+                                {{ show.ai_score if show.ai_score is not none else '-' }}
+                            </span>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium rounded-r-lg border-y border-r border-white/5 group-hover:border-white/10">
                         <div class="flex items-center gap-2">

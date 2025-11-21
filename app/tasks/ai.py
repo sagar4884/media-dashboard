@@ -100,12 +100,17 @@ def score_media_items(service_name):
         batch_size = ai_settings.batch_size_shows_score
 
     print(f"Fetching unscored items with batch size {batch_size}")
-    # Fetch unscored items
+    # Fetch items that are not in a final state (Keep, Delete, Tautulli Keep, Seasonal)
+    # This includes 'Not Scored' and None, regardless of whether they have an ai_score already.
+    # We want to re-score them as rules might have changed.
+    
+    excluded_scores = ['Keep', 'Delete', 'Tautulli Keep', 'Seasonal', 'Archived']
+    
     unscored_items = ModelClass.query.filter(
-        (ModelClass.ai_score == None)
+        (ModelClass.score.notin_(excluded_scores)) | (ModelClass.score == None)
     ).limit(batch_size).all()
     
-    print(f"Found {len(unscored_items)} unscored items")
+    print(f"Found {len(unscored_items)} items to score")
 
     if not unscored_items:
         return {'status': 'success', 'message': 'No unscored items found'}
