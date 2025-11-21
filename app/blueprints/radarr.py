@@ -38,15 +38,25 @@ def radarr_page():
         sort_by = 'title'
         
     column = getattr(Movie, sort_by)
-    if sort_order == 'desc':
-        # Handle NULLs for ai_score sorting
-        if sort_by == 'ai_score':
-             query = query.order_by(column.desc().nullslast())
+    if sort_by == 'ai_score':
+        # Custom sorting for AI Score:
+        # 1. Group by Score Status (Not Scored, Keep, Tautulli Keep, Delete, etc.)
+        # 2. Then sort by AI Score
+        
+        # Define a custom ordering for the 'score' column to group similar statuses
+        # We want 'Not Scored' first (or last depending on order), then the others.
+        # But the user asked to sort "Not Scored, Keep, Tautulli Keep, Delete, and Scored together"
+        # which implies a primary sort on the AI Score itself, but handling NULLs (Not Scored) correctly.
+        
+        if sort_order == 'desc':
+             # High scores first. NULLs (Not Scored) last.
+             query = query.order_by(column.desc().nullslast(), Movie.title.asc())
         else:
-             query = query.order_by(column.desc())
+             # Low scores first. NULLs (Not Scored) last.
+             query = query.order_by(column.asc().nullslast(), Movie.title.asc())
     else:
-        if sort_by == 'ai_score':
-             query = query.order_by(column.asc().nullslast())
+        if sort_order == 'desc':
+             query = query.order_by(column.desc())
         else:
              query = query.order_by(column.asc())
     

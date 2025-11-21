@@ -37,14 +37,16 @@ def sonarr_page():
         sort_by = 'title'
         
     column = getattr(Show, sort_by)
-    if sort_order == 'desc':
-        if sort_by == 'ai_score':
-             query = query.order_by(column.desc().nullslast())
+    if sort_by == 'ai_score':
+        if sort_order == 'desc':
+             # High scores first. NULLs (Not Scored) last.
+             query = query.order_by(column.desc().nullslast(), Show.title.asc())
         else:
-             query = query.order_by(column.desc())
+             # Low scores first. NULLs (Not Scored) last.
+             query = query.order_by(column.asc().nullslast(), Show.title.asc())
     else:
-        if sort_by == 'ai_score':
-             query = query.order_by(column.asc().nullslast())
+        if sort_order == 'desc':
+             query = query.order_by(column.desc())
         else:
              query = query.order_by(column.asc())
     

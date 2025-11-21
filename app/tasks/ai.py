@@ -111,7 +111,12 @@ def score_media_items(service_name):
         return {'status': 'success', 'message': 'No unscored items found'}
 
     # Prepare data
-    items_map = {str(item.radarr_id if service_name == 'Radarr' else item.sonarr_id): item for item in unscored_items}
+    # Map using the correct ID type (int vs str) to ensure matching works
+    items_map = {}
+    for item in unscored_items:
+        key = str(item.radarr_id) if service_name == 'Radarr' else str(item.sonarr_id)
+        items_map[key] = item
+
     items_data = []
     for item in unscored_items:
         items_data.append({
@@ -129,10 +134,17 @@ def score_media_items(service_name):
         
         count = 0
         for item_id, score in scores.items():
+            # Ensure item_id is string for lookup
             item_id_str = str(item_id)
+            
             if item_id_str in items_map:
-                items_map[item_id_str].ai_score = int(score)
-                count += 1
+                try:
+                    items_map[item_id_str].ai_score = int(score)
+                    count += 1
+                except (ValueError, TypeError):
+                    print(f"Invalid score value for item {item_id_str}: {score}")
+            else:
+                print(f"Warning: Received score for unknown item ID: {item_id_str}")
         
         db.session.commit()
         print(f"Successfully scored {count} items.")

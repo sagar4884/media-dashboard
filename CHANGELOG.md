@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.907] - 2025-11-21
+### Fixed
+- **Sorting:** Fixed sorting logic for "AI Score" in Radarr and Sonarr views. It now correctly handles unscored items (placing them at the bottom) and uses a secondary sort by title.
+- **AI Curator:** Improved robustness of the scoring task. Added explicit type conversion for IDs to prevent mismatches between AI responses and database records, and added error handling for individual item score updates.
+
 ## [0.906] - 2025-11-21
 ### Maintenance
 - **Build:** Version bump to ensure all recent AI fixes (timeouts, retries, enqueueing) and UI updates (column renaming) are correctly propagated to the Docker build.
