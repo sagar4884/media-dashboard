@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.89.0] - 2025-11-20
+### Refactor
+- **Architecture:** Continued backend modularization by splitting the monolithic `tasks.py` into a `tasks` package:
+    - `radarr.py`, `sonarr.py`, `tautulli.py`: Service-specific logic.
+    - `maintenance.py`: Database maintenance tasks.
+    - `utils.py`: Shared utilities.
+
+### Fixed
+- **UX:** Fixed a "page flash" issue where the browser would load the default view before redirecting to saved preferences. Navigation links now intercept clicks to apply preferences immediately.
+
+### Changed
+- **Tautulli:** Updated sync logic. "Quick Sync" now fetches the last 1000 items, while "Full Sync" fetches the last 100,000 items for a complete history rebuild.
+
 ## [0.88.0] - 2025-11-20
 ### Refactor
 - **Architecture:** Major refactor of the backend structure. Split the monolithic `routes.py` (1000+ lines) into modular Flask Blueprints:
