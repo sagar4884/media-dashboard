@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    setupNavInterceptors();
+
     const path = window.location.pathname;
     // Only run on Radarr and Sonarr pages
     if (!path.includes('/radarr') && !path.includes('/sonarr')) return;
@@ -67,5 +69,48 @@ document.addEventListener('DOMContentLoaded', function() {
         if (Object.keys(prefs).length > 0) {
             localStorage.setItem(key, JSON.stringify(prefs));
         }
+    }
+
+    function setupNavInterceptors() {
+        // Intercept clicks on Radarr and Sonarr links to apply preferences immediately
+        // This prevents the "flash" of default content before redirect
+        const links = document.querySelectorAll('a[href*="/radarr"], a[href*="/sonarr"]');
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Only intercept if it's a clean link (no params) and matches our target pages
+                const url = new URL(this.href, window.location.origin);
+                if (url.search) return; 
+                
+                // Check if it's strictly the main pages (avoid sub-pages if any)
+                const path = url.pathname;
+                if (!path.endsWith('/radarr') && !path.endsWith('/sonarr')) return;
+
+                const pageKey = path.split('/').pop();
+                const storageKey = `media_dashboard_prefs_${pageKey}`;
+                const saved = localStorage.getItem(storageKey);
+                
+                if (saved) {
+                    try {
+                        const prefs = JSON.parse(saved);
+                        let hasChanges = false;
+                        
+                        // Apply saved prefs to the URL
+                        Object.keys(prefs).forEach(key => {
+                            if (prefs[key]) {
+                                url.searchParams.set(key, prefs[key]);
+                                hasChanges = true;
+                            }
+                        });
+                        
+                        if (hasChanges) {
+                            e.preventDefault();
+                            window.location.href = url.toString();
+                        }
+                    } catch (err) {
+                        console.error('Error applying prefs on click:', err);
+                    }
+                }
+            });
+        });
     }
 });

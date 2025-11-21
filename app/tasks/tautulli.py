@@ -19,10 +19,16 @@ def sync_tautulli_history(full_sync=False):
         return {'error': 'Tautulli settings not found'}
     
     session = get_retry_session()
+    
+    # Determine fetch length based on sync type
+    # Full sync: Fetch a large number (effectively all relevant history)
+    # Quick sync: Fetch last 1000 items
+    fetch_length = 100000 if full_sync else 1000
+    
     params = {
         'cmd': 'get_history',
         'apikey': settings.api_key,
-        'length': 1000, # Adjust as needed
+        'length': fetch_length,
         'after': (datetime.now() - timedelta(days=settings.retention_days)).strftime('%Y-%m-%d')
     }
     response = session.get(f"{settings.url}/api/v2", params=params)
