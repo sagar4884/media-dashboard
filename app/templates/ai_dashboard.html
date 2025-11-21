@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-white">AI Curator</h1>
+            <p class="text-gray-400 mt-2">Manage scoring rules and train the AI on your library.</p>
+        </div>
+    </div>
+
+    <div x-data="{ activeTab: 'radarr' }">
+        <!-- Tabs -->
+        <div class="flex space-x-4 mb-6 border-b border-gray-700">
+            <button @click="activeTab = 'radarr'" 
+                    :class="{ 'border-indigo-500 text-indigo-400': activeTab === 'radarr', 'border-transparent text-gray-400 hover:text-gray-300': activeTab !== 'radarr' }"
+                    class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
+                Radarr (Movies)
+            </button>
+            <button @click="activeTab = 'sonarr'" 
+                    :class="{ 'border-indigo-500 text-indigo-400': activeTab === 'sonarr', 'border-transparent text-gray-400 hover:text-gray-300': activeTab !== 'sonarr' }"
+                    class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
+                Sonarr (Shows)
+            </button>
+        </div>
+
+        <!-- Radarr Content -->
+        <div x-show="activeTab === 'radarr'" class="space-y-6">
+            <div class="glass-panel p-6 rounded-lg shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
+                    <div class="space-x-2">
+                        <button hx-post="/ai/learn/Radarr" 
+                                hx-swap="none"
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                            Analyze Library & Update Rules
+                        </button>
+                        <button hx-post="/ai/score/Radarr" 
+                                hx-swap="none"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                            Score Unscored Items
+                        </button>
+                    </div>
+                </div>
+                <textarea id="radarr-rules" rows="15" 
+                          class="w-full bg-gray-800 text-gray-200 border border-gray-700 rounded-lg p-4 font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="Enter your scoring rules here...">{{ radarr_rules }}</textarea>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveRules('Radarr')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition duration-200">
+                        Save Rules
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sonarr Content -->
+        <div x-show="activeTab === 'sonarr'" class="space-y-6" style="display: none;">
+            <div class="glass-panel p-6 rounded-lg shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-white">Scoring Rules</h2>
+                    <div class="space-x-2">
+                        <button hx-post="/ai/learn/Sonarr" 
+                                hx-swap="none"
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                            Analyze Library & Update Rules
+                        </button>
+                        <button hx-post="/ai/score/Sonarr" 
+                                hx-swap="none"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition duration-200">
+                            Score Unscored Items
+                        </button>
+                    </div>
+                </div>
+                <textarea id="sonarr-rules" rows="15" 
+                          class="w-full bg-gray-800 text-gray-200 border border-gray-700 rounded-lg p-4 font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="Enter your scoring rules here...">{{ sonarr_rules }}</textarea>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveRules('Sonarr')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition duration-200">
+                        Save Rules
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function saveRules(service) {
+        const rules = document.getElementById(service.toLowerCase() + '-rules').value;
+        fetch('/ai/save_rules', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ service: service, rules: rules }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Toastify({
+                    text: "Rules saved successfully",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#10B981",
+                }).showToast();
+            } else {
+                Toastify({
+                    text: "Error saving rules",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#EF4444",
+                }).showToast();
+            }
+        });
+    }
+</script>
+{% endblock %}

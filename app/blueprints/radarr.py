@@ -33,15 +33,22 @@ def radarr_page():
             query = query.filter(Movie.score == score_filter)
 
     # Apply sorting
-    sortable_columns = ['title', 'size_gb', 'score', 'year']
+    sortable_columns = ['title', 'size_gb', 'score', 'year', 'ai_score']
     if sort_by not in sortable_columns:
         sort_by = 'title'
         
     column = getattr(Movie, sort_by)
     if sort_order == 'desc':
-        query = query.order_by(column.desc())
+        # Handle NULLs for ai_score sorting
+        if sort_by == 'ai_score':
+             query = query.order_by(column.desc().nullslast())
+        else:
+             query = query.order_by(column.desc())
     else:
-        query = query.order_by(column.asc())
+        if sort_by == 'ai_score':
+             query = query.order_by(column.asc().nullslast())
+        else:
+             query = query.order_by(column.asc())
     
     movies = query.paginate(page=page, per_page=per_page, error_out=False)
 

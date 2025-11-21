@@ -54,6 +54,7 @@ def create_app():
         from .blueprints.deletion import bp as deletion_bp
         from .blueprints.settings import bp as settings_bp
         from .blueprints.api import bp as api_bp
+        from .blueprints.ai import bp as ai_bp
 
         app.register_blueprint(main_bp)
         app.register_blueprint(radarr_bp)
@@ -62,6 +63,7 @@ def create_app():
         app.register_blueprint(deletion_bp)
         app.register_blueprint(settings_bp)
         app.register_blueprint(api_bp)
+        app.register_blueprint(ai_bp)
 
         run_migrations(app)
 
@@ -126,5 +128,36 @@ def run_migrations(app):
                 print("Migrated database: Added tmdb_id column to Show.")
         except Exception as e:
             pass
+
+        # Migration for AI Features
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE service_settings ADD COLUMN ai_rules TEXT"))
+                conn.commit()
+                print("Migrated database: Added ai_rules column.")
+        except Exception as e:
+            pass
+
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE movie ADD COLUMN ai_score INTEGER"))
+                conn.commit()
+                print("Migrated database: Added ai_score column to Movie.")
+        except Exception as e:
+            pass
+
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE show ADD COLUMN ai_score INTEGER"))
+                conn.commit()
+                print("Migrated database: Added ai_score column to Show.")
+        except Exception as e:
+            pass
+        
+        # Create AISettings table if it doesn't exist
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"Error creating tables: {e}")
 
     return app

@@ -13,6 +13,18 @@ class ServiceSettings(db.Model):
     overlay_movie_template = db.Column(db.Text)
     overlay_show_template = db.Column(db.Text)
     overlay_use_tmdb_for_shows = db.Column(db.Boolean, default=False)
+    ai_rules = db.Column(db.Text)
+
+class AISettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(50), default='Gemini')
+    api_key = db.Column(db.String(200))
+    learning_model = db.Column(db.String(100), default='gemini-1.5-pro')
+    scoring_model = db.Column(db.String(100), default='gemini-1.5-flash')
+    batch_size_movies_learn = db.Column(db.Integer, default=20)
+    batch_size_movies_score = db.Column(db.Integer, default=50)
+    batch_size_shows_learn = db.Column(db.Integer, default=10)
+    batch_size_shows_score = db.Column(db.Integer, default=20)
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +35,7 @@ class Movie(db.Model):
     size_gb = db.Column(db.Float)
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
+    ai_score = db.Column(db.Integer)
     marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
     delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)
@@ -38,6 +51,7 @@ class Show(db.Model):
     size_gb = db.Column(db.Float)
     labels = db.Column(db.String(200))
     score = db.Column(db.String(50))
+    ai_score = db.Column(db.Integer)
     marked_for_deletion_at = db.Column(db.DateTime(timezone=True))
     delete_at = db.Column(db.DateTime(timezone=True))
     overview = db.Column(db.Text)

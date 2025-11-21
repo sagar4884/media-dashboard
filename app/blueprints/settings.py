@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from sqlalchemy import text
 from .. import db, run_migrations
-from ..models import ServiceSettings
+from ..models import ServiceSettings, AISettings
 from ..tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, get_retry_session, vacuum_database
 from rq.job import Job
 from rq.exceptions import NoSuchJobError
@@ -17,6 +17,7 @@ bp = Blueprint('settings', __name__)
 @bp.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
+        # Handle Service Settings
         services = ['Radarr', 'Sonarr', 'Tautulli']
         for service_name in services:
             settings = ServiceSettings.query.filter_by(service_name=service_name).first()
@@ -32,6 +33,22 @@ def settings():
                 settings.tmdb_api_key = request.form.get('tmdb_api_key')
 
             db.session.add(settings)
+        
+        # Handle AI Settings
+        ai_settings = AISettings.query.first()
+        if not ai_settings:
+            ai_settings = AISettings()
+        
+        ai_settings.provider = request.form.get('ai_provider')
+        ai_settings.api_key = request.form.get('ai_api_key')
+        ai_settings.learning_model = request.form.get('ai_learning_model')
+        ai_settings.scoring_model = request.form.get('ai_scoring_model')
+        ai_settings.batch_size_movies_learn = int(request.form.get('batch_size_movies_learn', 20))
+        ai_settings.batch_size_movies_score = int(request.form.get('batch_size_movies_score', 50))
+        ai_settings.batch_size_shows_learn = int(request.form.get('batch_size_shows_learn', 10))
+        ai_settings.batch_size_shows_score = int(request.form.get('batch_size_shows_score', 20))
+        
+        db.session.add(ai_settings)
         db.session.commit()
         flash('Settings saved successfully!', 'success')
         return redirect(url_for('settings.settings'))
@@ -39,11 +56,15 @@ def settings():
     radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
     tautulli_settings = ServiceSettings.query.filter_by(service_name='Tautulli').first()
+    ai_settings = AISettings.query.first()
+    if not ai_settings:
+        ai_settings = AISettings() # Default values
 
     return render_template('settings.html',
                            radarr_settings=radarr_settings,
                            sonarr_settings=sonarr_settings,
-                           tautulli_settings=tautulli_settings)
+                           tautulli_settings=tautulli_settings,
+                           ai_settings=ai_settings)
 
 @bp.route('/test_connection/<service>', methods=['POST'])
 def test_connection(service):

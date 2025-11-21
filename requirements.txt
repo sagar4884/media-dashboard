@@ -7,3 +7,5 @@ requests
 python-dotenv
 supervisor
 PyYAML
+google-generativeai
+openai

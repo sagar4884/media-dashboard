@@ -13,6 +13,55 @@
                 {{ hero_header(title="Settings", subtitle="Configure application preferences and connections") }}
 
                                 <form action="{{ url_for('settings.settings') }}" method="POST" class="glass-panel p-6 rounded-lg shadow-xl">
+                    <!-- AI Settings -->
+                    <div class="mb-8 p-4 border border-gray-700 rounded-lg">
+                        <h2 class="text-2xl font-bold mb-4 text-white">AI Configuration</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="ai_provider" class="block text-sm font-medium text-gray-400 mb-1">Provider</label>
+                                <select id="ai_provider" name="ai_provider" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                    <option value="Gemini" {% if ai_settings.provider == 'Gemini' %}selected{% endif %}>Google Gemini</option>
+                                    <option value="OpenAI" {% if ai_settings.provider == 'OpenAI' %}selected{% endif %}>OpenAI</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="ai_api_key" class="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+                                <input type="password" id="ai_api_key" name="ai_api_key" value="{{ ai_settings.api_key or '' }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                            <div>
+                                <label for="ai_learning_model" class="block text-sm font-medium text-gray-400 mb-1">Learning Model</label>
+                                <input type="text" id="ai_learning_model" name="ai_learning_model" value="{{ ai_settings.learning_model or 'gemini-1.5-pro' }}" placeholder="e.g., gemini-1.5-pro, gpt-4o" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                <p class="text-xs text-gray-500 mt-1">Model used for analyzing library and generating rules.</p>
+                            </div>
+                            <div>
+                                <label for="ai_scoring_model" class="block text-sm font-medium text-gray-400 mb-1">Scoring Model</label>
+                                <input type="text" id="ai_scoring_model" name="ai_scoring_model" value="{{ ai_settings.scoring_model or 'gemini-1.5-flash' }}" placeholder="e.g., gemini-1.5-flash, gpt-4o-mini" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                                <p class="text-xs text-gray-500 mt-1">Model used for scoring items against rules.</p>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mt-6 mb-2 text-white">Batch Sizes</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label for="batch_size_movies_learn" class="block text-sm font-medium text-gray-400 mb-1">Movies (Learn)</label>
+                                <input type="number" id="batch_size_movies_learn" name="batch_size_movies_learn" value="{{ ai_settings.batch_size_movies_learn or 20 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                            <div>
+                                <label for="batch_size_movies_score" class="block text-sm font-medium text-gray-400 mb-1">Movies (Score)</label>
+                                <input type="number" id="batch_size_movies_score" name="batch_size_movies_score" value="{{ ai_settings.batch_size_movies_score or 50 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                            <div>
+                                <label for="batch_size_shows_learn" class="block text-sm font-medium text-gray-400 mb-1">Shows (Learn)</label>
+                                <input type="number" id="batch_size_shows_learn" name="batch_size_shows_learn" value="{{ ai_settings.batch_size_shows_learn or 10 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                            <div>
+                                <label for="batch_size_shows_score" class="block text-sm font-medium text-gray-400 mb-1">Shows (Score)</label>
+                                <input type="number" id="batch_size_shows_score" name="batch_size_shows_score" value="{{ ai_settings.batch_size_shows_score or 20 }}" class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radarr Settings -->
                     <div class="mb-8 p-4 border border-gray-700 rounded-lg">
                         <h2 class="text-2xl font-bold mb-4 text-white">Radarr</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

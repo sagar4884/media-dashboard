@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.900] - 2025-11-20
+### Added
+- **AI Curator:** Introduced a comprehensive AI-powered scoring and learning system.
+    - **Learning Mode:** Analyzes user's "Keep" and "Delete" history to generate personalized scoring rules using a "Learning Model" (e.g., Gemini 1.5 Pro).
+    - **Scoring Mode:** Scores unscored items (0-100) based on the generated rules using a faster "Scoring Model" (e.g., Gemini 1.5 Flash).
+    - **Dashboard:** New "AI Curator" page with tabs for Radarr and Sonarr to manage rules and trigger AI tasks.
+    - **Settings:** New "AI Configuration" section to select providers (Gemini, OpenAI), models, and batch sizes.
+- **Database:** Added `AISettings` table and updated `Movie`/`Show` tables with `ai_score` column. Added `ai_rules` to `ServiceSettings`.
+- **UI:** Added "AI Score" column to Radarr and Sonarr list views with sorting capabilities.
+
 ## [0.89.2] - 2025-11-20
 ### Fixed
 - **UX:** Fixed the "Undo" and "Fade Out" features by implementing asynchronous API calls, preventing page reloads.
