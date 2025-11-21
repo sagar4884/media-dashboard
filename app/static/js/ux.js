@@ -77,22 +77,69 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // --- Fade Out Logic ---
-    // We can attach this to any button that performs an action
+    // Intercept clicks on action buttons to perform async fetch instead of navigation
     document.body.addEventListener('click', function(e) {
-        // Check if it's an action button (Keep/Delete/etc)
-        // These usually have hx-get or are links.
-        // If it's an HTMX request, we can use htmx events.
-    });
+        // Find the closest anchor tag with data-action attribute
+        const btn = e.target.closest('a[data-action]');
+        if (!btn) return;
 
-    // HTMX Event for Fade Out
-    // When an element is about to be swapped out (or removed), we can animate it.
-    // But our buttons usually replace the *row* or the *list*.
-    // If the user clicks "Keep", the row is usually removed from the "Unscored" list.
-    
-    // Let's assume the buttons have a class `action-btn` or similar.
-    // Looking at templates, they are usually links or buttons.
-    
-    // Better approach: Intercept the click on specific action buttons.
-    const actionButtons = document.querySelectorAll('[data-action-type]');
-    // We need to add data-action-type to buttons in the templates first.
+        e.preventDefault(); // Stop the browser from following the link
+
+        const row = btn.closest('tr') || btn.closest('.group'); // Table row or Poster card
+        const action = btn.dataset.action;
+        const url = btn.href;
+
+        // Visual Feedback
+        if (row) {
+            row.classList.add('fade-out-row');
+        }
+
+        // Perform the action asynchronously
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(data => {
+            // Show Undo Toast
+            // We need to construct the undo URL. 
+            // Ideally the API returns the undo URL or we infer it.
+            // For now, let's assume 'not_scored' is the undo for everything, 
+            // OR we can use the one returned by the API if we update the API.
+            
+            const undoUrl = data.undo_url; 
+            const actionText = `Marked as ${action}`;
+            
+            if (window.triggerUndoToast && undoUrl) {
+                window.triggerUndoToast(actionText, undoUrl);
+            }
+
+            // Remove the row from DOM after animation
+            setTimeout(() => {
+                if (row) {
+                    row.remove();
+                    // If no rows left, maybe reload or show empty state?
+                    // For now, just removing is fine.
+                }
+            }, 300);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert visual changes
+            if (row) {
+                row.classList.remove('fade-out-row');
+            }
+            Toastify({
+                text: "Action failed: " + error.message,
+                backgroundColor: "#EF4444",
+                duration: 3000
+            }).showToast();
+        });
+    });
 });

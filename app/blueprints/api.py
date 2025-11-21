@@ -60,6 +60,16 @@ def media_action(media_type, media_id, action):
     }
     update_service_tags(service_name, payload)
     
+    # Check if the request wants JSON (AJAX/Fetch) or HTML (Standard Link)
+    if request.headers.get('Accept') == 'application/json':
+        return jsonify({
+            'status': 'success',
+            'action': action,
+            'media_id': media_id,
+            'media_type': media_type,
+            'undo_url': url_for('api.media_action', media_type=media_type, media_id=media_id, action='not_scored') # Simple undo for now
+        })
+
     if media_type == 'movie':
         return redirect(url_for('radarr.radarr_page', view=request.args.get('view', 'table')))
     else:
