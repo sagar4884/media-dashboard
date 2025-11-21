@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.933] - 2025-11-21
+### Fixed
+- **UI:** Fixed issue where the Mass Edit floating bar would not appear on initial page load when using "Select All".
+
 ## [0.932] - 2025-11-21
 ### Fixed
 - **UI:** Fixed issue where the Mass Edit floating action bar would not appear in Sonarr when items were selected.

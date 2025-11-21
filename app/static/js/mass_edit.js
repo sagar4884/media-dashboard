@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initMassEdit();
     });
 
+    // Initialize on load
+    initMassEdit();
+
     // Close Button Logic
     const closeBtn = document.getElementById('mass-edit-close');
     if (closeBtn) {
