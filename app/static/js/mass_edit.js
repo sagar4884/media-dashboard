@@ -55,6 +55,7 @@ function initMassEditSystem() {
 
     // Toggle Mass Edit Mode
     massEditToggle.addEventListener('click', function() {
+        console.log('Mass Edit Toggle Clicked. Current State:', isMassEditActive);
         isMassEditActive = !isMassEditActive;
         this.textContent = isMassEditActive ? 'Exit Mass Edit' : 'Mass Edit';
         
@@ -69,6 +70,7 @@ function initMassEditSystem() {
         
         // Update visibility
         const checkboxes = document.querySelectorAll('.mass-edit-checkbox');
+        console.log('Toggling visibility for', checkboxes.length, 'checkboxes');
         checkboxes.forEach(cb => {
             cb.classList.toggle('hidden', !isMassEditActive);
             if (!isMassEditActive) cb.checked = false;
@@ -89,6 +91,7 @@ function initMassEditSystem() {
     // Event Delegation for Checkboxes (handles clicks on both static and dynamic elements)
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('mass-edit-checkbox') && e.target.id !== 'select-all') {
+            console.log('Checkbox clicked:', e.target.value);
             const checkbox = e.target;
             const checkboxes = Array.from(document.querySelectorAll('.mass-edit-checkbox:not(#select-all)'));
             
@@ -122,15 +125,17 @@ function initMassEditSystem() {
     // HTMX Integration
     // Use document instead of body for better reliability
     document.addEventListener('htmx:afterSettle', function(evt) {
+        console.log('HTMX Settle Event Detected');
         // When content is swapped (search/filter), re-initialize mass edit state
         // We need to ensure we are using the current isMassEditActive state
         // Add a small delay to ensure DOM is fully ready
-        setTimeout(initMassEdit, 10);
+        setTimeout(initMassEdit, 50);
     });
 
     // Also listen for history restore (back button)
     document.addEventListener('htmx:historyRestore', function(evt) {
-        setTimeout(initMassEdit, 10);
+        console.log('HTMX History Restore Detected');
+        setTimeout(initMassEdit, 50);
     });
 
     // Initialize on load
@@ -163,12 +168,16 @@ function initMassEditSystem() {
         const selected = Array.from(allCheckboxes).filter(cb => cb.checked && cb.id !== 'select-all');
         const count = selected.length;
         
+        console.log('UpdateFab: Found', allCheckboxes.length, 'checkboxes,', count, 'selected');
+        
         if (selectedCountSpan) selectedCountSpan.textContent = count + ' Selected';
         
         if (fab) {
             if (count > 0) {
+                console.log('Showing FAB');
                 fab.classList.remove('translate-y-full', 'opacity-0');
             } else {
+                console.log('Hiding FAB');
                 fab.classList.add('translate-y-full', 'opacity-0');
             }
         }
