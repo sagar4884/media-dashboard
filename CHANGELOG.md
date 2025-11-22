@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.940] - 2025-11-21
+### Added
+- **Feature:** Implemented a comprehensive Scheduling system to automate library tasks (Sync, Analyze, Score, Vacuum DB).
+- **Backend:** Added dedicated `scheduler.py` process and Supervisor configuration to manage timed tasks.
+- **Backend:** Added `ScheduledTask` database model and API endpoints for schedule management.
+- **UI:** Added "Scheduling" tab in Settings to create, manage, and toggle automated schedules.
+
+### Changed
+- **UI:** Refactored Settings page into a modern 3-tab layout: "URL/APIs", "AI Configuration", and "Scheduling".
+- **UI:** Improved Settings page organization using Alpine.js for client-side tab switching.
+
 ## [0.937] - 2025-11-21
 ### Fixed
 - **UI:** Fixed Sonarr Mass Edit FAB disappearing on search by moving it outside the dynamic content area.
