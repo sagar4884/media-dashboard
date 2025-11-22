@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.942] - 2025-11-21
+### Fixed
+- **UI:** Fixed "Flash of Unstyled Content" (FOUC) on Settings page tabs by implementing `x-cloak`.
+- **UI:** Added global `x-cloak` style definition to prevent Alpine.js elements from flickering on load.
+
 ## [0.941] - 2025-11-21
 ### Fixed
 - **UI:** Fixed broken layout in Settings page where tabs were not visible due to missing closing tags.
