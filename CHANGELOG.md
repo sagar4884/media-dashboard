@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.943] - 2025-11-21
+### Fixed
+- **UI:** Fixed invisible tabs in Settings page by adding default styling to buttons, ensuring visibility before Alpine.js initialization.
+- **UI:** Applied `x-cloak` to URL/APIs tab to prevent content flashing.
+
 ## [0.942] - 2025-11-21
 ### Fixed
 - **UI:** Fixed "Flash of Unstyled Content" (FOUC) on Settings page tabs by implementing `x-cloak`.
