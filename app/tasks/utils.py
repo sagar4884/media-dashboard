@@ -2,10 +2,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os
+from flask import current_app
 from .. import db
-from ..models import ServiceSettings, Movie, Show
+from ..models import ServiceSettings, Movie, Show, AISettings
+from ..logging_utils import log_message
 
-def get_retry_session():
+def get_retry_session(category='System'):
     session = requests.Session()
     retry = Retry(
         total=5,
@@ -17,6 +19,23 @@ def get_retry_session():
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
     session.mount('https://', adapter)
+
+    def response_hook(response, *args, **kwargs):
+        try:
+            if current_app:
+                # We need to ensure we are in a context where we can query DB
+                # If this hook is called, we are likely in a request or task context
+                settings = AISettings.query.first()
+                if settings and settings.verbose_logging:
+                    req = response.request
+                    log_message('DEBUG', f"[OUTGOING] {req.method} {req.url}", category)
+                    # Log body if present and not too large? For now just URL.
+                    
+                    log_message('DEBUG', f"[INCOMING] Status: {response.status_code} | URL: {response.url}", category)
+        except Exception:
+            pass
+
+    session.hooks['response'].append(response_hook)
     return session
 
 def fetch_tmdb_assets(media_id, media_type='movie'):
@@ -25,7 +44,7 @@ def fetch_tmdb_assets(media_id, media_type='movie'):
         return None, None
         
     tmdb_api_key = settings.tmdb_api_key
-    session = get_retry_session()
+    session = get_retry_session(category='System')
     
     tmdb_id = None
     if media_type == 'movie':

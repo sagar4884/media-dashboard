@@ -3,6 +3,7 @@ from openai import OpenAI
 import json
 import time
 import logging
+from .logging_utils import log_message
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,9 @@ class AIService:
         Do not include markdown formatting like ```json. Just the raw JSON string.
         """
         
+        log_message('DEBUG', f"AI Prompt (Learning):\n{prompt}", 'AI Curator')
         response_text = self._call_model(prompt, model_type='learning')
+        log_message('DEBUG', f"AI Response (Learning):\n{response_text}", 'AI Curator')
         
         # Clean up potential markdown formatting
         cleaned_text = response_text.replace('```json', '').replace('```', '').strip()
@@ -86,7 +89,10 @@ class AIService:
         Do not include markdown formatting like ```json. Just the raw JSON string.
         """
         
+        log_message('DEBUG', f"AI Prompt (Scoring):\n{prompt}", 'AI Curator')
         response_text = self._call_model(prompt, model_type='scoring')
+        log_message('DEBUG', f"AI Response (Scoring):\n{response_text}", 'AI Curator')
+
         try:
             # Clean up potential markdown formatting
             cleaned_text = response_text.replace('```json', '').replace('```', '').strip()

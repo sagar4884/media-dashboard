@@ -1,4 +1,12 @@
 from . import db
+from datetime import datetime
+
+class SystemLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    level = db.Column(db.String(20), nullable=False) # INFO, DEBUG, ERROR, CRITICAL
+    category = db.Column(db.String(50), nullable=False, index=True) # Radarr, Sonarr, AI, System, etc.
+    message = db.Column(db.Text, nullable=False)
 
 class ServiceSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)

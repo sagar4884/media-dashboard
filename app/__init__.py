@@ -37,6 +37,10 @@ def create_app():
     app.logger.setLevel(logging.INFO) # Default application log level
     app.logger.info('Media Dashboard startup')
 
+    # Register Database Logger
+    from .logging_utils import register_logger
+    register_logger(app)
+
     # Configuration
     app.config.from_mapping(
         SECRET_KEY='a_very_secret_key',  # Change this!
@@ -72,6 +76,7 @@ def create_app():
         from .blueprints.settings import bp as settings_bp
         from .blueprints.api import bp as api_bp
         from .blueprints.ai import bp as ai_bp
+        from .blueprints.logs import bp as logs_bp
 
         app.register_blueprint(main_bp)
         app.register_blueprint(radarr_bp)
@@ -81,6 +86,7 @@ def create_app():
         app.register_blueprint(settings_bp)
         app.register_blueprint(api_bp)
         app.register_blueprint(ai_bp)
+        app.register_blueprint(logs_bp)
 
         run_migrations(app)
 
@@ -98,6 +104,18 @@ def run_migrations(app):
                 conn.commit()
                 print("Migrated database: Added seasonal_min_episodes column.")
         except Exception as e:
+            pass
+        
+        # Migration for SystemLog
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("CREATE TABLE IF NOT EXISTS system_log (id INTEGER PRIMARY KEY, timestamp DATETIME, level VARCHAR(20), category VARCHAR(50), message TEXT)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_system_log_timestamp ON system_log (timestamp)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_system_log_category ON system_log (category)"))
+                conn.commit()
+                print("Migrated database: Created system_log table.")
+        except Exception as e:
+            print(f"Migration error: {e}")
             # Column likely exists or table doesn't exist yet (fresh install handled by entrypoint)
             pass
 

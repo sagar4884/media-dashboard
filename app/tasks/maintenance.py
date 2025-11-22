@@ -3,7 +3,9 @@ from rq import get_current_job
 from flask import current_app
 from sqlalchemy import text
 from .. import db
+from ..logging_utils import task_wrapper
 
+@task_wrapper('System')
 def vacuum_database():
     job = get_current_job()
     job.meta['progress'] = 0

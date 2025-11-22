@@ -7,25 +7,27 @@ import time
 import logging
 import json
 import uuid
+from ..logging_utils import task_wrapper, log_message
 
 # Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+@task_wrapper('AI Curator')
 def learn_user_preferences(service_name):
-    print(f"Starting learning task for {service_name}")
+    log_message('INFO', f"Starting learning task for {service_name}", 'AI Curator')
     job = get_current_job()
     job.meta['progress'] = 0
     job.save_meta()
     
     ai_settings = AISettings.query.first()
     if not ai_settings or not ai_settings.api_key:
-        print("Error: AI not configured")
+        log_message('ERROR', "Error: AI not configured", 'AI Curator')
         return {'error': 'AI not configured'}
         
     service_settings = ServiceSettings.query.filter_by(service_name=service_name).first()
     if not service_settings:
-        print(f"Error: {service_name} settings not found")
+        log_message('ERROR', f"Error: {service_name} settings not found", 'AI Curator')
         return {'error': f'{service_name} settings not found'}
 
     ai_service = AIService(ai_settings)
@@ -38,7 +40,7 @@ def learn_user_preferences(service_name):
         ModelClass = Show
         batch_size = ai_settings.batch_size_shows_learn
 
-    print(f"Fetching samples with batch size {batch_size}")
+    log_message('INFO', f"Fetching samples with batch size {batch_size}", 'AI Curator')
     
     # Fetch samples using random ordering
     # Include 'Tautulli Keep' as a positive signal along with 'Keep'
@@ -48,10 +50,10 @@ def learn_user_preferences(service_name):
     
     deleted_items = ModelClass.query.filter_by(score='Delete').order_by(func.random()).limit(batch_size).all()
     
-    print(f"Found {len(kept_items)} kept/tautulli-kept items and {len(deleted_items)} deleted items")
+    log_message('INFO', f"Found {len(kept_items)} kept/tautulli-kept items and {len(deleted_items)} deleted items", 'AI Curator')
 
     if not kept_items and not deleted_items:
-        print("No history found to learn from.")
+        log_message('WARNING', "No history found to learn from.", 'AI Curator')
         return {'error': 'No history found to learn from.'}
 
     # Prepare data for AI
@@ -100,13 +102,14 @@ def learn_user_preferences(service_name):
 
         service_settings.ai_rule_proposals = proposals_json
         db.session.commit()
-        print("Rule proposals saved to database.")
+        log_message('INFO', "Rule proposals saved to database.", 'AI Curator')
         return {'status': 'success', 'message': 'Rule proposals generated. Please review them in the dashboard.'}
         
     except Exception as e:
-        print(f"Error generating rules: {str(e)}")
+        log_message('ERROR', f"Error generating rules: {str(e)}", 'AI Curator')
         return {'error': str(e)}
 
+@task_wrapper('AI Curator')
 def score_media_items(service_name, resume_mode=False):
     job = get_current_job()
     job.meta['progress'] = 0
@@ -114,20 +117,14 @@ def score_media_items(service_name, resume_mode=False):
     
     ai_settings = AISettings.query.first()
     if not ai_settings or not ai_settings.api_key:
-        logger.error("AI not configured")
+        log_message('ERROR', "AI not configured", 'AI Curator')
         return {'error': 'AI not configured'}
         
-    # Configure logging verbosity based on settings
-    if ai_settings.verbose_logging:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-        
-    logger.info(f"Starting scoring task for {service_name} (Resume: {resume_mode})")
+    log_message('INFO', f"Starting scoring task for {service_name} (Resume: {resume_mode})", 'AI Curator')
     
     service_settings = ServiceSettings.query.filter_by(service_name=service_name).first()
     if not service_settings or not service_settings.ai_rules:
-        logger.error(f"{service_name} rules not found. Please run Learn first.")
+        log_message('ERROR', f"{service_name} rules not found. Please run Learn first.", 'AI Curator')
         return {'error': f'{service_name} rules not found. Please run Learn first.'}
 
     ai_service = AIService(ai_settings)
@@ -139,7 +136,7 @@ def score_media_items(service_name, resume_mode=False):
         ModelClass = Show
         batch_size = ai_settings.batch_size_shows_score
 
-    logger.info(f"Fetching items with batch size {batch_size}")
+    log_message('INFO', f"Fetching items with batch size {batch_size}", 'AI Curator')
     
     excluded_scores = ['Keep', 'Delete', 'Tautulli Keep', 'Seasonal', 'Archived']
     
@@ -151,14 +148,14 @@ def score_media_items(service_name, resume_mode=False):
         
     # Apply Max Items Limit
     if ai_settings.max_items_limit > 0:
-        logger.info(f"Applying Max Items Limit: {ai_settings.max_items_limit}")
+        log_message('INFO', f"Applying Max Items Limit: {ai_settings.max_items_limit}", 'AI Curator')
         query = query.limit(ai_settings.max_items_limit)
     
     # Fetch all IDs first to ensure stability
     all_items = query.all()
     total_items = len(all_items)
     
-    logger.info(f"Found {total_items} items to score")
+    log_message('INFO', f"Found {total_items} items to score", 'AI Curator')
 
     if total_items == 0:
         return {'status': 'success', 'message': 'No items found to score'}
@@ -171,13 +168,13 @@ def score_media_items(service_name, resume_mode=False):
     for i in range(0, total_items, batch_size):
         # Check Stop Flag
         if redis_conn.exists(f"stop_job_flag_{job.id}"):
-            logger.info("Stop flag detected. Gracefully stopping task.")
+            log_message('INFO', "Stop flag detected. Gracefully stopping task.", 'AI Curator')
             redis_conn.delete(f"stop_job_flag_{job.id}")
             return {'status': 'stopped', 'message': f'Scoring stopped by user at {processed_count}/{total_items}'}
 
         batch_items = all_items[i : i + batch_size]
         
-        logger.info(f"Processing batch of {len(batch_items)} items ({processed_count}/{total_items})")
+        log_message('INFO', f"Processing batch of {len(batch_items)} items ({processed_count}/{total_items})", 'AI Curator')
         
         # Prepare data
         items_map = {}
@@ -196,7 +193,7 @@ def score_media_items(service_name, resume_mode=False):
             
         try:
             batch_start = time.time()
-            logger.debug("Calling AI service to score items...")
+            log_message('DEBUG', "Calling AI service to score items...", 'AI Curator')
             scores = ai_service.score_items(items_data, service_settings.ai_rules)
             
             count = 0

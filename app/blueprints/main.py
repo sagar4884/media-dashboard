@@ -49,8 +49,8 @@ def dashboard():
 
 @bp.route('/health/<service>')
 def health_check(service):
-    session = get_retry_session()
     service_name = service.capitalize()
+    session = get_retry_session(category=service_name)
     settings = ServiceSettings.query.filter_by(service_name=service_name).first()
     
     if not settings:

@@ -4,7 +4,9 @@ from rq import get_current_job
 from .. import db
 from ..models import ServiceSettings, Movie, Show, TautulliHistory
 from .utils import get_retry_session, update_service_tags
+from ..logging_utils import task_wrapper
 
+@task_wrapper('Tautulli')
 def sync_tautulli_history(full_sync=False):
     job = get_current_job()
     job.meta['progress'] = 0
@@ -18,7 +20,7 @@ def sync_tautulli_history(full_sync=False):
     if not settings:
         return {'error': 'Tautulli settings not found'}
     
-    session = get_retry_session()
+    session = get_retry_session(category='Tautulli')
     
     # Determine fetch length based on sync type
     # Full sync: Fetch a large number (effectively all relevant history)

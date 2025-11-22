@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.950] - 2025-11-22
+### Added
+- **Logging:** Complete overhaul of the logging system. Logs are now stored in the database for better persistence and querying.
+- **UI:** New "Logs" page with dedicated tabs for Radarr, Sonarr, Tautulli, AI Curator, and System logs.
+- **UI:** Live log polling on the Logs page (updates every 2 seconds).
+- **Feature:** "Verbose Logging" toggle moved to the Logs page. When enabled, it logs full HTTP request/response details and raw AI prompts/responses.
+- **Backend:** Global exception handling for background tasks. Failed tasks now log their full traceback to the database instead of failing silently.
+- **Backend:** HTTP Request hooks to automatically log API traffic in verbose mode.
+
 ## [0.947] - 2025-11-22
 ### Fixed
 - **Backend:** Fixed `AttributeError` in scheduler by correctly using `app.queue.enqueue` instead of calling `.queue()` on task functions.

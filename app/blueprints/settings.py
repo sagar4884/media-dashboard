@@ -49,7 +49,7 @@ def settings():
             ai_settings.batch_size_movies_score = int(request.form.get('batch_size_movies_score', 50))
             ai_settings.batch_size_shows_learn = int(request.form.get('batch_size_shows_learn', 10))
             ai_settings.batch_size_shows_score = int(request.form.get('batch_size_shows_score', 20))
-            ai_settings.verbose_logging = 'verbose_logging' in request.form
+            # verbose_logging is now handled in the Logs page
             ai_settings.log_retention = int(request.form.get('log_retention', 7))
             ai_settings.max_items_limit = int(request.form.get('max_items_limit', 0))
             

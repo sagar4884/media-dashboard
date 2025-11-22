@@ -3,7 +3,9 @@ from rq import get_current_job
 from .. import db
 from ..models import ServiceSettings, Movie
 from .utils import get_retry_session, fetch_tmdb_assets, update_service_tags
+from ..logging_utils import task_wrapper
 
+@task_wrapper('Radarr')
 def sync_radarr_movies(full_sync=False):
     job = get_current_job()
     job.meta['progress'] = 0
@@ -18,7 +20,7 @@ def sync_radarr_movies(full_sync=False):
         return {'error': 'Radarr settings not found'}
 
     headers = {'X-Api-Key': settings.api_key}
-    session = get_retry_session()
+    session = get_retry_session(category='Radarr')
 
     # Fetch all tags to create a mapping from ID to Label and vice-versa
     tags_response = session.get(f"{settings.url}/api/v3/tag", headers=headers)

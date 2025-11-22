@@ -1,0 +1,131 @@
+{% extends "_layout_head.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h2">System Logs</h1>
+        <div class="d-flex align-items-center gap-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="verboseToggle">
+                <label class="form-check-label" for="verboseToggle">Verbose Logging</label>
+            </div>
+            <button class="btn btn-outline-danger btn-sm" onclick="clearLogs()">Clear Logs</button>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="autoScroll" checked>
+                <label class="form-check-label" for="autoScroll">Auto-scroll</label>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="logTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" onclick="setCategory('Overview')">Overview</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" onclick="setCategory('System')">System</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="radarr-tab" data-bs-toggle="tab" data-bs-target="#radarr" type="button" role="tab" onclick="setCategory('Radarr')">Radarr</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sonarr-tab" data-bs-toggle="tab" data-bs-target="#sonarr" type="button" role="tab" onclick="setCategory('Sonarr')">Sonarr</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tautulli-tab" data-bs-toggle="tab" data-bs-target="#tautulli" type="button" role="tab" onclick="setCategory('Tautulli')">Tautulli</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab" onclick="setCategory('AI Curator')">AI Curator</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="overlays-tab" data-bs-toggle="tab" data-bs-target="#overlays" type="button" role="tab" onclick="setCategory('Overlays')">Overlays</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="deletion-tab" data-bs-toggle="tab" data-bs-target="#deletion" type="button" role="tab" onclick="setCategory('Deletion Manager')">Deletion Manager</button>
+        </li>
+    </ul>
+
+    <div class="card bg-dark text-light font-monospace" style="height: 70vh; overflow-y: auto;" id="logContainer">
+        <div class="card-body p-2" id="logContent">
+            <!-- Logs will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentCategory = 'Overview';
+    let lastLogId = 0;
+    let pollInterval;
+
+    function setCategory(category) {
+        currentCategory = category;
+        lastLogId = 0;
+        document.getElementById('logContent').innerHTML = '';
+        fetchLogs();
+    }
+
+    async function fetchLogs() {
+        try {
+            const response = await fetch(`/api/logs?category=${encodeURIComponent(currentCategory)}&last_id=${lastLogId}`);
+            const logs = await response.json();
+            
+            const container = document.getElementById('logContent');
+            
+            logs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'mb-1 border-bottom border-secondary pb-1';
+                
+                let colorClass = 'text-light';
+                if (log.level === 'WARNING') colorClass = 'text-warning';
+                if (log.level === 'ERROR' || log.level === 'CRITICAL') colorClass = 'text-danger';
+                if (log.level === 'DEBUG') colorClass = 'text-muted';
+
+                div.innerHTML = `
+                    <span class="text-secondary small">[${log.timestamp}]</span>
+                    <span class="badge bg-secondary me-2">${log.category}</span>
+                    <span class="${colorClass} fw-bold">${log.level}</span>: 
+                    <span class="${colorClass}" style="white-space: pre-wrap;">${log.message}</span>
+                `;
+                container.appendChild(div);
+                lastLogId = log.id;
+            });
+
+            if (document.getElementById('autoScroll').checked && logs.length > 0) {
+                const scrollContainer = document.getElementById('logContainer');
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            }
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+        }
+    }
+
+    async function clearLogs() {
+        if (!confirm('Are you sure you want to clear all logs?')) return;
+        await fetch('/api/logs/clear', { method: 'POST' });
+        lastLogId = 0;
+        document.getElementById('logContent').innerHTML = '';
+    }
+
+    // Verbose Toggle Logic
+    const verboseToggle = document.getElementById('verboseToggle');
+    
+    async function loadVerboseStatus() {
+        const res = await fetch('/api/logs/verbose/status');
+        const data = await res.json();
+        verboseToggle.checked = data.enabled;
+    }
+
+    verboseToggle.addEventListener('change', async (e) => {
+        await fetch('/api/logs/verbose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: e.target.checked })
+        });
+    });
+
+    // Init
+    loadVerboseStatus();
+    fetchLogs();
+    pollInterval = setInterval(fetchLogs, 2000);
+
+</script>
+{% endblock %}
