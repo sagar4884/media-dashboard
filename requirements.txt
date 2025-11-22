@@ -9,3 +9,4 @@ supervisor
 PyYAML
 google-generativeai
 openai
+schedule

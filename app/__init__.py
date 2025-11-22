@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event, text
@@ -52,6 +53,7 @@ def create_app():
 
     # Make timedelta available in templates
     app.jinja_env.globals['timedelta'] = timedelta
+    app.jinja_env.filters['from_json'] = json.loads
 
     @app.context_processor
     def inject_active_job_id():

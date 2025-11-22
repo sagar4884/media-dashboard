@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.945] - 2025-11-21
+### Fixed
+- **Backend:** Added missing `schedule` dependency to requirements.txt.
+- **Frontend:** Registered `from_json` Jinja2 filter to fix Settings page error.
+
 ## [0.944] - 2025-11-21
 ### Changed
 - **UI:** Moved Settings tabs inside the header area to resolve visibility issues.
