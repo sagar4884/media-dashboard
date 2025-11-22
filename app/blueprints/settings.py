@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from sqlalchemy import text
 from .. import db, run_migrations
-from ..models import ServiceSettings, AISettings
+from ..models import ServiceSettings, AISettings, ScheduledTask
 from ..tasks import sync_radarr_movies, sync_sonarr_shows, sync_tautulli_history, get_retry_session, vacuum_database
 from rq.job import Job
 from rq.exceptions import NoSuchJobError
@@ -10,6 +10,7 @@ import os
 import requests
 import shutil
 import sqlite3
+import json
 from datetime import datetime
 
 bp = Blueprint('settings', __name__)
@@ -18,56 +19,103 @@ bp = Blueprint('settings', __name__)
 def settings():
     if request.method == 'POST':
         # Handle Service Settings
-        services = ['Radarr', 'Sonarr', 'Tautulli']
-        for service_name in services:
-            settings = ServiceSettings.query.filter_by(service_name=service_name).first()
-            if not settings:
-                settings = ServiceSettings(service_name=service_name)
-            
-            settings.url = request.form.get(f'{service_name}_url')
-            settings.api_key = request.form.get(f'{service_name}_api_key')
-            if service_name != 'Tautulli':
-                settings.grace_days = int(request.form.get(f'{service_name}_grace_days', 30))
-            settings.retention_days = int(request.form.get(f'{service_name}_retention_days', 365))
-            if service_name == 'Radarr': # Centralized TMDB key
-                settings.tmdb_api_key = request.form.get('tmdb_api_key')
+        if 'save_settings' in request.form:
+            services = ['Radarr', 'Sonarr', 'Tautulli']
+            for service_name in services:
+                settings = ServiceSettings.query.filter_by(service_name=service_name).first()
+                if not settings:
+                    settings = ServiceSettings(service_name=service_name)
+                
+                settings.url = request.form.get(f'{service_name}_url')
+                settings.api_key = request.form.get(f'{service_name}_api_key')
+                if service_name != 'Tautulli':
+                    settings.grace_days = int(request.form.get(f'{service_name}_grace_days', 30))
+                settings.retention_days = int(request.form.get(f'{service_name}_retention_days', 365))
+                if service_name == 'Radarr': # Centralized TMDB key
+                    settings.tmdb_api_key = request.form.get('tmdb_api_key')
 
-            db.session.add(settings)
-        
-        # Handle AI Settings
-        ai_settings = AISettings.query.first()
-        if not ai_settings:
-            ai_settings = AISettings()
-        
-        ai_settings.provider = request.form.get('ai_provider')
-        ai_settings.api_key = request.form.get('ai_api_key')
-        ai_settings.learning_model = request.form.get('ai_learning_model')
-        ai_settings.scoring_model = request.form.get('ai_scoring_model')
-        ai_settings.batch_size_movies_learn = int(request.form.get('batch_size_movies_learn', 20))
-        ai_settings.batch_size_movies_score = int(request.form.get('batch_size_movies_score', 50))
-        ai_settings.batch_size_shows_learn = int(request.form.get('batch_size_shows_learn', 10))
-        ai_settings.batch_size_shows_score = int(request.form.get('batch_size_shows_score', 20))
-        ai_settings.verbose_logging = 'verbose_logging' in request.form
-        ai_settings.log_retention = int(request.form.get('log_retention', 7))
-        ai_settings.max_items_limit = int(request.form.get('max_items_limit', 0))
-        
-        db.session.add(ai_settings)
-        db.session.commit()
-        flash('Settings saved successfully!', 'success')
-        return redirect(url_for('settings.settings'))
-    
+                db.session.add(settings)
+            
+            # Handle AI Settings
+            ai_settings = AISettings.query.first()
+            if not ai_settings:
+                ai_settings = AISettings()
+            
+            ai_settings.provider = request.form.get('ai_provider')
+            ai_settings.api_key = request.form.get('ai_api_key')
+            ai_settings.learning_model = request.form.get('ai_learning_model')
+            ai_settings.scoring_model = request.form.get('ai_scoring_model')
+            ai_settings.batch_size_movies_learn = int(request.form.get('batch_size_movies_learn', 20))
+            ai_settings.batch_size_movies_score = int(request.form.get('batch_size_movies_score', 50))
+            ai_settings.batch_size_shows_learn = int(request.form.get('batch_size_shows_learn', 10))
+            ai_settings.batch_size_shows_score = int(request.form.get('batch_size_shows_score', 20))
+            ai_settings.verbose_logging = 'verbose_logging' in request.form
+            ai_settings.log_retention = int(request.form.get('log_retention', 7))
+            ai_settings.max_items_limit = int(request.form.get('max_items_limit', 0))
+            
+            db.session.add(ai_settings)
+            db.session.commit()
+            flash('Settings updated successfully.', 'success')
+            return redirect(url_for('settings.settings'))
+
+    # Fetch Settings
     radarr_settings = ServiceSettings.query.filter_by(service_name='Radarr').first()
     sonarr_settings = ServiceSettings.query.filter_by(service_name='Sonarr').first()
     tautulli_settings = ServiceSettings.query.filter_by(service_name='Tautulli').first()
     ai_settings = AISettings.query.first()
-    if not ai_settings:
-        ai_settings = AISettings() # Default values
+    schedules = ScheduledTask.query.all()
 
     return render_template('settings.html',
                            radarr_settings=radarr_settings,
                            sonarr_settings=sonarr_settings,
                            tautulli_settings=tautulli_settings,
-                           ai_settings=ai_settings)
+                           ai_settings=ai_settings,
+                           schedules=schedules)
+
+@bp.route('/settings/schedule/add', methods=['POST'])
+def add_schedule():
+    try:
+        name = request.form.get('name')
+        time = request.form.get('time')
+        days = request.form.getlist('days') # List of strings "0", "1", etc.
+        tasks = request.form.getlist('tasks') # List of task IDs
+        
+        if not name or not time or not days or not tasks:
+            flash('All fields are required.', 'error')
+            return redirect(url_for('settings.settings'))
+            
+        # Convert days to integers
+        days = [int(d) for d in days]
+        
+        schedule = ScheduledTask(
+            name=name,
+            time=time,
+            days=json.dumps(days),
+            tasks=json.dumps(tasks),
+            enabled=True
+        )
+        db.session.add(schedule)
+        db.session.commit()
+        flash('Schedule added successfully.', 'success')
+    except Exception as e:
+        flash(f'Error adding schedule: {str(e)}', 'error')
+        
+    return redirect(url_for('settings.settings'))
+
+@bp.route('/settings/schedule/delete/<int:id>', methods=['POST'])
+def delete_schedule(id):
+    schedule = ScheduledTask.query.get_or_404(id)
+    db.session.delete(schedule)
+    db.session.commit()
+    flash('Schedule deleted.', 'success')
+    return redirect(url_for('settings.settings'))
+
+@bp.route('/settings/schedule/toggle/<int:id>', methods=['POST'])
+def toggle_schedule(id):
+    schedule = ScheduledTask.query.get_or_404(id)
+    schedule.enabled = not schedule.enabled
+    db.session.commit()
+    return jsonify({'status': 'success', 'enabled': schedule.enabled})
 
 @bp.route('/test_connection/<service>', methods=['POST'])
 def test_connection(service):

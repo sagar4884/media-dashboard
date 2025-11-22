@@ -30,6 +30,15 @@ class AISettings(db.Model):
     log_retention = db.Column(db.Integer, default=7)
     max_items_limit = db.Column(db.Integer, default=0)
 
+class ScheduledTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    time = db.Column(db.String(5), nullable=False) # HH:MM format
+    days = db.Column(db.String(50), nullable=False) # JSON list of days [0,1,2...] or "Mon,Tue..."
+    tasks = db.Column(db.Text, nullable=False) # JSON list of task identifiers
+    enabled = db.Column(db.Boolean, default=True)
+    last_run = db.Column(db.DateTime(timezone=True))
+
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     radarr_id = db.Column(db.Integer, unique=True)

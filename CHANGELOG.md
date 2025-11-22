@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.944] - 2025-11-21
+### Changed
+- **UI:** Moved Settings tabs inside the header area to resolve visibility issues.
+- **Debug:** Added version marker to Settings page to verify code deployment.
+
 ## [0.943] - 2025-11-21
 ### Fixed
 - **UI:** Fixed invisible tabs in Settings page by adding default styling to buttons, ensuring visibility before Alpine.js initialization.
