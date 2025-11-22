@@ -26,19 +26,19 @@ logger = logging.getLogger(__name__)
 app = create_app()
 
 TASK_MAPPING = {
-    'radarr_quick_sync': lambda: sync_radarr_movies.queue(),
-    'radarr_full_sync': lambda: sync_radarr_movies.queue(full_sync=True),
-    'radarr_analyze': lambda: learn_user_preferences.queue('Radarr'),
-    'radarr_continue_scoring': lambda: score_media_items.queue('Radarr', resume_mode=True),
-    'radarr_rescore': lambda: score_media_items.queue('Radarr', resume_mode=False),
+    'radarr_quick_sync': lambda: app.queue.enqueue(sync_radarr_movies),
+    'radarr_full_sync': lambda: app.queue.enqueue(sync_radarr_movies, full_sync=True),
+    'radarr_analyze': lambda: app.queue.enqueue(learn_user_preferences, 'Radarr'),
+    'radarr_continue_scoring': lambda: app.queue.enqueue(score_media_items, 'Radarr', resume_mode=True),
+    'radarr_rescore': lambda: app.queue.enqueue(score_media_items, 'Radarr', resume_mode=False),
     
-    'sonarr_quick_sync': lambda: sync_sonarr_shows.queue(),
-    'sonarr_full_sync': lambda: sync_sonarr_shows.queue(full_sync=True),
-    'sonarr_analyze': lambda: learn_user_preferences.queue('Sonarr'),
-    'sonarr_continue_scoring': lambda: score_media_items.queue('Sonarr', resume_mode=True),
-    'sonarr_rescore': lambda: score_media_items.queue('Sonarr', resume_mode=False),
+    'sonarr_quick_sync': lambda: app.queue.enqueue(sync_sonarr_shows),
+    'sonarr_full_sync': lambda: app.queue.enqueue(sync_sonarr_shows, full_sync=True),
+    'sonarr_analyze': lambda: app.queue.enqueue(learn_user_preferences, 'Sonarr'),
+    'sonarr_continue_scoring': lambda: app.queue.enqueue(score_media_items, 'Sonarr', resume_mode=True),
+    'sonarr_rescore': lambda: app.queue.enqueue(score_media_items, 'Sonarr', resume_mode=False),
     
-    'system_vacuum': lambda: vacuum_database.queue()
+    'system_vacuum': lambda: app.queue.enqueue(vacuum_database)
 }
 
 def run_scheduled_tasks():
