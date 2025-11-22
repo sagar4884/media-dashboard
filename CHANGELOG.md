@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.941] - 2025-11-21
+### Fixed
+- **UI:** Fixed broken layout in Settings page where tabs were not visible due to missing closing tags.
+
 ## [0.940] - 2025-11-21
 ### Added
 - **Feature:** Implemented a comprehensive Scheduling system to automate library tasks (Sync, Analyze, Score, Vacuum DB).
