@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.946] - 2025-11-21
+### Removed
+- **Debug:** Removed debug version marker from Settings page.
+
 ## [0.945] - 2025-11-21
 ### Fixed
 - **Backend:** Added missing `schedule` dependency to requirements.txt.
