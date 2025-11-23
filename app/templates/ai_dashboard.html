@@ -28,22 +28,6 @@
                             class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
                         Sonarr (Shows)
                     </button>
-                    <button @click="activeTab = 'logs'" 
-                            :class="{ 'border-indigo-500 text-indigo-400': activeTab === 'logs', 'border-transparent text-gray-400 hover:text-gray-300': activeTab !== 'logs' }"
-                            class="py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
-                        System Logs
-                    </button>
-                </div>
-
-                <!-- Logs Content -->
-                <div x-show="activeTab === 'logs'" class="space-y-6" x-data="{ logs: 'Loading...', fetchLogs() { fetch('/ai/logs').then(r => r.json()).then(d => this.logs = d.logs) } }" x-init="fetchLogs(); setInterval(fetchLogs, 5000)">
-                    <div class="glass-panel p-6 rounded-lg shadow-xl">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold text-white">System Logs</h2>
-                            <button @click="fetchLogs()" class="text-sm text-indigo-400 hover:text-indigo-300">Refresh</button>
-                        </div>
-                        <pre class="bg-gray-900 p-4 rounded text-xs font-mono text-gray-300 h-96 overflow-y-auto whitespace-pre-wrap" x-text="logs"></pre>
-                    </div>
                 </div>
 
                 <!-- Radarr Content -->

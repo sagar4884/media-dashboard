@@ -1,55 +1,66 @@
 {% extends "_layout_head.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h2">System Logs</h1>
+<div class="container-fluid p-4 sm:p-6 lg:p-8">
+    <div class="d-flex justify-content-between align-items-center mb-6">
+        <h1 class="text-3xl font-bold text-white">System Logs</h1>
         <div class="d-flex align-items-center gap-3">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="verboseToggle">
-                <label class="form-check-label" for="verboseToggle">Verbose Logging</label>
+                <label class="form-check-label text-gray-300" for="verboseToggle">Verbose Logging</label>
             </div>
             <button class="btn btn-outline-danger btn-sm" onclick="clearLogs()">Clear Logs</button>
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="autoScroll" checked>
-                <label class="form-check-label" for="autoScroll">Auto-scroll</label>
+                <label class="form-check-label text-gray-300" for="autoScroll">Auto-scroll</label>
             </div>
         </div>
     </div>
 
-    <ul class="nav nav-tabs mb-3" id="logTabs" role="tablist">
+    <ul class="nav nav-tabs mb-4 border-gray-700" id="logTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" onclick="setCategory('Overview')">Overview</button>
+            <button class="nav-link active bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" onclick="setCategory('Overview')">Overview</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" onclick="setCategory('System')">System</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" onclick="setCategory('System')">System</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="radarr-tab" data-bs-toggle="tab" data-bs-target="#radarr" type="button" role="tab" onclick="setCategory('Radarr')">Radarr</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="radarr-tab" data-bs-toggle="tab" data-bs-target="#radarr" type="button" role="tab" onclick="setCategory('Radarr')">Radarr</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="sonarr-tab" data-bs-toggle="tab" data-bs-target="#sonarr" type="button" role="tab" onclick="setCategory('Sonarr')">Sonarr</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="sonarr-tab" data-bs-toggle="tab" data-bs-target="#sonarr" type="button" role="tab" onclick="setCategory('Sonarr')">Sonarr</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tautulli-tab" data-bs-toggle="tab" data-bs-target="#tautulli" type="button" role="tab" onclick="setCategory('Tautulli')">Tautulli</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="tautulli-tab" data-bs-toggle="tab" data-bs-target="#tautulli" type="button" role="tab" onclick="setCategory('Tautulli')">Tautulli</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab" onclick="setCategory('AI Curator')">AI Curator</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab" onclick="setCategory('AI Curator')">AI Curator</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="overlays-tab" data-bs-toggle="tab" data-bs-target="#overlays" type="button" role="tab" onclick="setCategory('Overlays')">Overlays</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="overlays-tab" data-bs-toggle="tab" data-bs-target="#overlays" type="button" role="tab" onclick="setCategory('Overlays')">Overlays</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="deletion-tab" data-bs-toggle="tab" data-bs-target="#deletion" type="button" role="tab" onclick="setCategory('Deletion Manager')">Deletion Manager</button>
+            <button class="nav-link bg-transparent text-gray-300 hover:text-white border-transparent hover:border-gray-600" id="deletion-tab" data-bs-toggle="tab" data-bs-target="#deletion" type="button" role="tab" onclick="setCategory('Deletion Manager')">Deletion Manager</button>
         </li>
     </ul>
 
-    <div class="card bg-dark text-light font-monospace" style="height: 70vh; overflow-y: auto;" id="logContainer">
-        <div class="card-body p-2" id="logContent">
+    <div class="card bg-gray-900 border border-gray-700 text-gray-300 font-mono shadow-xl" style="height: 70vh; overflow-y: auto;" id="logContainer">
+        <div class="card-body p-4" id="logContent">
             <!-- Logs will be injected here -->
         </div>
     </div>
 </div>
+
+<style>
+    .nav-tabs .nav-link.active {
+        background-color: rgba(55, 65, 81, 0.5) !important;
+        border-color: #4b5563 #4b5563 transparent !important;
+        color: #fff !important;
+    }
+    .nav-tabs .nav-link {
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+</style>
 
 <script>
     let currentCategory = 'Overview';

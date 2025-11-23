@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.951] - 2025-11-22
+### Fixed
+- **UI:** Fixed styling issues on the Logs page where text was invisible on a white background. Now fully compatible with dark mode.
+- **UI:** Removed the redundant "System Logs" tab from the AI Curator page, as it has been superseded by the dedicated Logs page.
+
 ## [0.950] - 2025-11-22
 ### Added
 - **Logging:** Complete overhaul of the logging system. Logs are now stored in the database for better persistence and querying.
